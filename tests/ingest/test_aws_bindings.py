@@ -24,6 +24,7 @@ from finops_core.domain.account import AccountKey, AccountStatus, Provider
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_fakes.composition import builders as fake_builders
 from finops_ingest import accounts
+from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT, enrolled
 from finops_ingest.composition import (
     _FROM_METER,
@@ -134,8 +135,10 @@ def fakes_in(root: Any) -> list[str]:
 
 def test_every_collector_the_worker_runs_is_built_from_aws_meter_or_said_why_not() -> None:
     aws, unbuilt, meter = set(AWS_BUILDERS), set(UNBUILT), set(_FROM_METER)
-    assert not (aws & unbuilt or aws & meter or unbuilt & meter)
-    assert aws | unbuilt | meter == worker_collectors() - RETENTION
+    # P13, TASK-P13-004. The AI providers' collectors, built from their own adapters.
+    providers = set(AI_PROVIDER_BUILDERS)
+    assert not (aws & unbuilt or aws & meter or unbuilt & meter or providers & (aws | meter))
+    assert aws | unbuilt | meter | providers == worker_collectors() - RETENTION
 
 
 @pytest.mark.parametrize("name", sorted(AWS_BUILDERS))

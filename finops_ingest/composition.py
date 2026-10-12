@@ -24,6 +24,7 @@ from datetime import UTC, datetime
 from typing import Final
 
 from finops_core.errors import Misconfigured
+from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
@@ -133,6 +134,9 @@ def production_bindings() -> tuple[Binding, ...]:
     """Every collector the worker runs, bound for a deployed environment."""
     bindings = [Binding(name, scope_of(name), _built(make)) for name, make in _FROM_METER.items()]
     bindings.extend(Binding(name, scope_of(name), build) for name, build in AWS_BUILDERS.items())
+    bindings.extend(
+        Binding(name, scope_of(name), build) for name, build in AI_PROVIDER_BUILDERS.items()
+    )
     bindings.extend(
         Binding(name, scope_of(name), unbuilt(name, why)) for name, why in UNBUILT.items()
     )

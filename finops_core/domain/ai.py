@@ -24,6 +24,20 @@ CACHE_WRITE: Final = "cache_write"
 TOKEN_TYPES: Final = frozenset({INPUT, OUTPUT, CACHE_READ, CACHE_WRITE})
 
 
+@dataclass(frozen=True)
+class ProviderAccount:
+    """One AI provider organization a tenant connected, P13 spec section 5.5.
+
+    Not a fact about the estate: a record of Meter's own configuration, so it carries no `as_of`.
+    `key_secret_name` names where the admin key is kept and never holds it.
+    """
+
+    provider: str
+    organization_id: str
+    name: str
+    key_secret_name: str
+
+
 @dataclass(frozen=True, kw_only=True)
 class AiUsage(Fact):
     """Tokens and requests one caller spent on one model in one day, P13 spec section 6.

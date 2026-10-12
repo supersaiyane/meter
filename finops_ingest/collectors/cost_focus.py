@@ -180,6 +180,71 @@ RETRACT = text(
     "AND billing_period_start = :period AND ingest_source = :source AND ingest_run_id <> :run"
 )
 
+#: An AI provider's restatement, TASK-P13-004: one source's rows for one billing account, which
+#: is one provider organization, in one period. A tenant can connect two organizations of the
+#: same provider, and each is read and restated on its own, so a failure reading one never
+#: removes the other's rows.
+RETRACT_ACCOUNT = text(
+    "DELETE FROM cost_focus_daily WHERE tenant_id = :tenant "
+    "AND billing_period_start = :period AND ingest_source = :source "
+    "AND billing_account_id = :account AND ingest_run_id <> :run"
+)
+
+
+def cost_parameters(
+    row: CostRecord, context: CollectorContext, at: datetime, source: str
+) -> dict[str, Any]:
+    """One row's statement parameters, under this run and tenant, for the source writing it."""
+    if row.ingest_source != source:
+        # A row claiming another source would be written where this run's restatement can never
+        # remove it, so it is refused rather than kept.
+        raise ValueError(f"this collector writes {source} rows, not {row.ingest_source!r}")
+    values = {column: getattr(row, column) for column in COLUMNS}
+    # The tenant and the run are this run's, not whatever the adapter put on
+    # the record. An adapter has no way to know which tenant it is reading
+    # for, and the fake fills both in so its rows are constructible.
+    values["tenant_id"] = context.unit.tenant_id
+    values["ingest_run_id"] = context.run_id
+    # `as_of` stays the adapter's: it is when the charge was true at the
+    # source. `collected_at` is ours: when we fetched it. Constraint 10, and
+    # conflating them is what makes a stale number look fresh.
+    values["collected_at"] = at
+    values["tags"] = json.dumps(dict(row.tags))
+    return values
+
+
+def write_cost_rows(
+    context: CollectorContext, rows: Iterable[CostRecord], *, source: str, at: datetime
+) -> int:
+    """Upsert the rows in batches under this run. Returns how many were written."""
+    written = 0
+    batch: list[dict[str, Any]] = []
+    for row in rows:
+        batch.append(cost_parameters(row, context, at, source))
+        if len(batch) >= BATCH:
+            context.connection.execute(UPSERT, batch)
+            written += len(batch)
+            batch = []
+    if batch:
+        context.connection.execute(UPSERT, batch)
+        written += len(batch)
+    return written
+
+
+def retract_account(context: CollectorContext, *, period: Any, source: str, account: str) -> int:
+    """Remove what one provider organization withdrew from one period, and nothing else."""
+    result = context.connection.execute(
+        RETRACT_ACCOUNT,
+        {
+            "tenant": context.unit.tenant_id,
+            "period": period,
+            "source": source,
+            "account": account,
+            "run": context.run_id,
+        },
+    )
+    return int(result.rowcount or 0)
+
 
 class CostFocusCollector:
     """Reads one billing period, writes it, and removes what was withdrawn."""
@@ -240,19 +305,7 @@ class CostFocusCollector:
         return CollectorOutcome(items_written=written, items_removed=removed)
 
     def _write(self, context: CollectorContext, rows: Iterable[CostRecord]) -> int:
-        at = self._clock()
-        written = 0
-        batch: list[dict[str, Any]] = []
-        for row in rows:
-            batch.append(self._parameters(row, context, at))
-            if len(batch) >= BATCH:
-                context.connection.execute(UPSERT, batch)
-                written += len(batch)
-                batch = []
-        if batch:
-            context.connection.execute(UPSERT, batch)
-            written += len(batch)
-        return written
+        return write_cost_rows(context, rows, source=SOURCE, at=self._clock())
 
     def _record_split_gap(self, context: CollectorContext) -> None:
         """Say so when the export carries no container grain, ISS-003.
@@ -339,19 +392,5 @@ class CostFocusCollector:
     def _parameters(
         self, row: CostRecord, context: CollectorContext, at: datetime
     ) -> dict[str, Any]:
-        if row.ingest_source != SOURCE:
-            # The export is the bill's. A row claiming another source would be written where
-            # this run's restatement can never remove it, so it is refused rather than kept.
-            raise ValueError(f"cost_focus writes {SOURCE} rows, not {row.ingest_source!r}")
-        values = {column: getattr(row, column) for column in COLUMNS}
-        # The tenant and the run are this run's, not whatever the adapter put on
-        # the record. An adapter has no way to know which tenant it is reading
-        # for, and the fake fills both in so its rows are constructible.
-        values["tenant_id"] = context.unit.tenant_id
-        values["ingest_run_id"] = context.run_id
-        # `as_of` stays the adapter's: it is when the charge was true at the
-        # source. `collected_at` is ours: when we fetched it. Constraint 10, and
-        # conflating them is what makes a stale number look fresh.
-        values["collected_at"] = at
-        values["tags"] = json.dumps(dict(row.tags))
-        return values
+        # The export is the bill's, so only the bill's rows are written here.
+        return cost_parameters(row, context, at, SOURCE)

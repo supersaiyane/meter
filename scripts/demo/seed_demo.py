@@ -150,6 +150,8 @@ DEMO_TABLES = (
     "creator_lookup",
     # P13, FEAT-082. Tokens per caller; it references the tenant only.
     "ai_usage_daily",
+    # P13, FEAT-083. The AI provider organizations a tenant connected; the tenant only.
+    "ai_provider_account",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so

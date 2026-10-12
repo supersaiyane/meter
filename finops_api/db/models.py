@@ -1906,6 +1906,30 @@ ai_usage_daily = Table(
     Index("ix_ai_usage_daily__tenant_date", "tenant_id", "usage_date"),
 )
 
+#: P13, 0049. The AI provider organizations a tenant connects, FEAT-083. The admin key is never
+#: here: `key_secret_name` names a Secrets Manager secret under `meter/<env>/ai/`. Which providers
+#: exist is the migration's constraint, ADR-0028 keeping vendors' names out of `finops_api`.
+ai_provider_account = Table(
+    "ai_provider_account",
+    metadata,
+    Column("provider", Text, primary_key=True),
+    Column("organization_id", Text, primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("name", Text, nullable=False),
+    Column("key_secret_name", Text, nullable=False),
+    Column("enrolled_at", DateTime(timezone=True), nullable=False),
+    Column("active", Boolean, nullable=False, server_default=text("true")),
+    CheckConstraint(
+        "length(trim(organization_id)) > 0 AND length(trim(name)) > 0",
+        name="ck_ai_provider_account__named",
+    ),
+    CheckConstraint(
+        "key_secret_name ~ '^meter/[a-z]+/ai/[A-Za-z0-9/_+=.@-]+$'",
+        name="ck_ai_provider_account__key_under_the_ai_path",
+    ),
+    Index("ix_ai_provider_account__tenant", "tenant_id", "provider"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept

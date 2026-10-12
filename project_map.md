@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 34 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 48 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 250 | test_*.py under tests/ |
-| Test functions | 3065 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 36 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 50 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 255 | test_*.py under tests/ |
+| Test functions | 3099 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -349,6 +349,9 @@ meter/
 │   │                          views and schedules too, 2026-10-12.
 │   │                          first_contact.py makes each AWS read once against
 │   │                          one account, TASK-P12-008, make first-contact.
+│   │                          connect_ai_provider.py records an AI provider
+│   │                          organization for a tenant once its key has read a
+│   │                          day of costs, TASK-P13-004
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses
@@ -486,8 +489,9 @@ meter/
 │       │                      groups tests/core/test_ports.py checks. A protocol
 │       │                      in no group is imported from its own module, and
 │       │                      that test never reaches it, ISS-239
-│       ├── ai.py              InvocationLogs, AI_PORTS, P13. Who spent tokens on which
-│       │                      model, read as aggregates and never a prompt
+│       ├── ai.py              InvocationLogs and AiProviderReports, AI_PORTS, P13.
+│       │                      Who spent tokens on which model, read as aggregates
+│       │                      and never a prompt, and what a provider billed
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
 │       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
@@ -595,6 +599,9 @@ meter/
 │   │   │                      count or a sum. No CloudWatch Logs group is NotOptedIn
 │   │   ├── cloudtrail_creators.py  FEAT-077, TASK-P11-004. Who created a resource,
 │   │   │                      from CloudTrail's event history, paced and asked once
+│   │   ├── secrets.py         FEAT-083, TASK-P13-004. An AI provider's admin key,
+│   │   │                      read when needed from meter/<env>/ai/ only, any other
+│   │   │                      name refused before a call
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
 │   │   │                      relay, six calls a Region, versioned by their digest.
 │   │   │                      Unproved, ISS-263
@@ -620,6 +627,15 @@ meter/
 │   │                          whole or raises, never short, because short and
 │   │                          retracted look identical to the collector's
 │   │                          delete. That buys a memory ceiling, ISS-181
+│   ├── ai_reports.py          FEAT-083, TASK-P13-004. The paged HTTPS client the AI
+│   │                          providers share: has_more and next_page, bounded
+│   │                          retries, every failure typed, and a refused key's
+│   │                          message never kept, so the key is in no detail
+│   ├── openai/
+│   │   └── reports.py         FEAT-083. OpenAI's costs and completions usage for one
+│   │                          organization: costs as FOCUS rows of source openai,
+│   │                          line items read into model and token type, cached
+│   │                          input counted once
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards
@@ -1127,7 +1143,9 @@ meter/
 │   │                      estate's own table, so a saving and the bill agree
 │   ├── ai.py              the estate's invocation logs, P13: fake-platform-a read,
 │   │                      fake-product-a to S3 only and the rest nowhere, both
-│   │                      NotOptedIn; three callers of the support assistant
+│   │                      NotOptedIn; three callers of the support assistant;
+│   │                      and the fake OpenAI organization's daily cost and
+│   │                      usage for two projects, FakeProviderReports
 │   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
 │   │                      an application owner, a person and a pipeline as
 │   │                      creators, and resources older than the 90 day record
@@ -1162,6 +1180,11 @@ meter/
 │   │                          runs, bound per unit for a deployment: the ones
 │   │                          reading only Meter for real, the rest failing typed
 │   │                          as Misconfigured until TASK-P12-002. ISS-182
+│   ├── ai_bindings.py         FEAT-083, TASK-P13-004. The AI provider collectors for a
+│   │                          deployment, each organization's key read from Secrets
+│   │                          Manager when a request is about to be made
+│   ├── ai_accounts.py         the AI provider organizations a tenant connected and
+│   │                          left active, read on every run
 │   ├── aws_bindings.py        TASK-P12-002. 17 collectors built from their AWS
 │   │                          adapters per unit, four failing typed, UNBUILT,
 │   │                          ISS-240 and ISS-272. Reads cloud_account for the
@@ -1241,6 +1264,10 @@ meter/
 │       ├── ai_usage.py        FEAT-082, TASK-P13-003. Daily per account and Region;
 │       │                      tokens and requests per caller into ai_usage_daily, a
 │       │                      rerun restating only its own window, Region and source
+│       ├── ai_providers.py    FEAT-083, TASK-P13-004. A provider's cost and usage for
+│       │                      each connected organization, the period to date; one
+│       │                      failing typed under its own scope, never another
+│       ├── openai_usage.py    the provider collector named for OpenAI, daily
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
 │       │                      and the creator of the unnamed, asked once, creator_lookup
@@ -1569,6 +1596,10 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0050_ai_collector_schedules.py  TASK-P13-004. Four cadences for existing
+│       │                      tenants, retention_assistant's among them, ISS-287
+│       ├── 0049_ai_provider_account.py  TASK-P13-004. The AI provider organizations a
+│       │                      tenant connected; a key's secret name, never a key
 │       ├── 0048_ai_usage_daily.py  TASK-P13-003. Tokens and requests per day, model and
 │       │                      caller, from every AI source; class P, 13 months
 │       ├── 0047_cost_ai_columns.py  TASK-P13-002. ingest_source and the five x_ columns

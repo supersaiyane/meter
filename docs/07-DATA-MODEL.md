@@ -1160,6 +1160,36 @@ rerun of a window removes that window's rows it no longer reports, keyed on the 
 account, the dates and, for Bedrock, the Region, and on the run id like the bill's restatement.
 Kept 13 months by `retention_ai_usage`, because a caller can name a person.
 
+### AI provider organizations, P13
+
+```sql
+-- P13, FEAT-083, migration 0049. The OpenAI and Anthropic organizations a tenant connected. The
+-- organization is the key, because it belongs to one tenant; the admin key is never here.
+CREATE TABLE ai_provider_account (
+    provider         TEXT        NOT NULL,   -- openai | anthropic
+    organization_id  TEXT        NOT NULL,
+    tenant_id        UUID        NOT NULL REFERENCES tenant(tenant_id),
+    name             TEXT        NOT NULL,
+    key_secret_name  TEXT        NOT NULL,   -- a Secrets Manager name, never a value
+    enrolled_at      TIMESTAMPTZ NOT NULL,
+    active           BOOLEAN     NOT NULL DEFAULT true,
+    CONSTRAINT pk_ai_provider_account PRIMARY KEY (provider, organization_id),
+    CONSTRAINT ck_ai_provider_account__provider CHECK (provider IN ('openai', 'anthropic')),
+    CONSTRAINT ck_ai_provider_account__named
+        CHECK (length(trim(organization_id)) > 0 AND length(trim(name)) > 0),
+    CONSTRAINT ck_ai_provider_account__key_under_the_ai_path
+        CHECK (key_secret_name ~ '^meter/[a-z]+/ai/[A-Za-z0-9/_+=.@-]+$')
+);
+CREATE INDEX ix_ai_provider_account__tenant ON ai_provider_account (tenant_id, provider);
+```
+
+Written by `scripts/ops/connect_ai_provider.py` only once the key has read a day of costs, and
+read by each provider's collector on every run, so `active` false stops the reads and keeps what
+was read. The constraint on the secret's name is what stops a row pointing the worker at a secret
+outside the AI path, whatever the role would allow. A provider's cost lands in `cost_focus_daily`
+with its own `ingest_source`, the organization as the billing account and the project or workspace
+as the sub account, and its usage in `ai_usage_daily`.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

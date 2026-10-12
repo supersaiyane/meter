@@ -2508,6 +2508,12 @@ changes:
   what: TASK-P13-003, Bedrock usage per caller from invocation logs, read as aggregates only
   commit: pending
   detail: 'Migration 0048 creates ai_usage_daily, tokens and requests per day, model, caller and application, class P and kept 13 months by retention_ai_usage. The InvocationLogs port, in a new AI_PORTS group, and finops_providers/aws/bedrock_invocations.py: the account''s invocation logging configuration, then one Logs Insights stats query a day whose every output is a count or a sum, held to that by a test; no CloudWatch Logs group is NotOptedIn with the step. The collector is scheduled daily and composed in both modes, with a fake of three accounts, read, S3 only and nowhere. The member role gains the configuration read and GetQueryResults, and StartQuery only on the log groups the new StackSet parameter InvocationLogGroupPattern names; StopQuery is not granted. A Bedrock interface endpoint in each collection Region, modelled at 16.06 USD a month each. The setting is ai_request_metadata_key, ADR-0028 keeping vendors out of finops_core'
+- id: CHG-0176
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-004, provider accounts and OpenAI's cost and usage beside the bill
+  commit: pending
+  detail: 'Migration 0049 creates ai_provider_account, an organization per row naming the Secrets Manager secret of its admin key, held under meter/<env>/ai/ by a constraint. The AiProviderReports port; finops_providers/ai_reports.py, the paged client OpenAI and Anthropic share, retries bounded, every failure typed and a refused key''s message never kept; finops_providers/openai/reports.py over the costs and completions usage reports, line items read into model and token type and cached input counted once; finops_providers/aws/secrets.py; finops_ingest/collectors/ai_providers.py, writing FOCUS rows of source openai and usage rows, each organization read and restated on its own and one failing typed in sync_error without failing another; scripts/ops/connect_ai_provider.py, which connects an organization only once its key reads a day of costs. The task role may read the AI path, shared with the API, ISS-286. Migration 0050 installs the cadences of bedrock_invocations, retention_ai_usage and openai_usage for existing tenants and found retention_assistant had none, ISS-287'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5053,6 +5059,16 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-287
+  severity: MEDIUM
+  status: FIXED
+  summary: retention_assistant never ran for a tenant that existed before it
+  detail: 'Found 2026-10-12 writing migration 0050 for TASK-P13-004. install_default_schedule gives a new tenant every collector in DEFAULT_SCHEDULE and nothing gives one to an existing tenant, so each new collector installs its own row, as 0043 did for savings_ledger. retention_assistant, added with the erasure fixes on 2026-10-12, CHG-0171, had no such migration, so for any tenant that existed before it a person''s questions would never have been removed at 90 days. Fixed by 0050_ai_collector_schedules, which installs it with P13''s three, and held by tests/ingest/test_registry.py'
+- id: ISS-286
+  severity: LOW
+  status: OPEN
+  summary: The API may read the AI providers' admin keys because it shares the worker's task role
+  detail: 'Raised 2026-10-12 by TASK-P13-004. The hub has one task role, FinOpsHubTaskRole, held by the API and the worker, and every member account''s collector role trusts it by name. Granting the worker the read of meter/<env>/ai/* grants it to the API too. The API never reads a key and cannot reach a provider, because only the worker''s security group leads to the internet, ADR-0036, so a key read in the API would reach nowhere; the residual risk is a compromised API task reading a key and returning it in a response. A role the worker alone holds needs every member StackSet''s trust policy to name it, a redeploy across the organization, so it is left for the owner to weigh'
 - id: ISS-285
   severity: MEDIUM
   status: OPEN

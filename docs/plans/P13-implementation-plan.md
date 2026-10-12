@@ -140,7 +140,7 @@ requires, modelled at 16.06 USD a month each. The setting is `ai_request_metadat
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.5 |
 | Delivers | FEAT-083 |
 | Depends on | TASK-P13-001, TASK-P13-002, TASK-P13-003 |
@@ -148,13 +148,25 @@ requires, modelled at 16.06 USD a month each. The setting is `ai_request_metadat
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `ai_provider_account`, and `scripts/ops/connect_ai_provider.py` records an
+- [x] A migration creates `ai_provider_account`, and `scripts/ops/connect_ai_provider.py` records an
       organization after one read with its key succeeds
-- [ ] The worker's role may read secrets under `meter/<env>/ai/` and nothing else new
-- [ ] An httpx adapter reads OpenAI's cost and usage reports, paginated, every failure typed
-- [ ] The collector writes FOCUS rows with `ingest_source` openai and usage rows, and its delete
+- [x] The task role may read secrets under `meter/<env>/ai/` and nothing else new; it is shared
+      with the API, ISS-286
+- [x] An httpx adapter reads OpenAI's cost and usage reports, paginated, every failure typed
+- [x] The collector writes FOCUS rows with `ingest_source` openai and usage rows, and its delete
       removes only its own organization's withdrawn rows
-- [ ] The key appears in no log, error or row, held by a test
+- [x] The key appears in no log, error or row, held by a test
+
+**Delivered 2026-10-12.** Migration `0049_ai_provider_account`; the `AiProviderReports` port;
+`finops_providers/ai_reports.py`, the paged client both providers share, retries bounded and every
+failure typed, a refused key's message never kept; `finops_providers/openai/reports.py`;
+`finops_providers/aws/secrets.py`, which refuses a name outside the AI path before any call;
+`finops_ingest/collectors/ai_providers.py`, one organization failing typed under its own scope
+and never failing another, with the cost writer and the per organization restatement now shared
+in `cost_focus.py`; `openai_usage` in both compositions; and the connect script. Migration
+`0050_ai_collector_schedules` installs the new collectors' cadences for existing tenants, and
+found `retention_assistant` had none, ISS-287, fixed by the same migration. The task role is
+shared with the API, ISS-286.
 
 ---
 

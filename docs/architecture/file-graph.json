@@ -462,9 +462,12 @@
     "finops_fakes/worker.py",
     "finops_ingest/__init__.py",
     "finops_ingest/accounts.py",
+    "finops_ingest/ai_accounts.py",
+    "finops_ingest/ai_bindings.py",
     "finops_ingest/aws_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
+    "finops_ingest/collectors/ai_providers.py",
     "finops_ingest/collectors/ai_usage.py",
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/catalog_reads.py",
@@ -479,6 +482,7 @@
     "finops_ingest/collectors/instance_catalog.py",
     "finops_ingest/collectors/inventory.py",
     "finops_ingest/collectors/invoices.py",
+    "finops_ingest/collectors/openai_usage.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/ownership.py",
     "finops_ingest/collectors/partitions.py",
@@ -512,6 +516,7 @@
     "finops_mcp/api.py",
     "finops_mcp/server.py",
     "finops_providers/__init__.py",
+    "finops_providers/ai_reports.py",
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/appregistry.py",
@@ -540,6 +545,7 @@
     "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
     "finops_providers/aws/savings_plans.py",
+    "finops_providers/aws/secrets.py",
     "finops_providers/aws/spot.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
@@ -547,6 +553,8 @@
     "finops_providers/grafana/__init__.py",
     "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
+    "finops_providers/openai/__init__.py",
+    "finops_providers/openai/reports.py",
     "finops_query/__init__.py",
     "finops_query/actions.py",
     "finops_query/anomaly.py",
@@ -662,6 +670,8 @@
     "migrations/versions/0046_redaction_found_in.py",
     "migrations/versions/0047_cost_ai_columns.py",
     "migrations/versions/0048_ai_usage_daily.py",
+    "migrations/versions/0049_ai_provider_account.py",
+    "migrations/versions/0050_ai_collector_schedules.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -685,6 +695,7 @@
     "scripts/docs/check_map_counts.py",
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
+    "scripts/ops/connect_ai_provider.py",
     "scripts/ops/erase_principal.py",
     "scripts/ops/first_contact.py",
     "scripts/ops/local_bucket.py",
@@ -800,6 +811,7 @@
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
+    "tests/ingest/collectors/test_ai_providers.py",
     "tests/ingest/collectors/test_ai_usage.py",
     "tests/ingest/collectors/test_commitment.py",
     "tests/ingest/collectors/test_commitment_actions.py",
@@ -886,6 +898,7 @@
     "tests/providers/aws/test_report_store.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_savings_plans.py",
+    "tests/providers/aws/test_secrets.py",
     "tests/providers/aws/test_spot.py",
     "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_translate.py",
@@ -897,10 +910,12 @@
     "tests/providers/fake/test_invoices.py",
     "tests/providers/fake/test_surface.py",
     "tests/providers/fake/test_utilization_estates.py",
+    "tests/providers/test_ai_reports.py",
     "tests/providers/test_amg_surface.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
+    "tests/providers/test_openai_reports.py",
     "tests/query/__init__.py",
     "tests/query/conftest.py",
     "tests/query/insight/__init__.py",
@@ -946,6 +961,7 @@
     "tests/scripts/test_check_identifiers.py",
     "tests/scripts/test_check_image_arch.py",
     "tests/scripts/test_check_index.py",
+    "tests/scripts/test_connect_ai_provider.py",
     "tests/scripts/test_deployed_settings.py",
     "tests/scripts/test_first_contact.py",
     "tests/scripts/test_images.py",
@@ -9177,6 +9193,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/ports/ai.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/budget.py",
       "t": "finops_core/domain/budget.py",
       "k": "python"
@@ -9293,6 +9314,11 @@
     },
     {
       "s": "finops_fakes/ai.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ai.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -9399,6 +9425,11 @@
     {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/openai_usage.py",
       "k": "python"
     },
     {
@@ -9837,6 +9868,46 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/ai_accounts.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_ingest/collectors/openai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_providers/openai/reports.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -10087,6 +10158,46 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_ingest/ai_accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_providers.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/ai_usage.py",
       "t": "finops_core/domain/ai.py",
       "k": "python"
@@ -10324,6 +10435,11 @@
     {
       "s": "finops_ingest/collectors/invoices.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/openai_usage.py",
+      "t": "finops_ingest/collectors/ai_providers.py",
       "k": "python"
     },
     {
@@ -10793,6 +10909,11 @@
     },
     {
       "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/ai_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
       "t": "finops_ingest/aws_bindings.py",
       "k": "python"
     },
@@ -10989,6 +11110,11 @@
     {
       "s": "finops_mcp/server.py",
       "t": "finops_mcp/api.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/ai_reports.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -11492,6 +11618,16 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/secrets.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/secrets.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/spot.py",
       "t": "finops_core/domain/catalog.py",
       "k": "python"
@@ -11594,6 +11730,26 @@
     {
       "s": "finops_providers/grafana/client.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/openai/reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/openai/reports.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/openai/reports.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/openai/reports.py",
+      "t": "finops_providers/ai_reports.py",
       "k": "python"
     },
     {
@@ -11964,6 +12120,31 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_providers/openai/reports.py",
       "k": "python"
     },
     {
@@ -13702,6 +13883,46 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/ai_accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/ai_providers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_ai_usage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -14624,6 +14845,11 @@
     {
       "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/ai_bindings.py",
       "k": "python"
     },
     {
@@ -15572,6 +15798,16 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_secrets.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_secrets.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_spot.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -15677,6 +15913,16 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/test_ai_reports.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_ai_reports.py",
+      "t": "finops_providers/ai_reports.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/test_amg_surface.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -15739,6 +15985,21 @@
     {
       "s": "tests/providers/test_grafana_client.py",
       "t": "finops_providers/grafana/client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_openai_reports.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_openai_reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_openai_reports.py",
+      "t": "finops_providers/openai/reports.py",
       "k": "python"
     },
     {
@@ -16129,6 +16390,21 @@
     {
       "s": "tests/query/test_waste.py",
       "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_connect_ai_provider.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_connect_ai_provider.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_connect_ai_provider.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
