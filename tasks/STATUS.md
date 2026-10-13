@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 90 total, 13 specified, 16 in build, 58 delivered |
+| Features | 90 total, 12 specified, 17 in build, 58 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 189 recorded |
-| Issues | 186 fixed, 107 open, 0 parked |
+| Changes | 190 recorded |
+| Issues | 186 fixed, 108 open, 0 parked |
 | Open questions | 39 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -153,7 +153,11 @@ terms and ends, and TASK-P14-003 every other reservable service, ElastiCache, Op
 and MemoryDB; DynamoDB reserved capacity has no read API, ISS-295. TASK-P14-004 measured the
 effective savings rate from the bill, by month, over the lines carrying a List Cost. TASK-P14-005
 added the per tenant purchase policy, its cautious default, and a renewal calendar flagging a month above
-the ladder limit.
+the ladder limit. TASK-P14-006 reads AWS's purchase recommendations daily as the payer, in the
+policy's terms, a refused service written with its cause; the service names Cost Explorer takes are
+partly undocumented and are a setting until first contact, ISS-297. The combined gate for 003 and 004
+failed one test on 2026-10-13: the relay allow list test assumed every IAM prefix is boto3's service
+name, and OpenSearch's is `es`; the test was fixed and the grant kept.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -331,7 +335,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
-| P14 | 5 | 0 | 0 | 0 | 5 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P14 | 6 | 0 | 0 | 0 | 4 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -630,6 +634,7 @@ ISS-003.
 | `TASK-P14-003` | Done 2026-10-13 | the inventory, every other reservable service |
 | `TASK-P14-004` | Done 2026-10-13 | the effective savings rate, measured from the bill |
 | `TASK-P14-005` | Done 2026-10-13 | the policy and the renewal calendar |
+| `TASK-P14-006` | Done 2026-10-13 | AWS's purchase recommendations |
 
 <!-- generated:task-status end -->
 

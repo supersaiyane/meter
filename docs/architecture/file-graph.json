@@ -501,6 +501,7 @@
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/price_catalog.py",
+    "finops_ingest/collectors/purchase_recommendation.py",
     "finops_ingest/collectors/query_audit.py",
     "finops_ingest/collectors/quotas.py",
     "finops_ingest/collectors/realized_savings.py",
@@ -545,6 +546,7 @@
     "finops_providers/aws/cloudtrail_creators.py",
     "finops_providers/aws/commitment.py",
     "finops_providers/aws/commitment_inventory.py",
+    "finops_providers/aws/commitment_recommendations.py",
     "finops_providers/aws/config_inventory.py",
     "finops_providers/aws/container_insights.py",
     "finops_providers/aws/credentials.py",
@@ -698,6 +700,7 @@
     "migrations/versions/0053_ai_spend_screen.py",
     "migrations/versions/0054_commitment_inventory.py",
     "migrations/versions/0055_commitment_policy.py",
+    "migrations/versions/0056_purchase_recommendation.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -864,6 +867,7 @@
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
     "tests/ingest/collectors/test_price_catalog.py",
+    "tests/ingest/collectors/test_purchase_recommendation.py",
     "tests/ingest/collectors/test_quotas.py",
     "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendation_options.py",
@@ -916,6 +920,7 @@
     "tests/providers/aws/test_cloudtrail_creators.py",
     "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_commitment_inventory.py",
+    "tests/providers/aws/test_commitment_recommendations.py",
     "tests/providers/aws/test_config_inventory.py",
     "tests/providers/aws/test_container_insights.py",
     "tests/providers/aws/test_credentials.py",
@@ -9819,6 +9824,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/purchase_recommendation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/query_audit.py",
       "k": "python"
     },
@@ -10384,6 +10394,11 @@
     },
     {
       "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/purchase_recommendation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
       "t": "finops_ingest/collectors/quotas.py",
       "k": "python"
     },
@@ -10440,6 +10455,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_providers/aws/commitment_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/commitment_recommendations.py",
       "k": "python"
     },
     {
@@ -10964,6 +10984,31 @@
     },
     {
       "s": "finops_ingest/collectors/price_catalog.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/purchase_recommendation.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/purchase_recommendation.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/purchase_recommendation.py",
+      "t": "finops_core/ports/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/purchase_recommendation.py",
+      "t": "finops_ingest/commitment_policy.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/purchase_recommendation.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -11785,6 +11830,26 @@
     {
       "s": "finops_providers/aws/commitment_inventory.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_recommendations.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_recommendations.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_recommendations.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_recommendations.py",
+      "t": "finops_providers/aws/commitment_inventory.py",
       "k": "python"
     },
     {
@@ -12724,6 +12789,11 @@
     },
     {
       "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -12740,6 +12810,11 @@
     {
       "s": "scripts/ops/first_contact.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/commitment_recommendations.py",
       "k": "python"
     },
     {
@@ -15223,6 +15298,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_ingest/collectors/purchase_recommendation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_ingest/commitment_policy.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_purchase_recommendation.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_quotas.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -16280,6 +16385,26 @@
     {
       "s": "tests/providers/aws/test_commitment_inventory.py",
       "t": "finops_providers/aws/commitment_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_recommendations.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_recommendations.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_recommendations.py",
+      "t": "finops_providers/aws/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_recommendations.py",
+      "t": "finops_providers/aws/commitment_recommendations.py",
       "k": "python"
     },
     {

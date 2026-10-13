@@ -38,6 +38,7 @@ from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
+from finops_ingest.collectors.purchase_recommendation import PurchaseRecommendationCollector
 from finops_ingest.collectors.quotas import QuotaCollector
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
@@ -50,6 +51,7 @@ from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
 from finops_providers.aws.commitment import COST_EXPLORER_REGION, CostExplorerCommitmentReport
 from finops_providers.aws.commitment_inventory import AwsCommitmentHoldings
+from finops_providers.aws.commitment_recommendations import CostExplorerRecommendations
 from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
@@ -168,6 +170,18 @@ def _commitment(context: CollectorContext) -> CollectorRunner:
             context.unit.tenant_id,
             client_factory=lambda: payer_client(settings, "ce", COST_EXPLORER_REGION),
         )
+    )
+
+
+def _purchase_recommendation(context: CollectorContext) -> CollectorRunner:
+    # As the payer, for the reason `_commitment` is: AWS recommends for the organization there.
+    settings = context.settings
+    return PurchaseRecommendationCollector(
+        CostExplorerRecommendations(
+            context.unit.tenant_id,
+            client_factory=lambda: payer_client(settings, "ce", COST_EXPLORER_REGION),
+        ),
+        services=settings.recommendation_services,
     )
 
 
@@ -349,6 +363,7 @@ AWS_BUILDERS: Final[dict[str, Build]] = {
     "ownership": _ownership,
     "platform_cost": _platform_cost,
     "price_catalog": _price_catalog,
+    "purchase_recommendation": _purchase_recommendation,
     "quotas": _quotas,
     "recommendations": _recommendations,
     "savings_plan_rates": _savings_plan_rates,

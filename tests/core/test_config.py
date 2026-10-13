@@ -127,6 +127,14 @@ def test_regions_are_parsed_into_a_list(monkeypatch: pytest.MonkeyPatch) -> None
     assert load_settings().region_list == ("eu-west-1", "eu-west-2", "us-east-1")
 
 
+def test_the_services_asked_for_purchase_advice_are_parsed_into_a_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    services = "Amazon Redshift , ,Amazon MemoryDB"
+    apply(monkeypatch, {"METER_COMMITMENT_RECOMMENDATION_SERVICES": services})
+    assert load_settings().recommendation_services == ("Amazon Redshift", "Amazon MemoryDB")
+
+
 def test_an_empty_region_list_refuses_startup(monkeypatch: pytest.MonkeyPatch) -> None:
     apply(monkeypatch, {"METER_REGIONS": "  "})
     with pytest.raises(ConfigurationError) as caught:

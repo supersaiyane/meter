@@ -191,7 +191,7 @@ the policy and replaces the name on it, and `docs/09-DATA-CLASSIFICATION.md` say
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.1 and 7, OPEN-35 |
 | Delivers | FEAT-089 |
 | Depends on | TASK-P14-001, TASK-P14-005 |
@@ -199,11 +199,20 @@ the policy and replaces the name on it, and `docs/09-DATA-CLASSIFICATION.md` say
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `purchase_recommendation` and installs the collector's cadence, with its
+- [x] A migration creates `purchase_recommendation` and installs the collector's cadence, with its
       modelled cost per run
-- [ ] An adapter reads both recommendation calls as the payer for the policy's term and payment
+- [x] An adapter reads both recommendation calls as the payer for the policy's term and payment
       option, every failure typed
-- [ ] The collector is scheduled, composed in both modes and has a fake
+- [x] The collector is scheduled, composed in both modes and has a fake
+
+**Delivered 2026-10-13.** `PurchaseRecommendation` and the `PurchaseRecommendations` port in the
+domain; `CostExplorerRecommendations` in `finops_providers/aws/commitment_recommendations.py`,
+reading every page of a reservation answer; migration `0056_purchase_recommendation`, its schedule
+row modelled at USD 0.08 a run, eight requests at USD 0.01; the `purchase_recommendation` collector,
+writing a failed type or service as a row with its cause; the AWS binding as the payer,
+`FakePurchaseRecommendations` for the local stack and the seed; and two first contact probes as the
+payer. The services asked about are the setting `METER_COMMITMENT_RECOMMENDATION_SERVICES`, because
+Cost Explorer's names for them are partly undocumented, ISS-297.
 
 ---
 
