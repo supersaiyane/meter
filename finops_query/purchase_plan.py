@@ -516,23 +516,48 @@ def difference(
         )
         said.append(
             f"Only Meter's applies the ladder, at most {_percent(ladder_limit)} percent of the "
-            f"commitment ending in any month: it buys {now} {currency} an hour this month of "
-            f"{total} in all, and names the rest as later tranches."
+            f"commitment ending in any month: it buys {_hours(now)} {currency} an hour this month "
+            f"of {_hours(total)} in all, and names the rest as later tranches."
         )
-        said.append(
-            f"Meter's buys {bound} {currency} an hour bound to families steady in one Region and "
-            f"{total - bound} flexible across them."
-        )
+        said.append(_split(bound, total - bound, currency))
     offered = sorted((one.program, one.hourly_commitment) for one in read if one.hourly_commitment)
     if offered:
         parts = " and ".join(
-            f"{value} {currency} an hour of {PROGRAM_NAMES.get(program, program)}"
+            f"{_hours(value)} {currency} an hour of {PROGRAM_NAMES.get(program, program)}"
             for program, value in offered
         )
         said.append(f"The provider recommends {parts}, bought at once.")
     elif read:
         said.append("The provider recommends buying no Savings Plan.")
     return tuple(said)
+
+
+def _hours(value: Decimal) -> str:
+    """An hourly commitment as a reader reads it: to the tenth of a cent, trailing noughts dropped.
+
+    A figure read back from the database carries the column's ten places, and `0.8500000000` in a
+    sentence reads as precision nobody has. ISS-298.
+    """
+    stepped = value.quantize(COMMITMENT_STEP).normalize()
+    return f"{stepped:f}"
+
+
+def _split(bound: Decimal, flexible: Decimal, currency: str) -> str:
+    """How Meter's plan divides between the two programs, saying only the parts it has. ISS-298."""
+    if bound > 0 and flexible > 0:
+        return (
+            f"Meter's buys {_hours(bound)} {currency} an hour bound to families steady in one "
+            f"Region and {_hours(flexible)} flexible across them."
+        )
+    if bound > 0:
+        return (
+            f"Meter's buys all of it, {_hours(bound)} {currency} an hour, bound to families steady "
+            "in one Region, and nothing flexible."
+        )
+    return (
+        f"Meter's buys all of it, {_hours(flexible)} {currency} an hour, flexible across families "
+        "and Regions, and nothing bound to one family."
+    )
 
 
 #: How close a commitment's hourly amount must be to a bought line's to be the purchase, spec 5.2.

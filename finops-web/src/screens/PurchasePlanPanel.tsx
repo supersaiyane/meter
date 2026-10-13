@@ -8,7 +8,7 @@ import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
-import { dayName, freshnessOf, monthName } from './commitmentFormat';
+import { dayName, freshnessOf, monthName, plainNumber } from './commitmentFormat';
 import { PlanActions } from './PlanActions';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -148,7 +148,7 @@ function providerColumns(freshness: Freshness): readonly Column<ApiProviderRecom
         return row.hourly_commitment !== null ? (
           <>{modelled(row.hourly_commitment, freshness, 'usd-unit')} an hour</>
         ) : (
-          `${row.units ?? '0'} instances or nodes`
+          `${plainNumber(row.units ?? '0')} instances or nodes`
         );
       },
     },
@@ -236,8 +236,8 @@ export function PurchasePlanPanel({ mayAct }: { readonly mayAct: boolean }) {
                       {one.instance_family === null
                         ? 'Usage that moves between families'
                         : `${one.instance_family} in ${one.region_id ?? ''}`}
-                      , {one.steady_hourly} USD an hour of steady usage: {one.reason}. Not
-                      priced, and not counted as nothing.
+                      , {plainNumber(one.steady_hourly)} USD an hour of steady usage:{' '}
+                      {one.reason}. Not priced, and not counted as nothing.
                     </li>
                   ))}
                 </ul>

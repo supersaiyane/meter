@@ -25,6 +25,18 @@ export function dayName(stamp: string): string {
   });
 }
 
+/** A Savings Plans program as a reader knows it: the API's `EC2Instance` is `EC2 Instance`. */
+export function programName(program: string): string {
+  return program === 'EC2Instance' ? 'EC2 Instance' : program;
+}
+
+/**
+ * A decimal the API sends with its column's places, `2.0000`, as a reader reads it, `2`. ISS-298.
+ */
+export function plainNumber(value: string): string {
+  return String(Number(value));
+}
+
 /** An envelope's two timestamps, constraint 10, as a figure's freshness. */
 export function freshnessOf(meta: ApiMeta | undefined) {
   return {
