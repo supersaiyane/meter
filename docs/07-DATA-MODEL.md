@@ -1242,6 +1242,63 @@ its usage went back on demand the day it ended, which the renewal calendar exist
 run restates the scope it read, the account and Region's reservations and, in the first collection
 Region's unit only, the account's Savings Plans; a read that fails removes nothing.
 
+### Commitment policy, P14
+
+```sql
+-- P14, FEAT-088, migration 0055. What a tenant's purchase plans aim for, one row per tenant, the
+-- cautious default installed for every one, OPEN-38. Payer wide, ADR-0025.
+CREATE TABLE commitment_policy (
+    tenant_id        UUID          NOT NULL REFERENCES tenant(tenant_id),
+    target_coverage  NUMERIC(4, 3) NOT NULL,   -- of the steady baseline, above 0, at most 1
+    term_years       INTEGER       NOT NULL,   -- 1 or 3, the terms AWS sells
+    payment_option   TEXT          NOT NULL,   -- No Upfront, Partial Upfront or All Upfront
+    ladder_limit     NUMERIC(5, 4) NOT NULL,   -- the most of the commitment ending in a month
+    reason           TEXT          NOT NULL,   -- a policy is a decision, so it says why
+    updated_by       TEXT          NOT NULL,   -- the person, or the migration or seed
+    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    CONSTRAINT pk_commitment_policy PRIMARY KEY (tenant_id)
+    -- and a check on each bound, so a policy no plan could follow cannot be stored
+);
+```
+
+Changed through `PUT /v1/commitments/policy` by a person whose scope is the organization, with a
+reason, audited ALLOWED or DENIED. An erasure keeps the policy and replaces `updated_by`, as it does
+a cadence's.
+
+### AWS's purchase recommendations, P14
+
+```sql
+-- P14, FEAT-089, migration 0056. AWS's advice for each Savings Plans type and reserved service, in
+-- the tenant's policy's terms, one row each. Payer wide, ADR-0025.
+CREATE TABLE purchase_recommendation (
+    tenant_id                  UUID           NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id              UUID           NOT NULL,
+    kind                       TEXT           NOT NULL,   -- savings_plan | reservation
+    program                    TEXT           NOT NULL,   -- the plan type, or Cost Explorer's service name
+    term_years                 INTEGER        NOT NULL,   -- as the policy asked
+    payment_option             TEXT           NOT NULL,
+    lookback_days              INTEGER        NOT NULL,
+    recommended                BOOLEAN,                   -- false: AWS looked and advises nothing
+    hourly_commitment          NUMERIC(20, 10),           -- a Savings Plan's, never a reservation's
+    units                      NUMERIC(20, 4),            -- a reservation's, never a Savings Plan's
+    estimated_monthly_savings  NUMERIC(20, 10),           -- AWS's estimate, labelled so
+    estimated_savings_percent  NUMERIC(10, 4),
+    upfront_cost               NUMERIC(20, 10),
+    currency                   TEXT,
+    failure_cause              TEXT,                      -- a typed cause, or null for an answer
+    failure_detail             TEXT,
+    as_of                      TIMESTAMPTZ    NOT NULL,   -- when AWS generated it
+    collected_at               TIMESTAMPTZ    NOT NULL,
+    CONSTRAINT pk_purchase_recommendation PRIMARY KEY (tenant_id, kind, program)
+    -- and checks: an answer or a failure, never both; each measure on its own kind; collected
+    -- after true
+);
+```
+
+A read that failed is a row with its cause and no figures, so one service Cost Explorer refuses is
+seen beside the ones that answered and never drawn as advice to buy nothing. A run restates every
+row; a type or service no longer asked about leaves.
+
 ### AI provider organizations, P13
 
 ```sql

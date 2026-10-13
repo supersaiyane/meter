@@ -116,6 +116,7 @@ from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.collectors.waste_parking import Parkable, WasteParkingCollector
 from finops_ingest.collectors.waste_volumes import VolumeCandidate
+from finops_ingest.commitment_policy import install_default_policy
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_query.parser import GrafanaQueryParser
@@ -167,6 +168,10 @@ DEMO_TABLES = (
     "gpu_utilization_daily",
     # P14, FEAT-086. What each account holds; the tenant only.
     "commitment_inventory",
+    # P14, FEAT-088. What the tenant's purchase plans aim for; the tenant only.
+    "commitment_policy",
+    # P14, FEAT-089. AWS's purchase advice; the tenant only.
+    "purchase_recommendation",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so
@@ -572,6 +577,8 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # its own freshness: every collector read `not scheduled` and therefore
         # `stale`, one minute after it ran.
         install_default_schedule(connection, DEMO_TENANT, updated_by="seed_demo")
+        # FEAT-088. What purchase plans aim for, the default every tenant starts with.
+        install_default_policy(connection, DEMO_TENANT, updated_by="seed_demo")
 
         ledger = RunLedger(
             connection,

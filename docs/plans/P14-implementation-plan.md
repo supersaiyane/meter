@@ -107,7 +107,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.3, OPEN-37 |
 | Delivers | FEAT-086 |
 | Depends on | TASK-P14-002 |
@@ -115,9 +115,17 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
-- [ ] The relay's allow list and the member collector role gain exactly the four reads
-- [ ] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+- [x] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
+- [x] The relay's allow list and the member collector role gain exactly the four reads
+- [x] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+
+**Delivered 2026-10-13.** The adapter's per service readers became one, driven by `RESERVED`, a
+table of where each reserved service keeps its identifier, type, count and payment option; EC2 and
+RDS moved onto it unchanged, and ElastiCache, OpenSearch, Redshift and MemoryDB joined through the
+relay, ADR-0037. The relay's allow list and the member collector role gain exactly the four reads,
+and first contact probes each as the member account. `UNREADABLE` names DynamoDB reserved capacity,
+which no API reads, ISS-295. The fake estate holds three ElastiCache nodes. Nothing applied,
+ISS-002.
 
 ---
 
@@ -125,7 +133,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.7 |
 | Delivers | FEAT-087 |
 | Depends on | Nothing |
@@ -133,10 +141,19 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] `GET /v1/commitments/savings-rate` returns the rate by month with Effective Cost, List Cost
+- [x] `GET /v1/commitments/savings-rate` returns the rate by month with Effective Cost, List Cost
       and the lines without a List Cost, each measured
-- [ ] A month whose lines carry no List Cost has no rate and says why, never a rate of zero
-- [ ] The fake bill carries List Cost on its usage lines, so the demo shows a rate
+- [x] A month whose lines carry no List Cost has no rate and says why, never a rate of zero
+- [x] The fake bill carries List Cost on its usage lines, so the demo shows a rate
+
+**Delivered 2026-10-13.** `finops_query/savings_rate.py`, the rate over the lines carrying a List
+Cost, none with the reason where no line does; `CostRepository.savings_rate_months`, the cloud bill's
+usage lines by billing month with both timestamps; and `finops_api/routes/commitments.py`, P14's
+router, with `GET /v1/commitments/savings-rate`, exportable and scoped by account as the bill is. The
+fake bill already carries List Cost on its usage lines, 583 of the demo's 715 cloud lines on
+2026-10-13, measured; the split cost lines carry none and are counted as left out. The overview's
+tile still reads Cost Explorer's sum, which offers List Cost only when every line carries it, so it
+reads the new route from TASK-P14-009 and the two screens cannot disagree.
 
 ---
 
@@ -144,7 +161,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.4 and 8, OPEN-38 |
 | Delivers | FEAT-088 |
 | Depends on | TASK-P14-002 |
@@ -152,12 +169,21 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `commitment_policy`, installed for new tenants and for every existing one
+- [x] A migration creates `commitment_policy`, installed for new tenants and for every existing one
       with the cautious default
-- [ ] `GET` and `PUT /v1/commitments/policy`, a change requiring a reason and a global principal,
+- [x] `GET` and `PUT /v1/commitments/policy`, a change requiring a reason and a global principal,
       audited
-- [ ] `GET /v1/commitments/calendar` returns twelve months of expiring commitment with each month's
+- [x] `GET /v1/commitments/calendar` returns twelve months of expiring commitment with each month's
       share, flagging a month above the ladder limit
+
+**Delivered 2026-10-13.** `CommitmentPolicy` and `DEFAULT_POLICY` in the domain; migration
+`0055_commitment_policy` with a check on every bound and the default for every tenant;
+`install_default_policy` and `policy_for` in `finops_ingest/commitment_policy.py`, the seed
+installing it beside the schedule; `finops_query/commitment_calendar.py`; the inventory and policy
+repositories, the change audited; and `GET /v1/commitments/inventory`, `GET /v1/commitments/calendar`
+and `GET` and `PUT /v1/commitments/policy`, each answering a narrowed reader with a 404 that says
+commitments need the payer, and refusing a narrowed change with a 403 audited DENIED. An erasure keeps
+the policy and replaces the name on it, and `docs/09-DATA-CLASSIFICATION.md` says so.
 
 ---
 
@@ -165,7 +191,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.1 and 7, OPEN-35 |
 | Delivers | FEAT-089 |
 | Depends on | TASK-P14-001, TASK-P14-005 |
@@ -173,11 +199,20 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `purchase_recommendation` and installs the collector's cadence, with its
+- [x] A migration creates `purchase_recommendation` and installs the collector's cadence, with its
       modelled cost per run
-- [ ] An adapter reads both recommendation calls as the payer for the policy's term and payment
+- [x] An adapter reads both recommendation calls as the payer for the policy's term and payment
       option, every failure typed
-- [ ] The collector is scheduled, composed in both modes and has a fake
+- [x] The collector is scheduled, composed in both modes and has a fake
+
+**Delivered 2026-10-13.** `PurchaseRecommendation` and the `PurchaseRecommendations` port in the
+domain; `CostExplorerRecommendations` in `finops_providers/aws/commitment_recommendations.py`,
+reading every page of a reservation answer; migration `0056_purchase_recommendation`, its schedule
+row modelled at USD 0.08 a run, eight requests at USD 0.01; the `purchase_recommendation` collector,
+writing a failed type or service as a row with its cause; the AWS binding as the payer,
+`FakePurchaseRecommendations` for the local stack and the seed; and two first contact probes as the
+payer. The services asked about are the setting `METER_COMMITMENT_RECOMMENDATION_SERVICES`, because
+Cost Explorer's names for them are partly undocumented, ISS-297.
 
 ---
 

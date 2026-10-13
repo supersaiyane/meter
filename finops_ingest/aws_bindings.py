@@ -15,10 +15,11 @@ the reason, and nothing runs on something invented.
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 from typing import Any, Final
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.commitments import EC2, RDS
+from finops_core.domain.commitments import EC2, ELASTICACHE, MEMORYDB, OPENSEARCH, RDS, REDSHIFT
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
@@ -37,6 +38,7 @@ from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
+from finops_ingest.collectors.purchase_recommendation import PurchaseRecommendationCollector
 from finops_ingest.collectors.quotas import QuotaCollector
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
@@ -49,6 +51,7 @@ from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
 from finops_providers.aws.commitment import COST_EXPLORER_REGION, CostExplorerCommitmentReport
 from finops_providers.aws.commitment_inventory import AwsCommitmentHoldings
+from finops_providers.aws.commitment_recommendations import CostExplorerRecommendations
 from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
@@ -170,6 +173,34 @@ def _commitment(context: CollectorContext) -> CollectorRunner:
     )
 
 
+def _purchase_recommendation(context: CollectorContext) -> CollectorRunner:
+    # As the payer, for the reason `_commitment` is: AWS recommends for the organization there.
+    settings = context.settings
+    return PurchaseRecommendationCollector(
+        CostExplorerRecommendations(
+            context.unit.tenant_id,
+            client_factory=lambda: payer_client(settings, "ce", COST_EXPLORER_REGION),
+        ),
+        services=settings.recommendation_services,
+    )
+
+
+#: Each reserved service read through the relay, ADR-0037, and the name the relay knows it by.
+RELAYED_RESERVATIONS: Final = {
+    RDS: "rds",
+    ELASTICACHE: "elasticache",
+    OPENSEARCH: "opensearch",
+    REDSHIFT: "redshift",
+    MEMORYDB: "memorydb",
+}
+
+
+def _relayed_reservations(
+    relayed: Callable[[str, str, str], Any], service: str, account: str, region: str
+) -> Any:
+    return relayed(service, region, account)
+
+
 def _commitment_inventory(context: CollectorContext) -> CollectorRunner:
     # Each account's own commitments, as its collector role: Savings Plans and RDS reservations
     # through the relay, ADR-0037, EC2 reservations through the EC2 endpoint, FEAT-086.
@@ -187,7 +218,10 @@ def _commitment_inventory(context: CollectorContext) -> CollectorRunner:
         savings_plans_for=lambda account: relayed("savingsplans", GLOBAL_REGION, account),
         reservations_for={
             EC2: lambda _account, region: ec2("ec2", region),
-            RDS: lambda account, region: relayed("rds", region, account),
+            **{
+                program: partial(_relayed_reservations, relayed, service)
+                for program, service in RELAYED_RESERVATIONS.items()
+            },
         },
     )
     return CommitmentInventoryCollector(holdings, first_region=settings.region_list[0])
@@ -329,6 +363,7 @@ AWS_BUILDERS: Final[dict[str, Build]] = {
     "ownership": _ownership,
     "platform_cost": _platform_cost,
     "price_catalog": _price_catalog,
+    "purchase_recommendation": _purchase_recommendation,
     "quotas": _quotas,
     "recommendations": _recommendations,
     "savings_plan_rates": _savings_plan_rates,

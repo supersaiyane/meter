@@ -560,6 +560,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0.00001",
     ),
     ScheduleEntry(
+        collector="purchase_recommendation",
+        cadence_seconds=DAILY,
+        reason=(
+            "AWS's purchase recommendations, P14 spec section 5.1. Daily: Cost Explorer refreshes "
+            "them at least once a day, and a plan is drafted against them daily. Eight requests a "
+            "run, two Savings Plans types and six reserved services, at USD 0.01 each at AWS's "
+            "published price: modelled at 0.08 USD a run, and not measured until a payer is read, "
+            "ISS-002. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.08",
+    ),
+    ScheduleEntry(
         collector="bedrock_invocations",
         cadence_seconds=DAILY,
         reason=(

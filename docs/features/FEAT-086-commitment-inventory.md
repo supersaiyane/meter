@@ -27,8 +27,15 @@ endpoint, and Savings Plans and RDS reservations through the relay, ADR-0037, ev
 both paths. A Savings Plan has no Region, so it is read once per account, in the first collection
 Region's unit. It writes `commitment_inventory`, `PayerWide`, ADR-0025: exactly one of quantity and
 hourly commitment, the real start, end, term and payment, and the state, retired ones included.
-`make first-contact` probes all three reads. ElastiCache, OpenSearch, Redshift and MemoryDB follow
-in TASK-P14-003.
+`make first-contact` probes every read. `GET /v1/commitments/inventory`, TASK-P14-005, lists every
+commitment, the soonest ending first, and names DynamoDB as unreadable; a narrowed reader is told
+commitments need the payer, as `/cost/commitments` tells them.
+
+TASK-P14-003 added ElastiCache, OpenSearch, Redshift and MemoryDB, each through the relay as the
+account's role, read by one table of where each service keeps its fields: its count, its type and
+its payment option, which OpenSearch spells as an enum. ElastiCache and MemoryDB name no currency;
+their prices are AWS's list prices, in US dollars. DynamoDB reserved capacity has no read API,
+ISS-295, so it is named unreadable, never counted as none held.
 
 ## Data sources and freshness
 

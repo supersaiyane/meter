@@ -86,6 +86,7 @@ settings = {
   METER_CREATOR_LOOKUPS_PER_RUN                       = "200"
   METER_AI_REQUEST_METADATA_KEY                       = ""
   METER_GPU_METRICS_NAMESPACE                         = "CWAgent"
+  METER_COMMITMENT_RECOMMENDATION_SERVICES            = "Amazon Elastic Compute Cloud - Compute,Amazon Relational Database Service,Amazon ElastiCache,Amazon OpenSearch Service,Amazon Redshift,Amazon MemoryDB"
   METER_BLAST_RADIUS_WIDE_AT                          = "10"
   METER_BLAST_RADIUS_DEPTH                            = "4"
   METER_BUDGET_AT_RISK_MARGIN                         = "0.1"

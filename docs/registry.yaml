@@ -655,19 +655,19 @@ features:
 - id: FEAT-087
   name: The effective savings rate as the headline, measured from the bill
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-087-effective-savings-rate.md
 - id: FEAT-088
   name: The renewal calendar and the ladder
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-088-renewal-calendar.md
 - id: FEAT-089
   name: Purchase plans, Meter's and AWS's side by side
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-089-purchase-plans.md
 - id: FEAT-090
@@ -2614,6 +2614,30 @@ changes:
   what: TASK-P14-002, the commitment inventory for Savings Plans, EC2 and RDS
   commit: pending
   detail: 'HeldCommitment and the CommitmentHoldings port; an AWS adapter reading Savings Plans and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the account''s collector role, every page read on both paths; migration 0054 creating commitment_inventory, payer wide, with exactly one of quantity and hourly commitment, and the collector''s cadence for existing tenants; the collector, reading Savings Plans once per account in the first collection Region''s unit and restating only the scope it read; the relay''s allow list and the member collector role gain the three reads, ADR-0037; a fake estate and both compositions; first contact probes all three, the relayed reads as the member account'
+- id: CHG-0187
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-003, the inventory for every other reservable service
+  commit: pending
+  detail: 'One table driven reader, RESERVED, for every reserved service, EC2 and RDS moved onto it unchanged; ElastiCache, OpenSearch, Redshift and MemoryDB read through the relay as each account''s collector role, ADR-0037, OpenSearch''s payment enum stored as the others spell it and a currency the API does not state read as AWS''s list currency, US dollars. The relay''s allow list and the member role gain the four reads; first contact probes each. DynamoDB reserved capacity is named unreadable, ISS-295'
+- id: CHG-0188
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-004, the effective savings rate, measured from the bill
+  commit: pending
+  detail: 'GET /v1/commitments/savings-rate, the first route of P14''s commitments router: per billing month, one minus Effective Cost over List Cost on the cloud bill''s usage lines carrying a List Cost, with both sums, the lines left out and what they cost, measured and scoped by account as the bill is. A month with no List Cost has no rate and says why, never nought; usage dearer than list is a rate below zero'
+- id: CHG-0189
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-005, the commitment policy and the renewal calendar
+  commit: pending
+  detail: 'Migration 0055 creates commitment_policy, one row per tenant with a check on every bound, and installs the cautious default for every tenant, OPEN-38; install_default_policy gives a new tenant the same. GET /v1/commitments/inventory lists what is held, the soonest ending first, naming DynamoDB unreadable; GET /v1/commitments/calendar groups it by the month it ends, a Savings Plan''s hourly amount measured and a reservation''s hourly value modelled, each month''s share flagged above the ladder limit; GET and PUT /v1/commitments/policy, a change needing a person whose scope is the organization and a reason, audited ALLOWED or DENIED. A narrowed reader is told commitments need the payer. An erasure keeps the policy and replaces the name on it'
+- id: CHG-0190
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-006, AWS's purchase recommendations
+  commit: pending
+  detail: 'Migration 0056 creates purchase_recommendation, one row per tenant, kind and program, with checks that a row is an answer or a failure and never both, and installs the daily cadence for every tenant, modelled at USD 0.08 a run. CostExplorerRecommendations asks Cost Explorer, as the payer, for the Compute and EC2 Instance Savings Plans and each service in METER_COMMITMENT_RECOMMENDATION_SERVICES, in the tenant policy''s term and payment option, reading every page. The collector writes a type or service that failed as a row with its typed cause beside the ones that answered, and fails only when every read failed. The fake advises a Compute Savings Plan and EC2 and RDS reservations. make first-contact asks for both kinds as the payer. The relay allow list test learned that OpenSearch is granted under the es prefix'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5159,6 +5183,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-297
+  severity: MEDIUM
+  status: OPEN
+  summary: Cost Explorer's service names for four reservation recommendations are unverified
+  detail: 'Found 2026-10-13 building TASK-P14-006. GetReservationPurchaseRecommendation takes a Service name, and AWS documents Amazon Elastic Compute Cloud - Compute, Amazon Relational Database Service, Amazon ElastiCache, Amazon OpenSearch Service and Amazon Redshift in different places, and Amazon MemoryDB nowhere found. The names are the setting METER_COMMITMENT_RECOMMENDATION_SERVICES rather than code, a name Cost Explorer refuses costs that service alone and is written as a row with its cause, and make first-contact asks for the first name as the payer. Closes when a first contact against a real payer has answered for every name'
 - id: ISS-296
   severity: HIGH
   status: FIXED

@@ -223,3 +223,138 @@ def test_a_service_with_no_reader_is_refused_when_built() -> None:
             savings_plans_for=lambda _a: None,
             reservations_for={"DynamoDB": lambda *_: None},
         )
+
+
+# --- TASK-P14-003, the other reservable services -----------------------------------------
+
+
+def _held_by(service: str, method: str, answer: dict[str, Any], program: str) -> Any:
+    one = client(service)
+    with Stubber(one) as stub:
+        stub.add_response(method, answer)
+        found = AwsCommitmentHoldings(
+            TENANT,
+            savings_plans_for=lambda _a: None,
+            reservations_for={program: lambda _a, _r: one},
+            clock=lambda: AT,
+        ).reservations(ACCOUNT, REGION)
+        return list(found)
+
+
+def test_each_other_reservable_service_is_read_with_its_own_field_names() -> None:
+    elasticache = _held_by(
+        "elasticache",
+        "describe_reserved_cache_nodes",
+        {
+            "ReservedCacheNodes": [
+                {
+                    "ReservedCacheNodeId": "rc-1",
+                    "CacheNodeType": "cache.r6g.large",
+                    "CacheNodeCount": 3,
+                    "StartTime": START,
+                    "Duration": 3 * YEAR,
+                    "FixedPrice": 1200.0,
+                    "UsagePrice": 0.0,
+                    "OfferingType": "Partial Upfront",
+                    "RecurringCharges": [
+                        {"RecurringChargeAmount": 0.05, "RecurringChargeFrequency": "Hourly"}
+                    ],
+                    "State": "active",
+                }
+            ]
+        },
+        "ElastiCache",
+    )
+    opensearch = _held_by(
+        "opensearch",
+        "describe_reserved_instances",
+        {
+            "ReservedInstances": [
+                {
+                    "ReservedInstanceId": "0f0e0d0c-0b0a-4009-8008-070605040302",
+                    "InstanceType": "r6g.large.search",
+                    "InstanceCount": 2,
+                    "StartTime": START,
+                    "Duration": YEAR,
+                    "FixedPrice": 0.0,
+                    "UsagePrice": 0.0,
+                    "PaymentOption": "NO_UPFRONT",
+                    "CurrencyCode": "USD",
+                    "RecurringCharges": [],
+                    "State": "active",
+                }
+            ]
+        },
+        "OpenSearch",
+    )
+    redshift = _held_by(
+        "redshift",
+        "describe_reserved_nodes",
+        {
+            "ReservedNodes": [
+                {
+                    "ReservedNodeId": "rr-1",
+                    "NodeType": "ra3.xlplus",
+                    "NodeCount": 2,
+                    "StartTime": START,
+                    "Duration": YEAR,
+                    "FixedPrice": 0.0,
+                    "UsagePrice": 0.0,
+                    "OfferingType": "No Upfront",
+                    "CurrencyCode": "USD",
+                    "RecurringCharges": [],
+                    "State": "active",
+                }
+            ]
+        },
+        "Redshift",
+    )
+    memorydb = _held_by(
+        "memorydb",
+        "describe_reserved_nodes",
+        {
+            "ReservedNodes": [
+                {
+                    "ReservationId": "rm-1",
+                    "NodeType": "db.r6g.large",
+                    "NodeCount": 1,
+                    "StartTime": START,
+                    "Duration": YEAR,
+                    "FixedPrice": 0.0,
+                    "OfferingType": "No Upfront",
+                    "RecurringCharges": [],
+                    "State": "active",
+                }
+            ]
+        },
+        "MemoryDB",
+    )
+    (cache,) = elasticache
+    assert (cache.program, cache.applies_to, cache.quantity, cache.term_months) == (
+        "ElastiCache",
+        "cache.r6g.large",
+        3,
+        36,
+    )
+    assert cache.recurring_hourly == Decimal("0.05")
+    # ElastiCache names no currency; its prices are AWS's list prices, in US dollars.
+    assert cache.currency == "USD"
+    (search,) = opensearch
+    # OpenSearch spells its payment option as an enum; it is stored as every other source spells it.
+    assert (search.program, search.payment_option, search.quantity) == (
+        "OpenSearch",
+        "No Upfront",
+        2,
+    )
+    (warehouse,) = redshift
+    assert (warehouse.program, warehouse.ends_at) == ("Redshift", START + timedelta(seconds=YEAR))
+    (memory,) = memorydb
+    assert (memory.commitment_id, memory.program, memory.currency) == ("rm-1", "MemoryDB", "USD")
+
+
+def test_dynamodb_reserved_capacity_is_named_unreadable_and_has_no_reader() -> None:
+    from finops_core.domain.commitments import UNREADABLE
+    from finops_providers.aws.commitment_inventory import RESERVED
+
+    assert UNREADABLE == ("DynamoDB",)
+    assert not set(UNREADABLE) & set(RESERVED)

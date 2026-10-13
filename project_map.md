@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 59 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 39 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 54 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 266 | test_*.py under tests/ |
-| Test functions | 3183 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 40 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 56 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 271 | test_*.py under tests/ |
+| Test functions | 3220 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -553,9 +553,13 @@ meter/
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
 │   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
 │   │   │                      a key with nothing under it is NoData, not SchemaDrift
-│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Savings Plans and RDS
+│   │   ├── commitment_recommendations.py  FEAT-089, TASK-P14-006. AWS's purchase
+│   │   │                      advice from Cost Explorer as the payer, in the policy's
+│   │   │                      terms; every page of a reservation answer read
+│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002 and 003. Savings Plans and
+│   │   │                      the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB
 │   │   │                      reservations through the relay, EC2 through its endpoint,
-│   │   │                      each as the account's role; every page read
+│   │   │                      each as the account's role; one table driven reader
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report
@@ -1202,6 +1206,8 @@ meter/
 │   │                          runs, bound per unit for a deployment: the ones
 │   │                          reading only Meter for real, the rest failing typed
 │   │                          as Misconfigured until TASK-P12-002. ISS-182
+│   ├── commitment_policy.py   FEAT-088, TASK-P14-005. The cautious default installed for a
+│   │                          tenant, and the policy read, the default where none is set
 │   ├── ai_bindings.py         FEAT-083, TASK-P13-004. The AI provider collectors for a
 │   │                          deployment, each organization's key read from Secrets
 │   │                          Manager when a request is about to be made
@@ -1270,6 +1276,9 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── purchase_recommendation.py  FEAT-089, TASK-P14-006. Daily, organization
+│       │                      wide; one row per type and service, a failed one written
+│       │                      with its cause beside those that answered
 │       ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Daily per account and
 │       │                      Region; Savings Plans only in the first Region's unit
 │       ├── commitment.py      two reads, two upserts, one transaction. A window is
@@ -1449,6 +1458,9 @@ meter/
 │   │   ├── ai.py              FEAT-081 to 085, TASK-P13-007. GET /ai/spend, grouped by
 │   │   │                      provider, model, token type, feature or caller; GET
 │   │   │                      /ai/callers; GET /ai/gpu. Every figure with its basis
+│   │   ├── commitments.py     P14, FEAT-086 to 090. GET /commitments/savings-rate, the
+│   │   │                      effective savings rate by month, measured, TASK-P14-004;
+│   │   │                      inventory, calendar and the policy, payer only, TASK-P14-005
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1537,6 +1549,8 @@ meter/
 │       └── repositories/      the only path to a scoped table, audited on read.
 │                              ai.py holds P13's: the bill's AI and GPU lines, AI
 │                              usage, GPU utilization and the connected providers.
+│                              commitments.py holds P14's: what is held and the
+│                              policy, its change audited ALLOWED or DENIED.
 │                              latest_audit_only confines a read to the newest
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
@@ -1628,6 +1642,10 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0056_purchase_recommendation.py  TASK-P14-006. AWS's purchase advice, and
+│       │                      the collector's cadence at a modelled USD 0.08 a run
+│       ├── 0055_commitment_policy.py  TASK-P14-005. What purchase plans aim for, the
+│       │                      cautious default for every tenant
 │       ├── 0054_commitment_inventory.py  TASK-P14-002. What each account holds,
 │       │                      and the collector's cadence
 │       ├── 0053_ai_spend_screen.py  TASK-P13-008. /analyze/ai admitted as a saved
@@ -1795,6 +1813,10 @@ meter/
 │   │                          model named in a log matched to the bill's name, tokens
 │   │                          measured from the bill or modelled from a usage report,
 │   │                          a caller's cost at the bill's unit cost, the GPU fleet
+│   ├── commitment_calendar.py FEAT-088, TASK-P14-005. What ends each month and its share
+│   │                          of the hourly commitment, against the ladder limit
+│   ├── savings_rate.py        FEAT-087, TASK-P14-004. One minus Effective over List
+│   │                          Cost on the same lines; no List Cost is no rate, never nought
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
 │   │                          own backtest or the sentence saying why it is

@@ -190,6 +190,13 @@ class Settings(BaseSettings):
     #: The CloudWatch namespace the agent publishes NVIDIA metrics in, P13 spec section 5.6. The
     #: agent's own default; a deployment whose agents are configured otherwise names theirs here.
     gpu_metrics_namespace: str = "CWAgent"
+    #: The services Cost Explorer's reservation purchase recommendation is asked about, P14 spec
+    #: section 5.1, comma separated, as AWS names them. AWS documents one exactly, Amazon Redshift;
+    #: the others are its usual names, unverified until first contact reads them, ISS-297.
+    commitment_recommendation_services: str = (
+        "Amazon Elastic Compute Cloud - Compute,Amazon Relational Database Service,"
+        "Amazon ElastiCache,Amazon OpenSearch Service,Amazon Redshift,Amazon MemoryDB"
+    )
 
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument
@@ -379,6 +386,15 @@ class Settings(BaseSettings):
                 "other one is working."
             )
         return self
+
+    @property
+    def recommendation_services(self) -> tuple[str, ...]:
+        """`commitment_recommendation_services` as a list, comma separated like `regions`."""
+        return tuple(
+            part.strip()
+            for part in self.commitment_recommendation_services.split(",")
+            if part.strip()
+        )
 
     @property
     def region_list(self) -> tuple[str, ...]:

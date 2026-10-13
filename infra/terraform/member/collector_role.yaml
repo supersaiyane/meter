@@ -163,6 +163,12 @@ Resources:
                   - savingsplans:DescribeSavingsPlans
                   - ec2:DescribeReservedInstances
                   - rds:DescribeReservedDBInstances
+                  # TASK-P14-003. The other reservable services. DynamoDB reserved capacity has
+                  # no read API, ISS-295, so nothing is granted for it.
+                  - elasticache:DescribeReservedCacheNodes
+                  - es:DescribeReservedInstances
+                  - redshift:DescribeReservedNodes
+                  - memorydb:DescribeReservedNodes
                 Resource: "*"
               # P13 bedrock_invocations. Starting a query is the one action that reads a log
               # group, and the invocation logs hold every prompt and response, so it is granted

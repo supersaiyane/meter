@@ -69,6 +69,8 @@ class ErasureReport:
     shared_views_unowned: int = 0
     schedules_paused: int = 0
     recipient_lists_changed: int = 0
+    #: TASK-P14-005. The commitment policy they last changed: the decision kept, the name gone.
+    policies_reattributed: int = 0
     #: Always zero. Present so the report says out loud what was left alone,
     #: rather than leaving the reader to infer it from an absence.
     audit_events_removed: int = 0
@@ -86,6 +88,7 @@ class ErasureReport:
             f"  shared views left unowned      {self.shared_views_unowned}",
             f"  report schedules paused        {self.schedules_paused}",
             f"  recipient lists changed        {self.recipient_lists_changed}",
+            f"  commitment policies reattributed {self.policies_reattributed}",
             f"  audit events written           {self.audit_events_written}",
             f"  audit events removed           {self.audit_events_removed}"
             " (never removed, by design)",
@@ -185,6 +188,16 @@ def erase(
         {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
     ).rowcount
 
+    # The commitment policy a person last set, as with a cadence: the decision is the tenant's and
+    # stays, and only the attribution goes. TASK-P14-005.
+    policy_rows = connection.execute(
+        text(
+            "UPDATE commitment_policy SET updated_by = :tombstone "
+            "WHERE tenant_id = :tenant AND updated_by = :who"
+        ),
+        {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
+    ).rowcount
+
     reached = _reach_personal_tables(connection, tenant_id, str(principal_id))
 
     _audit(connection, tenant_id, principal_id, "erasure.completed", request_id, requested_by, at)
@@ -194,6 +207,7 @@ def erase(
         principals_anonymised=anonymised or 0,
         scope_rows_removed=scope_rows or 0,
         schedule_rows_reattributed=schedule_rows or 0,
+        policies_reattributed=policy_rows or 0,
         audit_events_written=2,
         **reached,
     )

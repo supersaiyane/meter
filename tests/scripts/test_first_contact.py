@@ -289,6 +289,10 @@ def test_a_relayed_read_of_what_an_account_holds_is_made_as_that_account(
     for reads in (
         "Savings Plans the account holds, through the relay",
         "RDS reservations the account holds, through the relay",
+        "ElastiCache reservations the account holds, through the relay",
+        "OpenSearch reservations the account holds, through the relay",
+        "Redshift reservations the account holds, through the relay",
+        "MemoryDB reservations the account holds, through the relay",
     ):
         relayed = first_contact.clients(target(deployed))(probe(reads), target(deployed))
         assert isinstance(relayed, RelayClient), reads

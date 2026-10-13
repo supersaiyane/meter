@@ -32,6 +32,13 @@ KINDS: Final = (SAVINGS_PLAN, RESERVATION)
 #: The reserved services the inventory reads, as a reservation's program names them.
 EC2: Final = "EC2"
 RDS: Final = "RDS"
+ELASTICACHE: Final = "ElastiCache"
+OPENSEARCH: Final = "OpenSearch"
+REDSHIFT: Final = "Redshift"
+MEMORYDB: Final = "MemoryDB"
+#: Reserved, and unreadable: no API describes DynamoDB reserved capacity, ISS-295. Named so a
+#: screen can say it is unread rather than imply none is held.
+UNREADABLE: Final = ("DynamoDB",)
 
 #: The payment options, as both Savings Plans and reservations spell them.
 NO_UPFRONT: Final = "No Upfront"
@@ -102,3 +109,78 @@ def term_months(seconds: int) -> int:
     than claiming a precision the source did not have.
     """
     return max(1, round(seconds / _YEAR_SECONDS * 12))
+
+
+#: The payment options a policy may name, and the terms AWS sells, in years.
+PAYMENT_OPTIONS: Final = (NO_UPFRONT, PARTIAL_UPFRONT, ALL_UPFRONT)
+TERM_YEARS: Final = (1, 3)
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentPolicy:
+    """What a tenant's purchase plans aim for. FEAT-088, TASK-P14-005, OPEN-38.
+
+    Data, as cadence is, constraint 9: the coverage of the steady baseline to aim for, the term
+    and the payment option to plan in, and the ladder limit, the largest share of the hourly
+    commitment allowed to end in any one month.
+    """
+
+    target_coverage: Decimal
+    term_years: int
+    payment_option: str
+    ladder_limit: Decimal
+
+    def __post_init__(self) -> None:
+        if not Decimal(0) < self.target_coverage <= Decimal(1):
+            raise ValueError("target coverage is a share of the baseline, above 0 and at most 1")
+        if self.term_years not in TERM_YEARS:
+            raise ValueError(f"AWS sells terms of {TERM_YEARS} years, not {self.term_years}")
+        if self.payment_option not in PAYMENT_OPTIONS:
+            raise ValueError(f"a payment option is one of {PAYMENT_OPTIONS}")
+        if not Decimal(0) < self.ladder_limit <= Decimal(1):
+            raise ValueError("the ladder limit is a share of the commitment, above 0 and at most 1")
+
+
+#: The cautious ladder, the owner's answer to OPEN-38 on 2026-10-13: 80 percent of the steady
+#: baseline, one year, no upfront, and at most one twelfth ending in any month.
+DEFAULT_POLICY: Final = CommitmentPolicy(
+    target_coverage=Decimal("0.800"),
+    term_years=1,
+    payment_option=NO_UPFRONT,
+    ladder_limit=Decimal("0.0833"),
+)
+DEFAULT_POLICY_REASON: Final = "The cautious ladder, the owner's default, OPEN-38"
+
+
+@dataclass(frozen=True, kw_only=True)
+class PurchaseRecommendation(Fact):
+    """One of AWS's purchase recommendations, as AWS gave it. FEAT-089, TASK-P14-006.
+
+    AWS's estimate and labelled so: its savings are its own model, not Meter's. `recommended` is
+    False where AWS looked and advises buying nothing, which is an answer, not an absence.
+    """
+
+    tenant_id: UUID
+    kind: str
+    #: The Savings Plans type, or the service as Cost Explorer names it.
+    program: str
+    term_years: int
+    payment_option: str
+    lookback_days: int
+    recommended: bool
+    #: What a Savings Plan recommendation commits an hour. None for a reservation.
+    hourly_commitment: Decimal | None
+    #: How many instances or nodes a reservation recommendation buys, summed. None for a plan.
+    units: Decimal | None
+    estimated_monthly_savings: Decimal
+    estimated_savings_percent: Decimal | None
+    upfront_cost: Decimal
+    currency: str
+
+    def __post_init__(self) -> None:
+        if self.kind not in KINDS:
+            raise ValueError(
+                f"a recommendation is for a savings plan or a reservation, not {self.kind!r}"
+            )
+        if self.collected_at < self.as_of:
+            raise ValueError("a recommendation was collected before it was generated")

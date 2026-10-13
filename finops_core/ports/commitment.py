@@ -27,7 +27,11 @@ from datetime import date
 from typing import Protocol, runtime_checkable
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.commitments import HeldCommitment
+from finops_core.domain.commitments import (
+    CommitmentPolicy,
+    HeldCommitment,
+    PurchaseRecommendation,
+)
 from finops_core.domain.cost import CommitmentCoverage, CommitmentDay, CommitmentUse
 
 
@@ -114,4 +118,22 @@ class CommitmentHoldings(Protocol):
 
     def reservations(self, account: AccountKey, region: str) -> Iterable[HeldCommitment]:
         """Every reservation the account holds in the Region, for each service read."""
+        ...
+
+
+@runtime_checkable
+class PurchaseRecommendations(Protocol):
+    """AWS's own purchase recommendations, read as the payer. FEAT-089, TASK-P14-006, OPEN-35.
+
+    Asked in the tenant's policy's term and payment option, so AWS's answer and Meter's own plan
+    are about the same purchase. Each call is one recommendation: a Savings Plans type, or a
+    reserved service as Cost Explorer names it. Every failure is a typed `CollectionError`.
+    """
+
+    def savings_plans(self, program: str, policy: CommitmentPolicy) -> PurchaseRecommendation:
+        """AWS's recommendation for one Savings Plans type, `Compute` or `EC2Instance`."""
+        ...
+
+    def reservations(self, service: str, policy: CommitmentPolicy) -> PurchaseRecommendation:
+        """AWS's recommendation for one reserved service, summed over its lines."""
         ...

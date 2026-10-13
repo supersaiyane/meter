@@ -59,3 +59,22 @@ def test_a_commitment_that_cannot_exist_is_refused(overrides: dict[str, Any], re
 @pytest.mark.parametrize(("seconds", "months"), [(31536000, 12), (94608000, 36), (1, 1)])
 def test_a_term_in_seconds_is_whole_months(seconds: int, months: int) -> None:
     assert term_months(seconds) == months
+
+
+@pytest.mark.parametrize(
+    ("overrides", "reason"),
+    [
+        ({"target_coverage": Decimal(0)}, "target coverage"),
+        ({"target_coverage": Decimal("1.1")}, "target coverage"),
+        ({"term_years": 2}, "terms"),
+        ({"payment_option": "Monthly"}, "payment option"),
+        ({"ladder_limit": Decimal(0)}, "ladder limit"),
+    ],
+)
+def test_a_policy_no_plan_could_follow_is_refused(overrides: dict[str, Any], reason: str) -> None:
+    from dataclasses import replace
+
+    from finops_core.domain.commitments import DEFAULT_POLICY
+
+    with pytest.raises(ValueError, match=reason):
+        replace(DEFAULT_POLICY, **overrides)

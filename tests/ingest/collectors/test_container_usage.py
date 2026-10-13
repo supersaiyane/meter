@@ -368,7 +368,14 @@ def test_there_is_no_second_recommendation_table() -> None:
     names = {name for name in models.metadata.tables if "recommendation" in name}
     # TASK-P9-006 added the options a provider ranked for one recommendation. A child of a
     # recommendation rather than a second list of them, which the foreign key below holds.
-    assert names == {"recommendation", "recommendation_event", "recommendation_option"}, names
+    # TASK-P14-006 added AWS's purchase advice, which is no finding: it has no owner and no
+    # lifecycle, and is shown beside Meter's own purchase plan, OPEN-35, never worked as one.
+    assert names == {
+        "recommendation",
+        "recommendation_event",
+        "recommendation_option",
+        "purchase_recommendation",
+    }, names
     parents = {
         key.column.table.name
         for key in models.metadata.tables["recommendation_option"].foreign_keys
