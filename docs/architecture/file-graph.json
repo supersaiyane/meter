@@ -1030,6 +1030,7 @@
     "tests/scripts/test_p11_exit_criteria.py",
     "tests/scripts/test_p12_exit_criteria.py",
     "tests/scripts/test_p13_exit_criteria.py",
+    "tests/scripts/test_p14_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -12897,6 +12898,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/commitment_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/container_usage.py",
       "k": "python"
     },
@@ -12963,6 +12969,16 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/purchase_plan.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/purchase_recommendation.py",
       "k": "python"
     },
     {
@@ -17866,6 +17882,21 @@
       "k": "python"
     },
     {
+      "s": "tests/scripts/test_p14_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p14_exit_criteria.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p14_exit_criteria.py",
+      "t": "finops_ingest/collectors/purchase_plan.py",
+      "k": "python"
+    },
+    {
       "s": "tests/scripts/test_p9_exit_criteria.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -17873,6 +17904,11 @@
     {
       "s": "tests/scripts/test_seed_demo.py",
       "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_seed_demo.py",
+      "t": "finops_core/config.py",
       "k": "python"
     }
   ]

@@ -67,6 +67,7 @@ block is caught by `make check-docs`. See
 | Runbook, watching collection on the local stack | [docs/runbooks/local-collection.md](docs/runbooks/local-collection.md) |
 | Runbook, the first account and first contact | [docs/runbooks/first-account.md](docs/runbooks/first-account.md) |
 | Runbook, AI spend sources: a provider's key, invocation logging, the GPU agent | [docs/runbooks/ai-providers.md](docs/runbooks/ai-providers.md) |
+| Runbook, commitments: the reads, the purchase policy, and acting on a plan | [docs/runbooks/commitments.md](docs/runbooks/commitments.md) |
 | How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | What Meter costs to run | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | When a sub project is done | [docs/01-ROADMAP.md](docs/01-ROADMAP.md) |
@@ -90,7 +91,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-90 features across 15 sub projects. 11 specified, 3 planned, 18 in build, 58 delivered.
+90 features across 15 sub projects. 11 specified, 3 planned, 13 in build, 63 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -173,11 +174,11 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-086](docs/features/FEAT-086-commitment-inventory.md) | The commitment inventory, every commitment's real term, end and payment | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
-| [FEAT-087](docs/features/FEAT-087-effective-savings-rate.md) | The effective savings rate as the headline, measured from the bill | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
-| [FEAT-088](docs/features/FEAT-088-renewal-calendar.md) | The renewal calendar and the ladder | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
-| [FEAT-089](docs/features/FEAT-089-purchase-plans.md) | Purchase plans, Meter's and AWS's side by side | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
-| [FEAT-090](docs/features/FEAT-090-plan-approval.md) | Plan approval, the purchase recorded and verified against the bill | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-086](docs/features/FEAT-086-commitment-inventory.md) | The commitment inventory, every commitment's real term, end and payment | Delivered | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-087](docs/features/FEAT-087-effective-savings-rate.md) | The effective savings rate as the headline, measured from the bill | Delivered | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-088](docs/features/FEAT-088-renewal-calendar.md) | The renewal calendar and the ladder | Delivered | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-089](docs/features/FEAT-089-purchase-plans.md) | Purchase plans, Meter's and AWS's side by side | Delivered | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-090](docs/features/FEAT-090-plan-approval.md) | Plan approval, the purchase recorded and verified against the bill | Delivered | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md) |
 
 ### P3 Utilization and Rightsizing
 
@@ -514,6 +515,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0191 | 2026-10-13 | Feature | TASK-P14-007, Meter's purchase plan | `pending` | finops_query/purchase_plan.py drafts a plan, pure: the tenth percentile of 30 days of the bill's EC2 instance hours at their on demand equivalent, split by stability under OPEN-40 into EC2 Instance plans for each steady family and Region and a Compute plan for usage that moves, priced by P9's rates, the policy's coverage less what is held past the month, and laddered so at most the limit of the completed commitment ends in any month; a share with no rate is named and never priced at zero. Migration 0057 creates purchase_plan, purchase_plan_line and purchase_plan_event, with a trigger and a check refusing a transition out of order, and the daily cadence at no cost a run. The purchase_plan collector lapses an earlier month's draft and drafts or redrafts this month's. GET /v1/commitments/plans returns the plan beside AWS's recommendations with the difference in words. The fake bill's EC2 lines name their usage type. purchase_recommendation, missed by TASK-P14-006, is classified in docs/09-DATA-CLASSIFICATION.md |
 | CHG-0192 | 2026-10-13 | Feature | TASK-P14-008, plan approval, the purchase recorded, and verification | `pending` | POST /v1/commitments/plans/{id}/approve, /bought and /withdraw, each with a required note, by a person whose scope is the organization, audited ALLOWED, a narrowed person refused with a 403 audited DENIED and a step out of order with a 409 that says why; the status changes only if it is still what was read. The plan collector matches each line of a bought plan's own month to a Savings Plan in the inventory with the same program, term, payment option, family and Region for an EC2 Instance line, an hourly commitment within one percent and a start after the approval, and verifies the plan when every line is matched; a line matched to nothing stays bought. Migration 0058 lets one commitment pay for one line at most. GET /v1/commitments/plans carries the steps. An erasure replaces the person's name on their steps |
 | CHG-0193 | 2026-10-13 | Feature | TASK-P14-009, the commitments screen | `pending` | The commitments screen opens on the effective savings rate by billing month, a month with no List Cost saying so in the API's words, and gains what the payer holds, what ends each month against the ladder, and Meter's purchase plan beside AWS's with the difference in words, each panel with its freshness and every figure measured or modelled. The payer panels are read only for a reader whose scope is the whole organization with no account chosen, and anyone else is told why. The plan's actions offer only the steps its status allows, each with a note. The Overview's savings rate tile reads the same route by the same twelve months, so the two screens cannot disagree |
+| CHG-0194 | 2026-10-13 | Feature | TASK-P14-010, the local stack, first contact, proof and documents | `pending` | The demo seed runs the commitment inventory in each account, AWS's purchase advice and Meter's plan after the bill and P9's rates they read, the refusing account refusing here too, and its test asserts the demo carries what is held, a rate, the advice and a plan that buys something. tests/scripts/test_p14_exit_criteria.py proves exit criteria 2 to 6 over the seeded demo through the API, criterion 1 being held by the Terraform contract test. docs/runbooks/commitments.md names the owner's steps for the reads, the policy and a plan. P14 and FEAT-086 to FEAT-090 are delivered against fakes; ISS-002 and ISS-297 remain open |
 
 <!-- generated:changes end -->
 

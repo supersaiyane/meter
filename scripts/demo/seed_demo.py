@@ -65,6 +65,7 @@ from finops_fakes.catalog import (
 )
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
+from finops_fakes.commitments import FakeCommitmentHoldings, FakePurchaseRecommendations
 from finops_fakes.cur import FakeCostExport, estate
 from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
 from finops_fakes.evidence import FakeQueryEvidence
@@ -84,6 +85,7 @@ from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
+from finops_ingest.collectors.commitment_inventory import CommitmentInventoryCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
@@ -98,6 +100,8 @@ from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
+from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
+from finops_ingest.collectors.purchase_recommendation import PurchaseRecommendationCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
     default_ingest_rate,
@@ -368,6 +372,49 @@ def _through_the_ledger(
 
 
 #: The fake providers the demo connects, as `scripts/ops/connect_ai_provider.py` connects one.
+def _seed_commitments(
+    ledger: RunLedger, connection: Any, unit: Callable[..., Unit], now: datetime, settings: Any
+) -> int:
+    """P14, TASK-P14-010. What each account holds, AWS's advice, and Meter's plan, in that order.
+
+    The plan reads the inventory, the bill and P9's rates, so it runs after all of them; seeded
+    before them it would draft a plan from nothing and report success. The account the fake
+    estate refuses refuses here too, so the inventory shows a refusal beside what was read. Run
+    once a day of history, so a history that crosses a month lapses the earlier month's draft.
+    """
+    written = 0
+    holdings = CommitmentInventoryCollector(
+        FakeCommitmentHoldings(at=now), first_region=fixtures.REGION
+    )
+    for account in fixtures.ACCOUNT_KEYS:
+        written += _through_the_ledger(
+            ledger,
+            holdings,
+            connection,
+            unit(scope_key=f"{account}:{fixtures.REGION}", account=account, region=fixtures.REGION),
+            "commitment_inventory",
+        )
+    written += _through_the_ledger(
+        ledger,
+        PurchaseRecommendationCollector(
+            FakePurchaseRecommendations(DEMO_TENANT, at=now),
+            services=settings.recommendation_services,
+            clock=lambda: now,
+        ),
+        connection,
+        unit(scope_key="billing:recommendations"),
+        "purchase_recommendation",
+    )
+    written += _through_the_ledger(
+        ledger,
+        PurchasePlanCollector(clock=lambda: now),
+        connection,
+        unit(scope_key="billing:plans"),
+        "purchase_plan",
+    )
+    return written
+
+
 DEMO_AI_PROVIDERS = (FAKE_OPENAI, FAKE_ANTHROPIC)
 
 CONNECT_PROVIDER = text(
@@ -1038,6 +1085,7 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             )
 
         written += _seed_ai(ledger, connection, unit, now)
+        written += _seed_commitments(ledger, connection, unit, now, settings)
 
         counts = {
             name: connection.execute(
