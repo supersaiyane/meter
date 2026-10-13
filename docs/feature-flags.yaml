@@ -1,3 +1,11 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Every feature flag with an owner, a reason, an expiry and a removal
+# plan, so a temporary branch cannot become permanent.
+# Grade B here: copy it, then replace the flags. The six field schema is the asset.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
+
 # Feature flag register. See ADR-0017.
 #
 # Every flag carries five fields, or it is not merged:

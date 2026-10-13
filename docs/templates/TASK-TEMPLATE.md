@@ -1,5 +1,14 @@
 # TASK-P<n>-<nnn>: <short imperative title>
 
+<!-- Basic boiler Plate Doc | Grade A
+     Why this file exists: The shape of a task, carrying its acceptance criteria and the
+     evidence that closes it.
+     Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 | Field | Value |
 | --- | --- |
 | Status | Not started \| In progress \| Blocked \| Done |

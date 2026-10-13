@@ -1,3 +1,11 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Every routine task in the project, discoverable with make help. The
+# single largest reusable asset here, because the target set is the project's operating manual.
+# Grade B here: copy it, then replace the project specific targets. The verify, ci, session-end,
+# security and documentation targets carry over.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 
 # Meter. One entry point for every routine task.
 # Run `make` or `make help` for the list.

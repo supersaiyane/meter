@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: The gate that keeps memory true. Resume vectors must point somewhere
+# real, cited commits must resolve, identifiers must be defined, and a lesson must be finished.
+# Without it the memory layer rots silently.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Fail the build on a memory entry that has stopped being true.
 
 The checkpoint log makes exactly one promise, stated in its own header: a

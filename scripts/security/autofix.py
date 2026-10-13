@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Applies available fixes on a branch, runs the tests, re scans, and never
+# merges.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Propose and apply the available security fixes, on a branch, with tests.
 
 The requirement was that a fix should be applied after the scan. It is, with

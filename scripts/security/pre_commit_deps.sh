@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Runs the admission gate whenever a dependency manifest changes.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 # Dependency admission gate, triggered by pre-commit when a manifest changes.
 #
 # Scans the resolved tree rather than the named package, because a manifest

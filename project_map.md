@@ -1,5 +1,15 @@
 # Project map
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: The module level map, read before opening any source file, so
+     orientation costs one read instead of ten.
+     Grade B here: copy it, then replace the tree and the responsibilities. The format and the
+     update trigger carry over.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Module level map. Check this before reading any source file, and before
 searching. If it does not answer the question, the map is wrong and should be
 rebuilt from source rather than worked around.

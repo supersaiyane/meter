@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Runs the deterministic checks first and the review checklist second, so
+# a human reviewer spends attention on judgment rather than on what a script can see.
+# Grade B here: copy it, then replace the checklist items.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Automated code review of the working tree or a diff. See ADR-0011.
 
 Runs the deterministic checks first, because a linter finding is cheaper and

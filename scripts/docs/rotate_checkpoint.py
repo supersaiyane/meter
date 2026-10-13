@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Turns the checkpoint archive rule into a mechanism. The rule was written
+# on day one and never once ran, because a rule with no mechanism behind it is a wish.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Rotate the checkpoint log, so its own archive rule stops being a rule.
 
 docs/checkpoint.md has stated since the day it was created that at 50 entries
@@ -29,6 +36,15 @@ HEADER = "| Date and time | Task | Status | What changed | Resume vector |"
 SEPARATOR = "| --- | --- | --- | --- | --- |"
 
 ARCHIVE_PREAMBLE = f"""# Checkpoint archive
+
+<!-- Basic boiler Plate Doc | Grade A
+     Why this file exists: Where rotated checkpoint entries go. History, exempt from the memory
+     gate because history is allowed to reference what no longer exists.
+     Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
 
 Rotated out of `docs/checkpoint.md` by `scripts/docs/rotate_checkpoint.py` at
 {THRESHOLD} entries, oldest first. This is history, kept for the record.

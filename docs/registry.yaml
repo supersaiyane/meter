@@ -1,3 +1,11 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: The single source every derived document is generated from. Change a
+# status here, run one command, and every view updates together.
+# Grade B here: copy it, then replace every row. The seven top level keys are the schema worth
+# keeping.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 
 meta:
   note: Single source of truth for features, decisions, changes, issues and open questions. INDEX.md,
@@ -668,6 +676,13 @@ changes:
     command
   commit: pending
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+- id: CHG-0035
+  date: '2026-08-24'
+  type: Process
+  what: Every file that forms the reusable base of the project tagged Basic boiler Plate Doc, with
+    why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project
+  commit: pending
+  detail: '[scripts/README.md](scripts/README.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

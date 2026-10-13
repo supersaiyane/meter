@@ -1,5 +1,13 @@
 # Scripts
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: What every script does and how it is run.
+     Grade B here: copy it, then replace the script table.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Every script in the project lives here, grouped by what it serves. Nothing
 executable lives outside this directory.
 

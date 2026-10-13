@@ -1,5 +1,15 @@
 # Lessons
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: Corrections received, converted into rules. This is the compounding
+     half of the project: a mistake recorded once is a mistake not repeated.
+     Grade B here: copy it, then replace the lessons themselves. The four field format and the
+     rule rather than a feeling constraint carry over.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Corrections received, converted into rules so they are not repeated.
 A lesson must be a rule that can be followed, not a feeling.
 

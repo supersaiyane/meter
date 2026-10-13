@@ -1,5 +1,15 @@
 # Change control
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: Answers one question: where does this kind of change get recorded.
+     Without it, every change lands somewhere different and the index stops being true.
+     Grade B here: copy it, then replace the routing rows that name this project's documents.
+     The routing rule itself is the asset.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Last updated: 2026-08-23
 Update trigger: any change to the process itself
 

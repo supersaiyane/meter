@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Fails when a feature has no document, or a document has no feature.
+# Grade B here: copy it, then replace the feature identifier scheme and the required section set.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Every feature in INDEX.md must have a document, and vice versa.
 
 A feature listed in the index with no document is a promise with nothing behind

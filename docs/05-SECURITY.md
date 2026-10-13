@@ -1,5 +1,14 @@
 # Security
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: The security policy: what is scanned, by what, at which gate, and
+     what blocks a merge.
+     Grade B here: copy it, then replace the specifics. The gate structure carries over.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Last updated: 2026-08-23
 Update trigger: any change to a control, a threshold, or the tool set
 Reports and posture: `security/`

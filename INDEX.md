@@ -1,5 +1,16 @@
 # Meter: master index
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: The single entry point. Every feature, decision, change, issue and
+     open question, each with a pointer to the document holding the detail. If something is not
+     here, it does not exist as far as the project is concerned.
+     Grade B here: copy it, then replace all of the content. The section structure and the
+     generated block markers are what carry over.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Last updated: 2026-08-23
 Update trigger: every material change. See [change control](docs/03-CHANGE-CONTROL.md)
 Consistency check: `make check-docs`
@@ -236,6 +247,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0032 | 2026-08-23 | Correction | project_map.md verified against the tree and four errors corrected, including hyphenated Python package names that also appeared in CLAUDE.md | `a9ef75c` | [project_map.md](project_map.md) |
 | CHG-0033 | 2026-08-23 | Correction | TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked, and the dependency admission gate missed by TASK-P0-029 was run | `a699d3c` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0034 | 2026-08-24 | Process | The memory layer given a validity gate. Resume vectors, cited commits and identifiers are checked, the checkpoint archive rule became a script, and recording a lesson became one command | `pending` | [docs/checkpoint.md](docs/checkpoint.md) |
+| CHG-0035 | 2026-08-24 | Process | Every file that forms the reusable base of the project tagged Basic boiler Plate Doc, with why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project | `pending` | [scripts/README.md](scripts/README.md) |
 
 <!-- generated:changes end -->
 

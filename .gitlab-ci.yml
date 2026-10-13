@@ -1,3 +1,11 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: The pipeline: verify, build, plan, deploy.
+# Grade B here: copy it, then replace every job. Only the stage shape carries over, and none of
+# it carries over at all if the next project is not on GitLab.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
+
 # Meter delivery pipeline.
 #
 # Flow: push to GitLab, verify, build three images with Kaniko, push to ECR,

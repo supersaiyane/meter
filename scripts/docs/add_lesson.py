@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Makes recording a correction cost a single command. Reminders lose to
+# friction, so the friction is removed instead.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Append a lesson skeleton, so recording one costs a single command.
 
 Two lessons across forty seven completed tasks is the measured failure in this

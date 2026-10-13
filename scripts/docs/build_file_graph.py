@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Builds the file dependency graph and fails on a layering violation, so
+# the architecture is checked rather than merely described.
+# Grade B here: copy it, then replace the layer definitions.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Build the file dependency graph: which file depends on which other file.
 
 Covers four edge kinds, because a graph of Python imports alone would miss most

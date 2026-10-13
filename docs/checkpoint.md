@@ -1,5 +1,16 @@
 # Checkpoint log
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: The session continuity log. One row per completed task, each carrying
+     a resume vector precise enough that a cold session continues without re reading the
+     project.
+     Grade B here: copy it, then replace every row. The column set, the archive rule and the
+     resume vector discipline are the asset.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Session continuity. One entry per completed task. A resume vector must be
 precise enough that a cold session can continue without re reading the project.
 
@@ -57,6 +68,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-07 | Close the dependency admission gap left by TASK-P0-029 | Done | The task was marked done without running `make dep-check`, one of its own acceptance criteria. Run against the full resolved tree rather than package by package: grype 0 findings across 97 packages, pip-audit 0 advisories across 113. All 19 declared dependencies admitted | `docs/plans/P0-implementation-plan.md`, TASK-P0-029 evidence. ISS-111 |
 | 2026-10-08 | TASK-P0-001, the workspace and quality gates | Done | Editable install, `tests/__init__.py`, `tests/conftest.py`, coverage parked at 0 with its restoration owned by TASK-P0-005. **Found that the import linter contracts had never worked**: `include_external_packages` was unset, so every contract forbidding boto3, fastapi or sqlalchemy passed because it never saw those imports. CLAUDE.md constraint 1 had been documented as machine enforced since the first week and was enforced by nothing | `pyproject.toml`, commit `a699d3c`. ISS-110, ISS-109. CHG-0033 |
 | 2026-08-24 | Give the memory layer a validity gate | Done | `scripts/ci/check_memory.py` validates resume vectors, cited commits, identifiers and lesson shape. `scripts/docs/rotate_checkpoint.py` turns the archive rule into a mechanism. `scripts/docs/add_lesson.py` makes recording a correction one command. Wired into `make verify` and `make session-end`. Eight tests in `tests/test_checkpoint_rotation.py` | `make check-memory`. The live window is the latest 20 entries, older rows warn, the archive is exempt. First run found one dead resume vector and six historical ones. Harvest rate, 2 lessons across 47 tasks, is now printed every run. Tracked as CHG-0034 |
+| 2026-08-24 | Tag every file that builds the base of the project | Done | 58 files carry a `Basic boiler Plate Doc` header stating why the file exists and its grade. A copy as is, B copy and swap the named parts, C left behind and untagged. Four generated files carry the tag from inside their generator, so regeneration cannot wipe it | `grep -rl "Basic boiler Plate Doc"` lists the boiler plate set. 28 are grade A, the rest B. `scripts/README.md` and `project_map.md` name every script. Tracked as CHG-0035 |
 
 ## Next action
 

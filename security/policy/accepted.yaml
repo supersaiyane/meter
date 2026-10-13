@@ -1,3 +1,13 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Findings accepted as unfixable, each carrying the reachability argument
+# that justifies it. The argument is then enforced by a build check, so an acceptance cannot
+# quietly stop being true.
+# Grade B here: copy it, then replace the entries. The schema, and the pairing of an acceptance
+# with an enforcement, are the asset.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
+
 # Unfixable findings, accepted with a reachability argument. See ADR-0018.
 #
 # This is NOT the allowlist. The allowlist, in allowlist.yaml, is for findings

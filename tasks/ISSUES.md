@@ -1,5 +1,15 @@
 # Issues and open questions
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: Every issue and open question, opened the moment it is found and
+     closed the moment it is resolved.
+     Grade B here: copy it, then replace all of the content. Keep the shape and the identifier
+     scheme.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Last updated: 2026-08-23
 Update trigger: the moment an issue or open question is found, or closed
 Source of truth: `docs/registry.yaml`. The register below is generated

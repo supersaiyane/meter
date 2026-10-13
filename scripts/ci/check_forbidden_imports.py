@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Enforces the reachability claims the accepted findings depend on. An
+# accepted finding whose argument nobody checks is an accepted finding nobody can trust.
+# Grade B here: copy it, then replace the package list and the module to advisory map.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Enforce the reachability claims in security/policy/accepted.yaml.
 
 ADR-0018 accepts three unfixable CPython findings on the grounds that Meter

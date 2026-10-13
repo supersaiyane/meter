@@ -1,5 +1,14 @@
 # Status
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: What is done and what is left, updated at the end of every working
+     session.
+     Grade B here: copy it, then replace all of the content. Keep the shape and the update trigger.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Last updated: 2026-08-24
 Update trigger: end of every work session
 Master index: `INDEX.md`
@@ -15,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 20 specified, 0 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 34 recorded |
+| Changes | 35 recorded |
 | Issues | 73 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 

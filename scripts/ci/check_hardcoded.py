@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Fails on a value that belongs in configuration: a region, an account id,
+# an ARN, an endpoint, a role name or a bare threshold.
+# Grade B here: copy it, then replace the six patterns, which are shaped for AWS.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Fail the build on a value that belongs in configuration.
 
 Documentation alone does not prevent hardcoding. This is the third rule in this

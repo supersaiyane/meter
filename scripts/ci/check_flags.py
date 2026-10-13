@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Fails on an expired flag, or on one missing an owner, a reason or a
+# removal plan.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Validate the feature flag register, and fail on an expired flag.
 
 Same mechanism as the security allowlist, deliberately, because both solve the

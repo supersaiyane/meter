@@ -1,5 +1,13 @@
 # Architecture decision records
 
+<!-- Basic boiler Plate Doc | Grade A
+     Why this file exists: Explains what a decision record is for and when one is required.
+     Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 One file per decision that is expensive to reverse. Format is deliberately
 short. If a decision can be reversed in an afternoon, it does not need a
 record.

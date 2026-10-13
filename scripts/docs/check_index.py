@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Fails the build when the index and the documents disagree. An index is
+# only useful while it is true.
+# Grade B here: copy it, then replace the paths it checks.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Fail if INDEX.md and the documents it indexes have drifted apart.
 
 Two checks, both cheap and both worth having:

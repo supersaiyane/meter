@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Generates the function level index from source, so a reader can find an
+# existing implementation before writing a duplicate.
+# Grade B here: copy it, then replace the package list it walks.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Generate context_index.md: every public symbol, where it lives, who calls it.
 
 This file is load bearing. Rung two of the ADR-0013 ladder, "does it already
@@ -42,6 +49,16 @@ PACKAGES = (
 )
 
 HEADER = """# Context index
+
+<!-- Basic boiler Plate Doc | Grade A
+     Why this file exists: The function level index, generated from source. It is rung two
+     of the decision ladder, does this already exist here, so it prevents a duplicate
+     implementation. Ships empty and fills itself on the first sync.
+     Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
 
 Every public symbol, where it lives, and what calls it.
 

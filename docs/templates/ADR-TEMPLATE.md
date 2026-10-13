@@ -1,5 +1,14 @@
 # ADR-NNNN: <decision, stated as a decision not a topic>
 
+<!-- Basic boiler Plate Doc | Grade A
+     Why this file exists: The shape of a decision record, so a decision is captured with its
+     context, its options and its cost of reversal.
+     Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 Date: YYYY-MM-DD
 Status: Proposed | Accepted | Superseded by ADR-NNNN | Rejected
 

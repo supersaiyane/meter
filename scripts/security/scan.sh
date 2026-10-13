@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Basic boiler Plate Doc | Grade A
+# Why this file exists: Runs every scanner and writes a timestamped report.
+# Grade A here: nothing in this file is specific to this project. Copy it unchanged.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 # Full security scan. Writes a timestamped report under security/reports/.
 #
 # Usage: scripts/security/scan.sh [--images] [--digest <sha256:...>]

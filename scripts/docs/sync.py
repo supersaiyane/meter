@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Regenerates every derived document from the registry, so the same fact
+# is never written twice and cannot drift.
+# Grade B here: copy it, then replace the document list and the block names.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
 """Regenerate every derived document from docs/registry.yaml. See ADR-0014.
 
 One fact, one place. Feature status used to live in four documents by hand,

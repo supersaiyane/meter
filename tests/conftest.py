@@ -1,3 +1,11 @@
+# Basic boiler Plate Doc | Grade B
+# Why this file exists: Shared test setup, deliberately minimal. It also refuses to run the
+# suite against a real cloud account, which is the idea worth copying.
+# Grade B here: copy it, then replace the guard's environment variable names.
+# Grades: A copy into a new project as is, no edits. B copy it and swap the
+# names, paths or patterns named above. C leave behind, it is this project's
+# own content rather than scaffolding, and is not tagged.
+
 """Shared pytest configuration.
 
 Two things are set up here and nothing else. Fixtures that belong to one layer

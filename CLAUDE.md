@@ -1,5 +1,16 @@
 # Meter: project rules
 
+<!-- Basic boiler Plate Doc | Grade B
+     Why this file exists: The rules every contributor and agent must follow: the writing rules,
+     the definition of done, the documentation routing table and the architectural constraints.
+     Grade B here: copy it, then replace the thirteen architectural constraints and the
+     repository layout are this project's. The writing rules, the definition of done and the
+     documentation table carry over unchanged.
+     Grades: A copy into a new project as is, no edits. B copy it and swap the
+     names, paths or patterns named above. C leave behind, it is this project's
+     own content rather than scaffolding, and is not tagged.
+-->
+
 These rules are binding for every contributor, human or agent. They sit on
 top of the global rules and override them where they conflict.
 
