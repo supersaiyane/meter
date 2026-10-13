@@ -128,11 +128,16 @@ def client_for(relay: Relay, bucket: dict[str, bytes], service: str) -> RelayCli
 
 # --- the allow list -----------------------------------------------------------
 
+#: The services whose IAM prefix is not boto3's name for them. OpenSearch kept Elasticsearch's, so
+#: its reservations are granted as `es:DescribeReservedInstances`, TASK-P14-003.
+IAM_PREFIX = {"opensearch": "es"}
+
 
 def test_every_call_allowed_is_read_only_and_names_its_role() -> None:
     for (service, operation), allowed in ALLOWED.items():
         assert operation.startswith(("Describe", "List", "Get")), (service, operation)
-        assert allowed.action.split(":")[0] == service, (service, allowed.action)
+        prefix = IAM_PREFIX.get(service, service)
+        assert allowed.action.split(":")[0] == prefix, (service, allowed.action)
         assert isinstance(allowed.role, RoleKind)
 
 
