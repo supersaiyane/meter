@@ -65,3 +65,48 @@ test('every figure on each dashboard links to the screen that owns it', async ({
   expect(figures).toBeGreaterThan(0);
   expect(unlinked).toEqual([]);
 });
+
+test('a forecast interval as wide as a real one stays inside its tile', async ({ page }) => {
+  // The local stack's month end read $17,522 to $23,56: the interval did not wrap and ran out of
+  // the tile at 1440 pixels, four tiles to a row, and lost its last digit.
+  await demoEstate(page);
+  await page.route('**/api/v1/cost/forecast*', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          provenance: 'forecast',
+          method: 'weekday profile',
+          method_detail: 'Each weekday at its own level',
+          interval_percent: 80,
+          max_median_miss: '0.10',
+          min_held_out: 3,
+          billed_through: '2026-10-12',
+          billed_to_date: '8401.00',
+          month_end: {
+            month: '2026-10-01',
+            figure: { low: '17522.00', high: '23568.00' },
+            withheld: null,
+            median_miss: '0.04',
+            held_out: 6,
+          },
+          days: [],
+          ahead: [],
+          backtest: [],
+        },
+        meta: {
+          as_of: '2026-10-12T04:00:00Z',
+          collected_at: '2026-10-12T06:00:00Z',
+          scope_coverage: { visible: 5, total: 5, is_partial: false, unit: 'accounts' },
+          degraded: false,
+          failures: [],
+        },
+      },
+    });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const value = page.getByTestId('kpi-value').filter({ hasText: '23,568' });
+  await expect(value).toBeVisible();
+  const overflow = await value.evaluate((element) => element.scrollWidth - element.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});

@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 85 total, 11 specified, 13 in build, 58 delivered |
 | Decisions | 36 architecture decision records |
-| Changes | 181 recorded |
-| Issues | 180 fixed, 106 open, 0 parked |
+| Changes | 182 recorded |
+| Issues | 183 fixed, 106 open, 0 parked |
 | Open questions | 34 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -137,7 +137,9 @@ that never published are words, and found ISS-288, a provider's projects counted
 seeded every AI source into the demo and the local stack, taught first contact the GPU agent and each
 provider's key, wrote the owner's runbook, and proved the six exit criteria through the API over the
 seeded demo; proving them found ISS-289, a provider's usage reaching the callers panel unnamed, and
-fixed it. P13 is delivered against fakes; ISS-285 closes with a real key.
+fixed it. P13 is delivered against fakes; ISS-285 closes with a real key. Running the demo on the local stack the
+same day found three more and fixed them: the front page counting a provider's projects as accounts,
+ISS-290; make up dispatching with a stale image, ISS-291; and the forecast tile losing a digit, ISS-292.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
