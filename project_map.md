@@ -30,12 +30,12 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 59 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 61 in 22 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 57 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 58 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 273 | test_*.py under tests/ |
-| Test functions | 3257 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3271 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -748,6 +748,16 @@ meter/
 │   ├── screens/queryByDashboard.ts  Query cost summed per dashboard
 │   ├── screens/commitmentDays.ts  The daily commitment figures as two money
 │   │                          stacks and a heatmap of the two percentages
+│   ├── screens/SavingsRatePanel.tsx  FEAT-087, TASK-P14-009. The commitments
+│   │                          screen's headline, the savings rate by month, a month
+│   │                          with no List Cost saying so; the Overview reads it too
+│   ├── screens/CommitmentHoldingsPanels.tsx  FEAT-086 and 088. What the payer
+│   │                          holds, and what ends each month against the ladder
+│   ├── screens/PurchasePlanPanel.tsx  FEAT-089. Meter's plan beside AWS's, the
+│   │                          difference in words, an unpriced share named
+│   ├── screens/PlanActions.tsx  FEAT-090. Approve, bought and withdraw, each with
+│   │                          a note, for a payer, a refusal in the API's own words
+│   ├── screens/commitmentFormat.ts  Month and day names and an envelope's freshness
 │   ├── screens/GeographyScreen.tsx  FEAT-061. The map, a glass tile per geography,
 │   │                          a table of every geography and of every link, the
 │   │                          leftovers of resources and of cost that are never
@@ -1276,8 +1286,9 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
-│       ├── purchase_plan.py   FEAT-089, TASK-P14-007. Daily, from Meter's own tables;
-│       │                      lapses a stale draft, drafts or redrafts this month's
+│       ├── purchase_plan.py   FEAT-089 and 090, TASK-P14-007 and 008. Daily, from
+│       │                      Meter's own tables; lapses a stale draft, verifies a
+│       │                      bought plan, drafts or redrafts this month's
 │       ├── purchase_recommendation.py  FEAT-089, TASK-P14-006. Daily, organization
 │       │                      wide; one row per type and service, a failed one written
 │       │                      with its cause beside those that answered
@@ -1644,6 +1655,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0058_purchase_plan_match.py  TASK-P14-008. A commitment pays for one plan
+│       │                      line at most, a partial unique index
 │       ├── 0057_purchase_plan.py  TASK-P14-007. Plans, lines and events, a trigger
 │       │                      refusing a transition out of order, and the cadence
 │       ├── 0056_purchase_recommendation.py  TASK-P14-006. AWS's purchase advice, and

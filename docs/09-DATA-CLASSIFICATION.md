@@ -36,7 +36,7 @@ that before there is data in it, which is the only cheap moment to do it.
 | `commitment_inventory` | O | Each commitment's term, end, payment and owning account | Life of the tenant | No |
 | `purchase_recommendation` | O | AWS's purchase advice per program, its own estimate, and any typed failure | Restated daily | Not applicable |
 | `purchase_plan`, `purchase_plan_line` | O | Meter's plan per month, the policy it was drafted under, and its modelled lines | Life of the tenant | Not applicable |
-| `purchase_plan_event` | O and **P** | Each transition with its `principal` and note; the collector's own until TASK-P14-008 lets people act | Life of the tenant | `principal` on request, from TASK-P14-008 |
+| `purchase_plan_event` | O and **P** | Each step with its `principal`, a person or the collector, and the note | Life of the tenant | `principal` on request |
 | `audit_event` | **P** | Who read what, when, and the scope evaluated | **13 months**, immutable within that window | **No.** See below |
 | `grafana_instance` | O | Workspace name, endpoint, account and region, and `credential_ref`, which is a Secrets Manager **name and never a value** | Life of the instance | Not applicable |
 | `query_definition` | O and **P** | Query text, dashboard and panel names, and `last_editor`, which is a named person | 13 months after the query was last seen | `last_editor` on request |
@@ -142,8 +142,9 @@ A request to erase a person:
 1. Anonymise their `principal` row: tombstone the name and email, hash the
    subject.
 2. Delete their `principal_scope` rows.
-3. Anonymise `collector_schedule.updated_by` and `commitment_policy.updated_by` where they name
-   them; the cadence and the policy stay, as the tenant's decisions.
+3. Anonymise `collector_schedule.updated_by`, `commitment_policy.updated_by` and
+   `purchase_plan_event.principal` where they name them; the cadence, the policy and each step of
+   a purchase plan stay, as the tenant's decisions.
 4. Tombstone their questions to the assistant and their redaction records: the
    question, answer and reason replaced, the identifier hashed, the row kept so
    the month's token spend stays true.

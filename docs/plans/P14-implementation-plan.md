@@ -252,7 +252,7 @@ daily, and TASK-P14-010 seeds them.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.2, OPEN-36 |
 | Delivers | FEAT-090 |
 | Depends on | TASK-P14-007 |
@@ -260,11 +260,20 @@ daily, and TASK-P14-010 seeds them.
 
 **Acceptance criteria.**
 
-- [ ] `POST` approve, bought and withdraw, each an event with the principal, the time and a note,
+- [x] `POST` approve, bought and withdraw, each an event with the principal, the time and a note,
       for a global principal only; a narrowed principal is refused
-- [ ] A transition out of order is refused by the database as well as the API
-- [ ] The plan collector matches a bought line to a new commitment and verifies the plan, and a
+- [x] A transition out of order is refused by the database as well as the API
+- [x] The plan collector matches a bought line to a new commitment and verifies the plan, and a
       line matched to nothing stays bought, shown as not yet seen
+
+**Delivered 2026-10-13.** `POST /v1/commitments/plans/{id}/approve`, `/bought` and `/withdraw`,
+each with a required note, made by a person whose scope is the organization and audited, a
+narrowed person refused with a 403 audited DENIED and a step out of order with a 409 that says why;
+`PurchasePlanRepository.transition`, which changes a status only if it is still what was read;
+`finops_query.purchase_plan.match`, pure, and the collector's daily verification of a bought plan's
+own month's lines against the inventory; migration `0058_purchase_plan_match`, one line per
+commitment; the steps in `GET /v1/commitments/plans`; and erasure replacing a person's name on
+their steps. What a person approves and buys is the plan's own month's tranche.
 
 ---
 
@@ -272,7 +281,7 @@ daily, and TASK-P14-010 seeds them.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 8 |
 | Delivers | FEAT-087, FEAT-088, FEAT-089, FEAT-090 |
 | Depends on | TASK-P14-004 to TASK-P14-008 |
@@ -280,11 +289,19 @@ daily, and TASK-P14-010 seeds them.
 
 **Acceptance criteria.**
 
-- [ ] The commitments screen opens on the effective savings rate and gains the inventory, the
+- [x] The commitments screen opens on the effective savings rate and gains the inventory, the
       calendar and the plans, each panel with its freshness
-- [ ] The plans panel offers approve, bought and withdraw to a principal who may take them, and
+- [x] The plans panel offers approve, bought and withdraw to a principal who may take them, and
       says why to one who may not
-- [ ] Every figure says measured or modelled; unit tests and a Playwright journey
+- [x] Every figure says measured or modelled; unit tests and a Playwright journey
+
+**Delivered 2026-10-13.** The commitments screen opens on `SavingsRatePanel`, the effective savings
+rate by billing month, and closes on `InventoryPanel`, `CalendarPanel` and `PurchasePlanPanel`, each
+with its own freshness. The three are read only for a reader whose scope is the whole organization
+with no account chosen; anyone else is told why. `PlanActions` offers only the steps the plan's
+status allows, each with a note. The Overview's savings rate tile now reads the same route, so the
+two cannot disagree. Unit tests in `CommitmentPanels.test.tsx` and a Playwright journey,
+`e2e/commitments.spec.ts`, against stubs; the seeded demo is TASK-P14-010.
 
 ---
 

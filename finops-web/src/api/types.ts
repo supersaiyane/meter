@@ -1702,3 +1702,153 @@ export interface ApiAiGpuFleet {
   readonly period: string | null;
   readonly instances: readonly ApiAiGpu[];
 }
+
+/* --- P14 commitments, FEAT-086 to FEAT-090, TASK-P14-009 ---------------------------------- */
+
+/** One billing month's effective savings rate, measured from the bill. FEAT-087. */
+export interface ApiSavingsRateMonth {
+  readonly period: string;
+  readonly effective_cost: string;
+  readonly list_cost: string;
+  /** Null where no usage line carried a List Cost, never nought for want of a denominator. */
+  readonly rate: string | null;
+  readonly rate_basis: 'measured' | 'modelled';
+  readonly lines: number;
+  readonly lines_without_list_cost: number;
+  readonly effective_cost_without_list_cost: string;
+  readonly reason: string | null;
+}
+
+export interface ApiSavingsRate {
+  readonly months: readonly ApiSavingsRateMonth[];
+}
+
+/** One commitment the organization holds, as the service that sold it says. FEAT-086. */
+export interface ApiHeldCommitment {
+  readonly kind: 'savings_plan' | 'reservation';
+  readonly commitment_id: string;
+  readonly program: string;
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly applies_to: string | null;
+  readonly quantity: number | null;
+  readonly hourly_commitment: string | null;
+  readonly term_months: number;
+  readonly payment_option: string;
+  readonly upfront_amount: string;
+  readonly recurring_hourly: string;
+  readonly currency: string;
+  readonly starts_at: string;
+  readonly ends_at: string;
+  readonly state: string;
+}
+
+export interface ApiCommitmentInventory {
+  readonly commitments: readonly ApiHeldCommitment[];
+  /** Reserved services no API reads, named so none reads as none held, ISS-295. */
+  readonly unreadable: readonly string[];
+}
+
+/** What ends in one month and its share of the hourly commitment held. FEAT-088. */
+export interface ApiCalendarMonth {
+  readonly month: string;
+  readonly commitments: readonly string[];
+  readonly hourly_value: string;
+  readonly share: string | null;
+  readonly basis: 'measured' | 'modelled';
+  readonly over_limit: boolean;
+}
+
+export interface ApiCommitmentCalendar {
+  readonly months: readonly ApiCalendarMonth[];
+  readonly ladder_limit: string;
+  readonly total_hourly_value: string;
+  readonly total_basis: 'measured' | 'modelled';
+}
+
+/** One purchase in one tranche of Meter's plan. Every figure modelled. FEAT-089. */
+export interface ApiPlanLine {
+  readonly line_no: number;
+  readonly program: string;
+  readonly instance_family: string | null;
+  readonly region_id: string | null;
+  readonly tranche_month: string;
+  readonly hourly_commitment: string;
+  readonly discount_percent: string;
+  readonly covers_hourly: string;
+  readonly monthly_saving: string;
+  readonly usage_floor_percent: string;
+  readonly upfront_cost: string;
+  readonly matched_commitment_id: string | null;
+  readonly basis: 'modelled';
+}
+
+export interface ApiUnpricedShare {
+  readonly instance_family: string | null;
+  readonly region_id: string | null;
+  readonly steady_hourly: string;
+  readonly reason: string;
+}
+
+export type ApiPlanStatus =
+  'DRAFT' | 'APPROVED' | 'BOUGHT' | 'VERIFIED' | 'WITHDRAWN' | 'LAPSED';
+
+export interface ApiPurchasePlan {
+  readonly plan_id: string;
+  readonly plan_month: string;
+  readonly status: ApiPlanStatus;
+  readonly target_coverage: string;
+  readonly term_years: number;
+  readonly payment_option: string;
+  readonly ladder_limit: string;
+  readonly window_start: string;
+  readonly window_end: string;
+  readonly days_held: number;
+  readonly steady_hourly: string | null;
+  readonly held_hourly: string | null;
+  readonly target_hourly: string | null;
+  readonly beyond_hourly: string | null;
+  readonly no_purchase_reason: string | null;
+  readonly currency: string;
+  readonly unpriced: readonly ApiUnpricedShare[];
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** The provider's own recommendation; its saving is its own estimate. FEAT-089. */
+export interface ApiProviderRecommendation {
+  readonly kind: 'savings_plan' | 'reservation';
+  readonly program: string;
+  readonly term_years: number;
+  readonly payment_option: string;
+  readonly lookback_days: number;
+  readonly recommended: boolean | null;
+  readonly hourly_commitment: string | null;
+  readonly units: string | null;
+  readonly estimated_monthly_savings: string | null;
+  readonly estimated_savings_percent: string | null;
+  readonly upfront_cost: string | null;
+  readonly currency: string | null;
+  readonly failure_cause: string | null;
+  readonly failure_detail: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** One step of a plan's lifecycle and who took it. FEAT-090. */
+export interface ApiPlanEvent {
+  readonly from_status: ApiPlanStatus | null;
+  readonly to_status: ApiPlanStatus;
+  readonly principal: string;
+  readonly at: string;
+  readonly note: string | null;
+}
+
+export interface ApiPurchasePlans {
+  readonly plan: ApiPurchasePlan | null;
+  readonly no_plan_reason: string | null;
+  readonly lines: readonly ApiPlanLine[];
+  readonly provider: readonly ApiProviderRecommendation[];
+  readonly difference: readonly string[];
+  readonly events: readonly ApiPlanEvent[];
+}

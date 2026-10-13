@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse
@@ -19,9 +20,11 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.commitments import (
     CommitmentInventoryRepository,
     CommitmentPolicyRepository,
+    PurchasePlanEventRepository,
     PurchasePlanLineRepository,
     PurchasePlanRepository,
     PurchaseRecommendationRepository,
+    TransitionRefusedError,
 )
 from finops_api.db.repositories.cost import CostRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
@@ -36,7 +39,9 @@ from finops_api.schemas import (
     Envelope,
     HeldCommitmentOut,
     Meta,
+    PlanEventOut,
     PlanLineOut,
+    PlanTransitionIn,
     ProviderRecommendationOut,
     PurchasePlanOut,
     PurchasePlansOut,
@@ -59,6 +64,7 @@ from finops_query.savings_rate import savings_rate
 router = APIRouter(prefix=API_PREFIX, tags=["commitments"])
 
 NO_PLAN_YET = "No plan has been drafted yet; the purchase plan collector drafts one a day."
+NO_SUCH_PLAN = "No purchase plan has that identifier."
 
 MONTHS = Query(default=12, ge=1, le=36, description="How many billing months, the newest last.")
 
@@ -309,8 +315,83 @@ def commitments_plans(
     """Meter's plan for the newest month beside the provider's, and why they differ. FEAT-089."""
     _payer_only(scope)
     plan = PurchasePlanRepository(connection, context).current(scope)
+    return _plans(connection, scope, context, plan)
+
+
+@router.post("/commitments/plans/{plan_id}/approve", response_model=Envelope[PurchasePlansOut])
+def approve_plan(
+    plan_id: UUID,
+    body: PlanTransitionIn,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[PurchasePlansOut] | JSONResponse:
+    """Approve a draft, with a note. A person whose scope is the organization only. FEAT-090."""
+    return _transition(connection, scope, context, plan_id, "APPROVED", body)
+
+
+@router.post("/commitments/plans/{plan_id}/bought", response_model=Envelope[PurchasePlansOut])
+def record_plan_bought(
+    plan_id: UUID,
+    body: PlanTransitionIn,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[PurchasePlansOut] | JSONResponse:
+    """Record that a person bought an approved plan in AWS. Meter never buys, constraint 6."""
+    return _transition(connection, scope, context, plan_id, "BOUGHT", body)
+
+
+@router.post("/commitments/plans/{plan_id}/withdraw", response_model=Envelope[PurchasePlansOut])
+def withdraw_plan(
+    plan_id: UUID,
+    body: PlanTransitionIn,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[PurchasePlansOut] | JSONResponse:
+    """Withdraw a draft or an approved plan, with a note saying why. FEAT-090."""
+    return _transition(connection, scope, context, plan_id, "WITHDRAWN", body)
+
+
+def _transition(
+    connection: Connection,
+    scope: Scope,
+    context: AccessContext,
+    plan_id: UUID,
+    to_status: str,
+    body: PlanTransitionIn,
+) -> Envelope[PurchasePlansOut] | JSONResponse:
+    """A person's step, audited. Refusals are answered rather than raised, so the DENIED audit row
+    is not rolled back with the request, as the policy's change does."""
+    repository = PurchasePlanRepository(connection, context)
+    if not scope.is_global or scope.principal_id is None:
+        repository.refuse(scope, to_status)
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": NEEDS_THE_PAYER}
+        )
+    try:
+        plan = repository.transition(
+            scope, plan_id, to_status=to_status, note=body.note.strip(), at=datetime.now(UTC)
+        )
+    except TransitionRefusedError as refusal:
+        return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"detail": str(refusal)})
+    if plan is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NO_SUCH_PLAN)
+    return _plans(connection, scope, context, plan)
+
+
+def _plans(
+    connection: Connection, scope: Scope, context: AccessContext, plan: Any | None
+) -> Envelope[PurchasePlansOut]:
+    """One plan with its lines and steps, beside the provider's recommendations."""
     lines = (
         PurchasePlanLineRepository(connection, context).of(scope, plan.plan_id)
+        if plan is not None
+        else ()
+    )
+    events = (
+        PurchasePlanEventRepository(connection, context).of(scope, plan.plan_id)
         if plan is not None
         else ()
     )
@@ -321,12 +402,13 @@ def commitments_plans(
         lines=[_fields(PlanLineOut, row, skip={"basis"}) for row in lines],
         provider=[_fields(ProviderRecommendationOut, row) for row in advice],
         difference=list(_difference(plan, lines, advice)) if plan is not None else [],
+        events=[_fields(PlanEventOut, row) for row in events],
     )
     facts = [*([plan] if plan is not None else []), *advice]
     return Envelope(data=found, meta=_payer_meta(connection, scope, context, facts))
 
 
-def _fields[Model: PlanLineOut | ProviderRecommendationOut](
+def _fields[Model: PlanLineOut | ProviderRecommendationOut | PlanEventOut](
     model: type[Model], row: Any, skip: frozenset[str] | set[str] = frozenset()
 ) -> Model:
     return model(**{name: getattr(row, name) for name in model.model_fields if name not in skip})

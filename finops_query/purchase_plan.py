@@ -27,7 +27,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import ROUND_DOWN, Decimal
 from typing import Final
 
@@ -533,3 +533,79 @@ def difference(
     elif read:
         said.append("The provider recommends buying no Savings Plan.")
     return tuple(said)
+
+
+#: How close a commitment's hourly amount must be to a bought line's to be the purchase, spec 5.2.
+MATCH_TOLERANCE: Final = Decimal("0.01")
+
+
+@dataclass(frozen=True)
+class Bought:
+    """A bought line waiting to be seen in the inventory, with what the purchase must look like."""
+
+    plan_id: Hashable
+    line_no: int
+    program: str
+    family: str | None
+    region: str | None
+    hourly_commitment: Decimal
+    term_months: int
+    payment_option: str
+    approved_at: datetime
+
+
+@dataclass(frozen=True)
+class Seen:
+    """A Savings Plan the inventory holds that no line has been matched to yet."""
+
+    commitment_id: str
+    program: str
+    family: str | None
+    region: str | None
+    hourly_commitment: Decimal
+    term_months: int
+    payment_option: str
+    starts_at: datetime
+
+
+def match(lines: Iterable[Bought], seen: Iterable[Seen]) -> dict[tuple[Hashable, int], str]:
+    """Each bought line's commitment, where the inventory holds one that is the purchase.
+
+    TASK-P14-008, spec section 5.2. The same program, term and payment option, the same family and
+    Region for a family bound line, an hourly amount within `MATCH_TOLERANCE` of the line's, and a
+    start after the plan was approved, so a commitment bought before anyone approved the plan is
+    never taken for it. Each commitment is matched once, to the line it is closest to, and a line
+    with nothing that fits stays unmatched rather than taking the nearest thing.
+    """
+    unused = list(seen)
+    found: dict[tuple[Hashable, int], str] = {}
+    for line in sorted(lines, key=lambda one: (str(one.plan_id), one.line_no)):
+        fits = [one for one in unused if _fits(line, one)]
+        if not fits:
+            continue
+        best = min(
+            fits,
+            key=lambda one: (
+                abs(one.hourly_commitment - line.hourly_commitment),
+                one.commitment_id,
+            ),
+        )
+        unused.remove(best)
+        found[(line.plan_id, line.line_no)] = best.commitment_id
+    return found
+
+
+def _fits(line: Bought, one: Seen) -> bool:
+    if (one.program, one.term_months, one.payment_option) != (
+        line.program,
+        line.term_months,
+        line.payment_option,
+    ):
+        return False
+    if line.program == FAMILY_BOUND and (one.family, one.region) != (line.family, line.region):
+        return False
+    if one.starts_at < line.approved_at:
+        return False
+    return abs(one.hourly_commitment - line.hourly_commitment) <= (
+        MATCH_TOLERANCE * line.hourly_commitment
+    )

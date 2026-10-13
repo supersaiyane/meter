@@ -370,3 +370,196 @@ def test_the_plans_lines_export_as_a_file(
     response = client.get(f"{PLANS}?format=csv", headers=auth(token))
     assert response.status_code == 200
     assert "EC2Instance" in response.text
+
+
+# --- TASK-P14-008: approval, the purchase recorded, and verification ----------------------------
+
+
+def plan_of(engine: Engine, tenant: UUID) -> UUID:
+    from sqlalchemy import text
+
+    with engine.connect() as connection:
+        plan: UUID = connection.execute(
+            text("SELECT plan_id FROM purchase_plan WHERE tenant_id = :t"), {"t": tenant}
+        ).scalar_one()
+        return plan
+
+
+def step(client: Any, token: str, plan: UUID, action: str, note: str = "Within the ladder") -> Any:
+    from tests.api.test_query_routes import auth
+
+    return client.post(f"{PLANS}/{plan}/{action}", json={"note": note}, headers=auth(token))
+
+
+def audited(engine: Engine, tenant: UUID) -> list[tuple[str, str]]:
+    from sqlalchemy import text
+
+    with engine.connect() as connection:
+        return [
+            (row.action, row.outcome)
+            for row in connection.execute(
+                text(
+                    "SELECT action, outcome FROM audit_event WHERE tenant_id = :t "
+                    "AND resource = 'purchase_plan' AND action LIKE 'plan.%' ORDER BY action"
+                ),
+                {"t": tenant},
+            )
+        ]
+
+
+def test_a_person_approves_and_records_a_plan_bought_each_step_named(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    client, token = client_for(engine, as_owner(planned), settings)
+    plan = plan_of(engine, planned)
+    approved = step(client, token, plan, "approve")
+    assert approved.status_code == 200, approved.text
+    assert approved.json()["data"]["plan"]["status"] == "APPROVED"
+    bought = step(client, token, plan, "bought", "Bought in the console by the payer")
+    assert bought.status_code == 200, bought.text
+    data = bought.json()["data"]
+    assert data["plan"]["status"] == "BOUGHT"
+    assert [(one["from_status"], one["to_status"]) for one in data["events"]] == [
+        (None, "DRAFT"),
+        ("DRAFT", "APPROVED"),
+        ("APPROVED", "BOUGHT"),
+    ]
+    # Both steps carry the person who signed in, never the collector that drafted the plan.
+    people = {one["principal"] for one in data["events"][1:]}
+    assert len(people) == 1 and data["events"][0]["principal"] not in people
+    assert data["events"][-1]["note"] == "Bought in the console by the payer"
+    assert audited(engine, planned) == [("plan.approved", "ALLOWED"), ("plan.bought", "ALLOWED")]
+
+
+def test_a_step_out_of_order_is_refused_and_says_why(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    client, token = client_for(engine, as_owner(planned), settings)
+    response = step(client, token, plan_of(engine, planned), "bought")
+    assert response.status_code == 409
+    assert response.json()["detail"] == "This plan is draft, so it cannot be recorded as bought."
+
+
+def test_a_withdrawn_plan_cannot_be_approved(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    client, token = client_for(engine, as_owner(planned), settings)
+    plan = plan_of(engine, planned)
+    withdrawn = step(client, token, plan, "withdraw", "Usage is moving to containers")
+    assert withdrawn.json()["data"]["plan"]["status"] == "WITHDRAWN"
+    assert step(client, token, plan, "approve").status_code == 409
+
+
+def test_a_narrowed_person_cannot_approve_and_the_refusal_is_audited(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    from finops_core.domain.tenant import Scope
+
+    narrowed = only(planned, ACCOUNT)
+    scope = Scope(
+        tenant_id=planned, is_global=False, accounts=narrowed.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, scope, settings)
+    assert step(client, token, plan_of(engine, planned), "approve").status_code == 403
+    assert audited(engine, planned) == [("plan.approved", "DENIED")]
+
+
+def test_an_unknown_plan_is_not_found_and_a_note_is_required(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    from finops_api.routes.commitments import NO_SUCH_PLAN
+
+    client, token = client_for(engine, as_owner(planned), settings)
+    missing = step(client, token, uuid4(), "approve")
+    assert (missing.status_code, missing.json()["detail"]) == (404, NO_SUCH_PLAN)
+    assert step(client, token, plan_of(engine, planned), "approve", note="").status_code == 422
+
+
+def hold(engine: Engine, tenant: UUID, commitment: str, hourly: Decimal, family: str) -> None:
+    """A Savings Plan the inventory holds, bought a minute after now."""
+    from datetime import UTC, datetime
+
+    from sqlalchemy import text
+
+    from tests.ingest.collectors.test_purchase_plan import REGION
+
+    start = datetime.now(UTC) + timedelta(minutes=1)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO commitment_inventory (tenant_id, ingest_run_id, kind, commitment_id, "
+                "program, account_id, region_id, applies_to, quantity, hourly_commitment, "
+                "term_months, payment_option, upfront_amount, recurring_hourly, currency, "
+                "starts_at, ends_at, state, as_of, collected_at) VALUES (:t, :run, "
+                "'savings_plan', :id, 'EC2Instance', 'fake-platform-a', :region, :family, NULL, "
+                ":hourly, 12, 'No Upfront', 0, :hourly, 'USD', :start, :end, 'active', :start, "
+                ":start)"
+            ),
+            {
+                "t": tenant,
+                "run": uuid4(),
+                "id": commitment,
+                "region": REGION,
+                "family": family,
+                "hourly": hourly,
+                "start": start,
+                "end": start + timedelta(days=365),
+            },
+        )
+
+
+def this_months_lines(engine: Engine, plan: UUID) -> list[Any]:
+    from sqlalchemy import text
+
+    with engine.connect() as connection:
+        return list(
+            connection.execute(
+                text(
+                    "SELECT l.line_no, l.hourly_commitment, l.matched_commitment_id "
+                    "FROM purchase_plan_line l JOIN purchase_plan p ON p.plan_id = l.plan_id "
+                    "WHERE l.plan_id = :plan AND l.tranche_month = p.plan_month"
+                ),
+                {"plan": plan},
+            )
+        )
+
+
+def settle(engine: Engine, tenant: UUID) -> None:
+    from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
+    from tests.ingest.collectors.test_purchase_plan import NOW, run
+
+    run(engine, tenant, PurchasePlanCollector(clock=lambda: NOW))
+
+
+def test_a_bought_plan_is_verified_once_the_inventory_holds_its_purchase(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    from finops_ingest.collectors.purchase_plan import PRINCIPAL
+
+    client, token = client_for(engine, as_owner(planned), settings)
+    plan = plan_of(engine, planned)
+    step(client, token, plan, "approve")
+    step(client, token, plan, "bought")
+    for line in this_months_lines(engine, plan):
+        hold(engine, planned, f"sp-bought-{line.line_no}", line.hourly_commitment, "m6i")
+    settle(engine, planned)
+    data = get(client, token, PLANS)["data"]
+    assert data["plan"]["status"] == "VERIFIED"
+    steps = [(one["from_status"], one["to_status"], one["principal"]) for one in data["events"]]
+    assert ("BOUGHT", "VERIFIED", PRINCIPAL) in steps
+    assert all(line.matched_commitment_id for line in this_months_lines(engine, plan))
+
+
+def test_a_bought_line_nothing_matches_stays_bought_and_unseen(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    client, token = client_for(engine, as_owner(planned), settings)
+    plan = plan_of(engine, planned)
+    step(client, token, plan, "approve")
+    step(client, token, plan, "bought")
+    # Bought in the wrong family, so it is not this plan's purchase.
+    for line in this_months_lines(engine, plan):
+        hold(engine, planned, f"sp-other-{line.line_no}", line.hourly_commitment, "c6i")
+    settle(engine, planned)
+    assert get(client, token, PLANS)["data"]["plan"]["status"] == "BOUGHT"
+    assert not any(line.matched_commitment_id for line in this_months_lines(engine, plan))

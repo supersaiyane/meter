@@ -16,6 +16,21 @@ const META = {
   failures: [],
 };
 
+/** A billing month whose usage lines carry no List Cost, as the savings rate route says it. */
+export const NO_LIST_COST_MONTH = {
+  period: '2026-09-01',
+  effective_cost: '0',
+  list_cost: '0',
+  rate: null,
+  rate_basis: 'measured',
+  lines: 412,
+  lines_without_list_cost: 412,
+  effective_cost_without_list_cost: '3781.93',
+  reason:
+    'No usage line this month carries a List Cost, so there is no on demand equivalent to ' +
+    'measure the rate against',
+};
+
 /** The rightsizing the journeys open, with a target and its alternatives. TASK-P9-010. */
 export const RIGHTSIZED = '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f';
 
@@ -326,6 +341,13 @@ export async function demoEstate(page: Page): Promise<void> {
   });
 
   await stubAi(page);
+
+  // FEAT-087, TASK-P14-009. The demo bill carries no List Cost, so the effective savings rate
+  // has no figure and says why, in the API's own words, on the overview and on commitments.
+  await stub(page, '/api/v1/commitments/savings-rate', {
+    data: { months: [NO_LIST_COST_MONTH] },
+    meta: META,
+  });
 
   await stub(page, '/api/v1/savings/ledger', {
     data: { teams: LEDGER_TEAMS },

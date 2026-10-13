@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ArrivingRail, HomeScreen, type SlotDef } from '../HomeScreen';
 import { PERSONA_KEY } from '../personas';
 import { Harness } from './Harness';
-import { clientReturning, exploreOf, metaOf } from './fixtures';
+import { clientReturning, metaOf } from './fixtures';
 import { costBudgetsFixture } from '../../api/fixtures/cost';
 import { violationsIn } from '../../components/__tests__/axe';
 import type { ApiClient } from '../../api/client';
@@ -179,6 +179,9 @@ describe('HomeScreen', () => {
     renderHome({}, recording);
     await meterCostShown();
     expect([...new Set(asked.map((path) => path.split('?')[0]))].sort()).toEqual([
+      // `useSavingsRate`, the commitments screen's own headline, by its own twelve months, so
+      // the two share one answer. FEAT-087.
+      '/api/v1/commitments/savings-rate',
       // `useCostAllocation`, the allocation screen's own hook, by its default tag.
       '/api/v1/cost/allocation',
       // `useCostAnomalies`, the anomalies screen's own hook.
@@ -202,6 +205,7 @@ describe('HomeScreen', () => {
     ]);
     // The Explorer's own default view, under its own key, so the two share one answer.
     expect(asked).toContain('/api/v1/cost/explore');
+    expect(asked).toContain('/api/v1/commitments/savings-rate?months=12');
   });
 
   it('shows the budget furthest ahead of its calendar, not the biggest one', async () => {
@@ -217,13 +221,27 @@ describe('HomeScreen', () => {
 
   it('says why a figure the data cannot support has none', async () => {
     const withoutListCost = {
-      data: exploreOf({ metrics_available: ['effective_cost', 'billed_cost'] }),
+      data: {
+        months: [
+          {
+            period: '2026-10-01',
+            effective_cost: '0',
+            list_cost: '0',
+            rate: null,
+            rate_basis: 'measured',
+            lines: 3,
+            lines_without_list_cost: 3,
+            effective_cost_without_list_cost: '12.00',
+            reason: 'No usage line this month carries a List Cost',
+          },
+        ],
+      },
       meta: metaOf(),
     };
-    renderHome({ '/api/v1/cost/explore': withoutListCost });
+    renderHome({ '/api/v1/commitments/savings-rate?months=12': withoutListCost });
     const rate = tile('Effective savings rate');
     expect(await within(rate).findByTestId('kpi-unsupported')).toHaveTextContent(
-      'The bill carries no List Cost',
+      'carries a List Cost',
     );
     expect(within(rate).queryByTestId('kpi-value')).toBeNull();
   });

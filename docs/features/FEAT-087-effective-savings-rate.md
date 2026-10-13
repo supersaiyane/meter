@@ -20,7 +20,7 @@ Utilization and coverage say how well a commitment is used and how much is cover
 
 ## How it works
 
-Built: the API, TASK-P14-004; the screen follows in TASK-P14-009. `CostRepository.savings_rate_months`
+Built: the API, TASK-P14-004, and the screen, TASK-P14-009. `CostRepository.savings_rate_months`
 sums, per billing month, Effective Cost and List Cost over the cloud bill's usage lines that carry a
 List Cost, and counts the lines that carry none with what they cost. `finops_query/savings_rate.py`
 makes the rate, one minus Effective over List Cost, to a hundredth of a percent; a month whose lines
@@ -48,7 +48,7 @@ Scoped by account as the bill is; a narrowed reader sees the rate of their accou
 
 ## Interface
 
-`GET /v1/commitments/savings-rate`, and the headline of the commitments screen.
+`GET /v1/commitments/savings-rate`, and the headline of the commitments screen, built in TASK-P14-009: the newest month's rate, or the API's reason where it has none, and every month with both sums. The Overview's savings rate tile reads the same route by the same twelve months, so the two screens share one answer and cannot disagree.
 
 ## Not doing
 
