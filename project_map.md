@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 59 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 40 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 56 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 271 | test_*.py under tests/ |
-| Test functions | 3220 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 57 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 273 | test_*.py under tests/ |
+| Test functions | 3257 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1276,6 +1276,8 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── purchase_plan.py   FEAT-089, TASK-P14-007. Daily, from Meter's own tables;
+│       │                      lapses a stale draft, drafts or redrafts this month's
 │       ├── purchase_recommendation.py  FEAT-089, TASK-P14-006. Daily, organization
 │       │                      wide; one row per type and service, a failed one written
 │       │                      with its cause beside those that answered
@@ -1642,6 +1644,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0057_purchase_plan.py  TASK-P14-007. Plans, lines and events, a trigger
+│       │                      refusing a transition out of order, and the cadence
 │       ├── 0056_purchase_recommendation.py  TASK-P14-006. AWS's purchase advice, and
 │       │                      the collector's cadence at a modelled USD 0.08 a run
 │       ├── 0055_commitment_policy.py  TASK-P14-005. What purchase plans aim for, the
@@ -1813,6 +1817,9 @@ meter/
 │   │                          model named in a log matched to the bill's name, tokens
 │   │                          measured from the bill or modelled from a usage report,
 │   │                          a caller's cost at the bill's unit cost, the GPU fleet
+│   ├── purchase_plan.py       FEAT-089, TASK-P14-007. Meter's plan, pure: the steady
+│   │                          baseline, split by stability, OPEN-40, P9's rates, the
+│   │                          policy's target less what is held, and the ladder
 │   ├── commitment_calendar.py FEAT-088, TASK-P14-005. What ends each month and its share
 │   │                          of the hourly commitment, against the ladder limit
 │   ├── savings_rate.py        FEAT-087, TASK-P14-004. One minus Effective over List

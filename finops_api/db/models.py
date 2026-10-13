@@ -2072,6 +2072,78 @@ purchase_recommendation = Table(
     ),
 )
 
+#: P14, FEAT-089, migration 0057. Meter's purchase plan, one per tenant per month, its lines and
+#: the events of its lifecycle. Payer wide, ADR-0025. The trigger refusing a transition out of
+#: order lives in the migration, constraint 11.
+PLAN_STATUSES = ("DRAFT", "APPROVED", "BOUGHT", "VERIFIED", "WITHDRAWN", "LAPSED")
+
+purchase_plan = Table(
+    "purchase_plan",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("plan_month", Date, nullable=False),
+    Column("status", Text, nullable=False, server_default="DRAFT"),
+    Column("target_coverage", Numeric(4, 3), nullable=False),
+    Column("term_years", Integer, nullable=False),
+    Column("payment_option", Text, nullable=False),
+    Column("ladder_limit", Numeric(5, 4), nullable=False),
+    Column("window_start", Date, nullable=False),
+    Column("window_end", Date, nullable=False),
+    Column("days_held", Integer, nullable=False),
+    Column("steady_hourly", Numeric(20, 4)),
+    Column("held_hourly", Numeric(20, 4)),
+    Column("target_hourly", Numeric(20, 4)),
+    Column("beyond_hourly", Numeric(20, 4)),
+    Column("unpriced", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    Column("no_purchase_reason", Text),
+    Column("currency", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "plan_month", name="uq_purchase_plan__month"),
+    CheckConstraint(
+        "status IN ('DRAFT', 'APPROVED', 'BOUGHT', 'VERIFIED', 'WITHDRAWN', 'LAPSED')",
+        name="ck_purchase_plan__status",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_purchase_plan__collected_after_true"),
+)
+
+purchase_plan_line = Table(
+    "purchase_plan_line",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), ForeignKey("purchase_plan.plan_id"), primary_key=True),
+    Column("line_no", Integer, primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("program", Text, nullable=False),
+    Column("instance_family", Text),
+    Column("region_id", Text),
+    Column("tranche_month", Date, nullable=False),
+    Column("hourly_commitment", Numeric(20, 3), nullable=False),
+    Column("discount_percent", Numeric(7, 4), nullable=False),
+    Column("covers_hourly", Numeric(20, 4), nullable=False),
+    Column("monthly_saving", Numeric(20, 2), nullable=False),
+    Column("usage_floor_percent", Numeric(5, 1), nullable=False),
+    Column("upfront_cost", Numeric(20, 2), nullable=False),
+    Column("matched_commitment_id", Text),
+    CheckConstraint("program IN ('Compute', 'EC2Instance')", name="ck_purchase_plan_line__program"),
+    CheckConstraint("hourly_commitment > 0", name="ck_purchase_plan_line__buys_something"),
+)
+
+purchase_plan_event = Table(
+    "purchase_plan_event",
+    metadata,
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column("plan_id", UUID(as_uuid=True), ForeignKey("purchase_plan.plan_id"), nullable=False),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("from_status", Text),
+    Column("to_status", Text, nullable=False),
+    Column("principal", Text, nullable=False),
+    Column("at", DateTime(timezone=True), nullable=False),
+    Column("note", Text),
+    Index("ix_purchase_plan_event__plan", "plan_id", "at"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept

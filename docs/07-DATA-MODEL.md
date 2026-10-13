@@ -1299,6 +1299,45 @@ A read that failed is a row with its cause and no figures, so one service Cost E
 seen beside the ones that answered and never drawn as advice to buy nothing. A run restates every
 row; a type or service no longer asked about leaves.
 
+### Meter's purchase plans, P14
+
+```sql
+-- P14, FEAT-089, migration 0057. One plan per tenant per month, its lines and its lifecycle.
+-- Payer wide, ADR-0025. Every figure modelled.
+CREATE TABLE purchase_plan (
+    plan_id             UUID           PRIMARY KEY,
+    tenant_id           UUID           NOT NULL REFERENCES tenant(tenant_id),
+    plan_month          DATE           NOT NULL,   -- the first of the month; unique per tenant
+    status              TEXT           NOT NULL,   -- DRAFT APPROVED BOUGHT VERIFIED WITHDRAWN LAPSED
+    target_coverage, term_years, payment_option, ladder_limit,   -- the policy it was drafted under
+    window_start, window_end, days_held,   -- the bill it was drawn from
+    steady_hourly, held_hourly, target_hourly, beyond_hourly,   -- null where too few days
+    unpriced            JSONB          NOT NULL,   -- shares no rate prices, each with why
+    no_purchase_reason  TEXT,
+    as_of, collected_at
+);
+CREATE TABLE purchase_plan_line (
+    plan_id, line_no,                       -- primary key
+    program             TEXT  NOT NULL,     -- EC2Instance with a family and Region, or Compute
+    instance_family, region_id,             -- both or neither, by program
+    tranche_month       DATE  NOT NULL,     -- this month, or a later tranche
+    hourly_commitment, discount_percent, covers_hourly, monthly_saving, usage_floor_percent,
+    upfront_cost,
+    matched_commitment_id                   -- TASK-P14-008
+);
+CREATE TABLE purchase_plan_event (
+    event_id, plan_id, tenant_id,
+    from_status, to_status,                 -- a check allows only the lifecycle's transitions
+    principal           TEXT  NOT NULL,     -- a person, or collector:purchase_plan
+    at, note
+);
+```
+
+A trigger on `purchase_plan` refuses an insert that is not a draft and a change of status the
+lifecycle does not allow, so no path can write a plan bought before it was approved, constraint 11.
+The collector redrafts a draft in place, replacing its lines, and lapses a draft from an earlier
+month; a plan in any other status is left as it is.
+
 ### AI provider organizations, P13
 
 ```sql
