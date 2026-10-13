@@ -15,10 +15,11 @@ the reason, and nothing runs on something invented.
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 from typing import Any, Final
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.commitments import EC2, RDS
+from finops_core.domain.commitments import EC2, ELASTICACHE, MEMORYDB, OPENSEARCH, RDS, REDSHIFT
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
@@ -170,6 +171,22 @@ def _commitment(context: CollectorContext) -> CollectorRunner:
     )
 
 
+#: Each reserved service read through the relay, ADR-0037, and the name the relay knows it by.
+RELAYED_RESERVATIONS: Final = {
+    RDS: "rds",
+    ELASTICACHE: "elasticache",
+    OPENSEARCH: "opensearch",
+    REDSHIFT: "redshift",
+    MEMORYDB: "memorydb",
+}
+
+
+def _relayed_reservations(
+    relayed: Callable[[str, str, str], Any], service: str, account: str, region: str
+) -> Any:
+    return relayed(service, region, account)
+
+
 def _commitment_inventory(context: CollectorContext) -> CollectorRunner:
     # Each account's own commitments, as its collector role: Savings Plans and RDS reservations
     # through the relay, ADR-0037, EC2 reservations through the EC2 endpoint, FEAT-086.
@@ -187,7 +204,10 @@ def _commitment_inventory(context: CollectorContext) -> CollectorRunner:
         savings_plans_for=lambda account: relayed("savingsplans", GLOBAL_REGION, account),
         reservations_for={
             EC2: lambda _account, region: ec2("ec2", region),
-            RDS: lambda account, region: relayed("rds", region, account),
+            **{
+                program: partial(_relayed_reservations, relayed, service)
+                for program, service in RELAYED_RESERVATIONS.items()
+            },
         },
     )
     return CommitmentInventoryCollector(holdings, first_region=settings.region_list[0])

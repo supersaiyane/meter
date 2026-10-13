@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1184 public symbols across 5 packages.
+1185 public symbols across 5 packages.
 
 ## finops_core
 
@@ -66,8 +66,8 @@ a duplicate.
 | `PriceSheet` | class | `finops_core/domain/catalog.py:190` | Every price of one version of one service in one Region, read together. TASK-P9-012. | `finops_providers/aws/savings_plans.py` |
 | `SpotPrice` | class | `finops_core/domain/catalog.py:208` | One spot price reading for one pool, as EC2 recorded it. TASK-P9-013. | `finops_providers/aws/spot.py` |
 | `SpotPrice.pool` | method | `finops_core/domain/catalog.py:231` |  | nothing in this tree |
-| `HeldCommitment` | class | `finops_core/domain/commitments.py:49` | One commitment, as the service that sold it describes it. | `finops_providers/aws/commitment_inventory.py` |
-| `term_months` | function | `finops_core/domain/commitments.py:97` | A term in seconds, as both sources give it, in whole months: a year is twelve. | `finops_providers/aws/commitment_inventory.py` |
+| `HeldCommitment` | class | `finops_core/domain/commitments.py:56` | One commitment, as the service that sold it describes it. | `finops_providers/aws/commitment_inventory.py` |
+| `term_months` | function | `finops_core/domain/commitments.py:104` | A term in seconds, as both sources give it, in whole months: a year is twelve. | `finops_providers/aws/commitment_inventory.py` |
 | `LaunchType` | class | `finops_core/domain/containers.py:45` | Where a workload's compute comes from, which decides how it gets resized. | nothing in this tree |
 | `OomStatus` | class | `finops_core/domain/containers.py:58` | Whether a workload has been killed for running out of memory. | nothing in this tree |
 | `OomStatus.from_observation` | method | `finops_core/domain/containers.py:73` | Map a nullable reading, which is how the column and the fake both hold it. | `finops_api/routes/waste.py` |
@@ -393,9 +393,10 @@ a duplicate.
 | `CostExplorerCommitmentReport.utilization` | method | `finops_providers/aws/commitment.py:217` |  | `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/gpu_utilization.py` |
 | `CostExplorerCommitmentReport.coverage` | method | `finops_providers/aws/commitment.py:230` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
 | `CostExplorerCommitmentReport.daily` | method | `finops_providers/aws/commitment.py:405` | Each kind's use and coverage per day, four requests for the whole window. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/spot_prices.py` |
-| `AwsCommitmentHoldings` | class | `finops_providers/aws/commitment_inventory.py:170` | `CommitmentHoldings` over Savings Plans and the reserved services, as each account's role. | `finops_ingest/aws_bindings.py` |
-| `AwsCommitmentHoldings.savings_plans` | method | `finops_providers/aws/commitment_inventory.py:189` |  | `finops_ingest/collectors/commitment_inventory.py` |
-| `AwsCommitmentHoldings.reservations` | method | `finops_providers/aws/commitment_inventory.py:199` |  | `finops_api/routes/waste.py`, `finops_ingest/collectors/commitment_inventory.py`, `finops_ingest/collectors/container_usage.py` |
+| `ReservedService` | class | `finops_providers/aws/commitment_inventory.py:113` | Where one reserved service keeps each field, which differs from service to service. | nothing in this tree |
+| `AwsCommitmentHoldings` | class | `finops_providers/aws/commitment_inventory.py:228` | `CommitmentHoldings` over Savings Plans and the reserved services, as each account's role. | `finops_ingest/aws_bindings.py` |
+| `AwsCommitmentHoldings.savings_plans` | method | `finops_providers/aws/commitment_inventory.py:247` |  | `finops_ingest/collectors/commitment_inventory.py` |
+| `AwsCommitmentHoldings.reservations` | method | `finops_providers/aws/commitment_inventory.py:257` |  | `finops_api/routes/waste.py`, `finops_ingest/collectors/commitment_inventory.py`, `finops_ingest/collectors/container_usage.py` |
 | `ConfigAggregatorInventory` | class | `finops_providers/aws/config_inventory.py:236` | One aggregator query per slice, paginated, with a bounded retry. | `finops_ingest/aws_bindings.py` |
 | `ConfigAggregatorInventory.enrolled_slices` | method | `finops_providers/aws/config_inventory.py:272` | Every slice this source is expected to read, from configuration. | nothing in this tree |
 | `ConfigAggregatorInventory.read_slice` | method | `finops_providers/aws/config_inventory.py:281` | One account and region of the graph, with what was missed named. | `finops_ingest/collectors/inventory.py`, `finops_ingest/collectors/topology.py` |
@@ -503,7 +504,7 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `active_accounts` | function | `finops_ingest/accounts.py:23` | The tenant's ACTIVE AWS accounts, in account id order. | `finops_ingest/aws_bindings.py`, `finops_ingest/processes.py` |
 | `connected` | function | `finops_ingest/ai_accounts.py:22` | This tenant's active organizations of one provider, in a stable order. | `finops_ingest/collectors/ai_providers.py` |
-| `enrolled` | function | `finops_ingest/aws_bindings.py:135` | The tenant's active accounts, each in every configured Region and globally. | nothing in this tree |
+| `enrolled` | function | `finops_ingest/aws_bindings.py:136` | The tenant's active accounts, each in every configured Region and globally. | nothing in this tree |
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | `finops_ingest/aws_bindings.py` |
 | `period_of` | function | `finops_ingest/collectors/ai_providers.py:55` | The billing period the window's last moment falls in. | nothing in this tree |
 | `AiProviderCollector` | class | `finops_ingest/collectors/ai_providers.py:61` | One provider's reports for each organization the tenant connected. | `finops_ingest/collectors/anthropic_usage.py`, `finops_ingest/collectors/openai_usage.py` |

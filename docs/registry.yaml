@@ -2614,6 +2614,12 @@ changes:
   what: TASK-P14-002, the commitment inventory for Savings Plans, EC2 and RDS
   commit: pending
   detail: 'HeldCommitment and the CommitmentHoldings port; an AWS adapter reading Savings Plans and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the account''s collector role, every page read on both paths; migration 0054 creating commitment_inventory, payer wide, with exactly one of quantity and hourly commitment, and the collector''s cadence for existing tenants; the collector, reading Savings Plans once per account in the first collection Region''s unit and restating only the scope it read; the relay''s allow list and the member collector role gain the three reads, ADR-0037; a fake estate and both compositions; first contact probes all three, the relayed reads as the member account'
+- id: CHG-0187
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-003, the inventory for every other reservable service
+  commit: pending
+  detail: 'One table driven reader, RESERVED, for every reserved service, EC2 and RDS moved onto it unchanged; ElastiCache, OpenSearch, Redshift and MemoryDB read through the relay as each account''s collector role, ADR-0037, OpenSearch''s payment enum stored as the others spell it and a currency the API does not state read as AWS''s list currency, US dollars. The relay''s allow list and the member role gain the four reads; first contact probes each. DynamoDB reserved capacity is named unreadable, ISS-295'
 issues:
 - id: ISS-189
   severity: LOW

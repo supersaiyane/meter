@@ -32,6 +32,13 @@ KINDS: Final = (SAVINGS_PLAN, RESERVATION)
 #: The reserved services the inventory reads, as a reservation's program names them.
 EC2: Final = "EC2"
 RDS: Final = "RDS"
+ELASTICACHE: Final = "ElastiCache"
+OPENSEARCH: Final = "OpenSearch"
+REDSHIFT: Final = "Redshift"
+MEMORYDB: Final = "MemoryDB"
+#: Reserved, and unreadable: no API describes DynamoDB reserved capacity, ISS-295. Named so a
+#: screen can say it is unread rather than imply none is held.
+UNREADABLE: Final = ("DynamoDB",)
 
 #: The payment options, as both Savings Plans and reservations spell them.
 NO_UPFRONT: Final = "No Upfront"

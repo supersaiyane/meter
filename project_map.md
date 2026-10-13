@@ -35,7 +35,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Collectors | 39 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 54 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 266 | test_*.py under tests/ |
-| Test functions | 3183 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3185 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -553,9 +553,10 @@ meter/
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
 │   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
 │   │   │                      a key with nothing under it is NoData, not SchemaDrift
-│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Savings Plans and RDS
+│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002 and 003. Savings Plans and
+│   │   │                      the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB
 │   │   │                      reservations through the relay, EC2 through its endpoint,
-│   │   │                      each as the account's role; every page read
+│   │   │                      each as the account's role; one table driven reader
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report

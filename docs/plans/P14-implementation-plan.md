@@ -107,7 +107,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.3, OPEN-37 |
 | Delivers | FEAT-086 |
 | Depends on | TASK-P14-002 |
@@ -115,9 +115,17 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
-- [ ] The relay's allow list and the member collector role gain exactly the four reads
-- [ ] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+- [x] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
+- [x] The relay's allow list and the member collector role gain exactly the four reads
+- [x] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+
+**Delivered 2026-10-13.** The adapter's per service readers became one, driven by `RESERVED`, a
+table of where each reserved service keeps its identifier, type, count and payment option; EC2 and
+RDS moved onto it unchanged, and ElastiCache, OpenSearch, Redshift and MemoryDB joined through the
+relay, ADR-0037. The relay's allow list and the member collector role gain exactly the four reads,
+and first contact probes each as the member account. `UNREADABLE` names DynamoDB reserved capacity,
+which no API reads, ISS-295. The fake estate holds three ElastiCache nodes. Nothing applied,
+ISS-002.
 
 ---
 

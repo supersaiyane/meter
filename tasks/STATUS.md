@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 90 total, 15 specified, 14 in build, 58 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 186 recorded |
+| Changes | 187 recorded |
 | Issues | 186 fixed, 107 open, 0 parked |
 | Open questions | 39 awaiting a decision |
 
@@ -149,7 +149,8 @@ ISS-294, the Cost Explorer commitment reads made as the hub with no role grantin
 read what only the payer answers as the payer, fixing ISS-294 and, found beside it, ISS-296: account
 discovery listed Organizations with the hub's own credentials. TASK-P14-002
 read what each account holds, its Savings Plans and its EC2 and RDS reservations, with their real
-terms and ends.
+terms and ends, and TASK-P14-003 every other reservable service, ElastiCache, OpenSearch, Redshift
+and MemoryDB; DynamoDB reserved capacity has no read API, ISS-295.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -327,7 +328,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
-| P14 | 2 | 0 | 0 | 0 | 8 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P14 | 3 | 0 | 0 | 0 | 7 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -623,6 +624,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P14-001` | Done 2026-10-13 | Cost Explorer's commitment reads, as the payer |
 | `TASK-P14-002` | Done 2026-10-13 | the inventory, Savings Plans, EC2 and RDS |
+| `TASK-P14-003` | Done 2026-10-13 | the inventory, every other reservable service |
 
 <!-- generated:task-status end -->
 

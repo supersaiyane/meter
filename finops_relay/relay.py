@@ -85,6 +85,19 @@ ALLOWED: Final[Mapping[tuple[str, str], Allowed]] = {
     ("rds", "DescribeReservedDBInstances"): Allowed(
         "rds:DescribeReservedDBInstances", RoleKind.MEMBER
     ),
+    # TASK-P14-003, the other reservable services, OPEN-37 and ADR-0037.
+    ("elasticache", "DescribeReservedCacheNodes"): Allowed(
+        "elasticache:DescribeReservedCacheNodes", RoleKind.MEMBER
+    ),
+    ("opensearch", "DescribeReservedInstances"): Allowed(
+        "es:DescribeReservedInstances", RoleKind.MEMBER
+    ),
+    ("redshift", "DescribeReservedNodes"): Allowed(
+        "redshift:DescribeReservedNodes", RoleKind.MEMBER
+    ),
+    ("memorydb", "DescribeReservedNodes"): Allowed(
+        "memorydb:DescribeReservedNodes", RoleKind.MEMBER
+    ),
 }
 
 
