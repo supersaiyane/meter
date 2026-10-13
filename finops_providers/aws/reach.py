@@ -25,7 +25,7 @@ from botocore.config import Config
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_providers.aws.appregistry import AwsServiceCatalogue
-from finops_providers.aws.client import botocore_config
+from finops_providers.aws.client import botocore_config, role_account
 from finops_providers.aws.credentials import AwsCredentialBroker
 from finops_providers.aws.relay_client import RelayClient, lambda_invoke, s3_fetch
 
@@ -115,11 +115,24 @@ def payer_of(settings: Settings) -> str | None:
     In AWS Organizations the management account pays for every member, so the account in the
     org reader role's ARN is the payer. None when that setting is not an IAM role ARN.
     """
-    parts = settings.org_reader_role_arn.split(":")
-    if len(parts) != 6 or parts[2] != "iam" or not parts[5].startswith("role/"):
-        return None
-    account = parts[4]
-    return account if len(account) == 12 and account.isdigit() else None
+    return role_account(settings.org_reader_role_arn)
+
+
+def payer_client(
+    settings: Settings, service: str, region: str = GLOBAL_REGION, broker: Any = None
+) -> LazyClient:
+    """A client as the organization reader role in the management account, made on first use.
+
+    For what only the payer answers for the whole organization: Cost Explorer's commitment reports,
+    ISS-294, and Organizations, ISS-296. The hub's own credentials would read its own account
+    alone, and no role grants them these reads.
+    """
+    resolved = broker if broker is not None else AwsCredentialBroker(settings)
+
+    def assumed() -> Any:
+        return session_clients(settings, resolved.payer_session().session)(service, region)
+
+    return LazyClient(assumed)
 
 
 class PerAccountCatalogue:

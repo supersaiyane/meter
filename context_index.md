@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1172 public symbols across 5 packages.
+1175 public symbols across 5 packages.
 
 ## finops_core
 
@@ -40,7 +40,7 @@ a duplicate.
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/deps.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py`, and 1 more |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
-| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 10 more |
+| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 11 more |
 | `CloudAccount` | class | `finops_core/domain/account.py:80` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
 | `AccountHealth` | class | `finops_core/domain/account.py:95` | Whether we could actually use the collector role, and why not if not. | `finops_providers/aws/health.py` |
@@ -211,7 +211,7 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/ai_reports.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, `finops_providers/aws/client.py`, and 3 more |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_api/exports/scheduled.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/org_tree.py`, and 7 more |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_api/exports/scheduled.py`, `finops_providers/ai_reports.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/client.py`, and 3 more |
-| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/composition.py`, `finops_providers/aws/bedrock.py`, and 4 more |
+| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/composition.py`, `finops_providers/aws/bedrock.py`, and 5 more |
 | `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/collectors/account_health.py`, and 26 more |
 | `FlagResolver` | class | `finops_core/flags.py:42` | Reads a flag for a tenant, caching the per tenant override briefly. | `finops_ingest/processes.py` |
 | `FlagResolver.is_enabled` | method | `finops_core/flags.py:58` |  | `finops_ingest/registry.py` |
@@ -377,8 +377,9 @@ a duplicate.
 | `botocore_config` | function | `finops_providers/aws/client.py:88` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, `finops_providers/aws/commitment.py`, and 8 more |
 | `partition_for` | function | `finops_providers/aws/client.py:97` | The partition a region belongs to. | `finops_providers/aws/topology.py` |
 | `role_arn` | function | `finops_providers/aws/client.py:115` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
-| `error_code` | function | `finops_providers/aws/client.py:120` |  | `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, `finops_providers/aws/report_store.py`, `finops_providers/aws/secrets.py` |
-| `translate` | function | `finops_providers/aws/client.py:146` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/appregistry.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, and 23 more |
+| `role_account` | function | `finops_providers/aws/client.py:120` | The account an IAM role's ARN names, or None when the text is not a role's ARN. | `finops_providers/aws/credentials.py`, `finops_providers/aws/reach.py` |
+| `error_code` | function | `finops_providers/aws/client.py:129` |  | `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, `finops_providers/aws/report_store.py`, `finops_providers/aws/secrets.py` |
+| `translate` | function | `finops_providers/aws/client.py:155` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/appregistry.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, and 23 more |
 | `AwsResourceCreators` | class | `finops_providers/aws/cloudtrail_creators.py:77` | CloudTrail's record of who created each resource, account by account and Region by Region. | `finops_ingest/aws_bindings.py` |
 | `AwsResourceCreators.creator` | method | `finops_providers/aws/cloudtrail_creators.py:96` |  | `finops_ingest/collectors/ownership.py` |
 | `names_of` | function | `finops_providers/aws/cloudtrail_creators.py:192` | The names CloudTrail may record a resource under, the likelier first. | nothing in this tree |
@@ -393,10 +394,11 @@ a duplicate.
 | `ContainerInsightsSource` | class | `finops_providers/aws/container_insights.py:135` | `ContainerSource` over CloudWatch. Reads only, per constraint 6. | `finops_ingest/aws_bindings.py` |
 | `ContainerInsightsSource.list_clusters` | method | `finops_providers/aws/container_insights.py:179` | Every cluster publishing container metrics in this account and region. | `finops_ingest/collectors/container_usage.py` |
 | `ContainerInsightsSource.reservations` | method | `finops_providers/aws/container_insights.py:250` | Requested against used per workload, with requests where published. | `finops_api/routes/waste.py`, `finops_ingest/collectors/container_usage.py` |
-| `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
-| `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | `finops_ingest/aws_bindings.py`, `finops_providers/aws/reach.py` |
-| `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
-| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py`, `finops_providers/aws/reach.py` |
+| `AwsSession` | class | `finops_providers/aws/credentials.py:47` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
+| `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:56` | Produces a scoped session for a target account, and caches it sensibly. | `finops_ingest/aws_bindings.py`, `finops_providers/aws/reach.py` |
+| `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:77` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
+| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:94` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py`, `finops_providers/aws/reach.py` |
+| `AwsCredentialBroker.payer_session` | method | `finops_providers/aws/credentials.py:98` | The organization reader role in the management account, ISS-294 and ISS-296. | `finops_providers/aws/reach.py` |
 | `AthenaCostExport` | class | `finops_providers/aws/cur.py:180` | `CostExport` over a Data Exports table. Never yet run against AWS. | `finops_ingest/aws_bindings.py` |
 | `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:213` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
 | `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:227` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
@@ -433,8 +435,9 @@ a duplicate.
 | `member_clients` | function | `finops_providers/aws/reach.py:81` | Clients in any member account, each on the role the broker assumes there. | `finops_ingest/aws_bindings.py` |
 | `relay` | function | `finops_providers/aws/reach.py:97` | A client in shape for a service the hub reaches only through the relay, ADR-0035. | `finops_ingest/aws_bindings.py` |
 | `payer_of` | function | `finops_providers/aws/reach.py:112` | The payer account: the management account, where the org reader role lives. | `finops_ingest/aws_bindings.py` |
-| `PerAccountCatalogue` | class | `finops_providers/aws/reach.py:125` | The AppRegistry catalogue of whichever account is asked, on that account's role. | `finops_ingest/aws_bindings.py` |
-| `PerAccountCatalogue.applications` | method | `finops_providers/aws/reach.py:137` |  | `finops_ingest/collectors/ownership.py` |
+| `payer_client` | function | `finops_providers/aws/reach.py:121` | A client as the organization reader role in the management account, made on first use. | `finops_ingest/aws_bindings.py` |
+| `PerAccountCatalogue` | class | `finops_providers/aws/reach.py:138` | The AppRegistry catalogue of whichever account is asked, on that account's role. | `finops_ingest/aws_bindings.py` |
+| `PerAccountCatalogue.applications` | method | `finops_providers/aws/reach.py:150` |  | `finops_ingest/collectors/ownership.py` |
 | `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:122` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | `finops_ingest/aws_bindings.py` |
 | `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:213` |  | nothing in this tree |
 | `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:317` |  | nothing in this tree |
@@ -492,7 +495,7 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `active_accounts` | function | `finops_ingest/accounts.py:23` | The tenant's ACTIVE AWS accounts, in account id order. | `finops_ingest/aws_bindings.py`, `finops_ingest/processes.py` |
 | `connected` | function | `finops_ingest/ai_accounts.py:22` | This tenant's active organizations of one provider, in a stable order. | `finops_ingest/collectors/ai_providers.py` |
-| `enrolled` | function | `finops_ingest/aws_bindings.py:131` | The tenant's active accounts, each in every configured Region and globally. | nothing in this tree |
+| `enrolled` | function | `finops_ingest/aws_bindings.py:132` | The tenant's active accounts, each in every configured Region and globally. | nothing in this tree |
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | `finops_ingest/aws_bindings.py` |
 | `period_of` | function | `finops_ingest/collectors/ai_providers.py:55` | The billing period the window's last moment falls in. | nothing in this tree |
 | `AiProviderCollector` | class | `finops_ingest/collectors/ai_providers.py:61` | One provider's reports for each organization the tenant connected. | `finops_ingest/collectors/anthropic_usage.py`, `finops_ingest/collectors/openai_usage.py` |

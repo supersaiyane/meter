@@ -48,6 +48,10 @@ class Broker:
         self.asked: list[tuple[AccountKey, str]] = []
         self.session = Session()
 
+    def payer_session(self) -> Any:
+        self.asked.append((AccountKey(provider=Provider.AWS, account_id="999988887777"), "payer"))
+        return SimpleNamespace(session=self.session)
+
     def session_for(self, account: AccountKey, region: str) -> Any:
         self.asked.append((account, region))
         return SimpleNamespace(session=self.session)
@@ -166,3 +170,13 @@ def test_the_catalogue_reads_each_account_on_that_accounts_own_role() -> None:
     account = AccountKey(provider=Provider.AWS, account_id=MEMBER)
     assert tuple(catalogue.applications(account, "eu-west-1")) == ()
     assert asked == [("servicecatalog-appregistry", MEMBER, "eu-west-1")]
+
+
+def test_a_payer_read_assumes_the_org_reader_role_only_when_first_read(settings: Settings) -> None:
+    """ISS-294 and ISS-296: what only the payer answers is read as the payer, made on first use."""
+    broker = Broker()
+    client = reach.payer_client(settings, "ce", "us-east-1", broker)
+    assert broker.asked == []
+    assert client.service == "ce"
+    assert [region for _account, region in broker.asked] == ["payer"]
+    assert broker.session.made[0][:2] == ("ce", "us-east-1")

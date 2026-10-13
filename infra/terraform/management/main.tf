@@ -69,6 +69,30 @@ data "aws_iam_policy_document" "org_read" {
   }
 
   statement {
+    sid    = "ReadTheOrganizationsCommitments"
+    effect = "Allow"
+
+    actions = [
+      # finops_providers/aws/commitment.py, FEAT-024 and FEAT-086, TASK-P14-001. Cost Explorer
+      # reports the organization's commitments only to the management account, and these were
+      # called as the hub with no role granting them, ISS-294.
+      "ce:GetSavingsPlansUtilization",
+      "ce:GetSavingsPlansUtilizationDetails",
+      "ce:GetSavingsPlansCoverage",
+      "ce:GetReservationUtilization",
+      "ce:GetReservationCoverage",
+      # FEAT-089, TASK-P14-006. AWS's purchase recommendations: reads, at USD 0.01 a request,
+      # modelled. Nothing that buys, exchanges or sells a commitment is granted anywhere,
+      # constraint 6, held by tests/contract/test_no_commitment_purchases.py.
+      "ce:GetSavingsPlansPurchaseRecommendation",
+      "ce:GetReservationPurchaseRecommendation",
+    ]
+
+    # Cost Explorer has no resource level permissions; every read is the account's own.
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "ReadThePayersInvoices"
     effect = "Allow"
 

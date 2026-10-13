@@ -23,7 +23,7 @@ from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, AccountStatus, Provider
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_fakes.composition import builders as fake_builders
-from finops_ingest import accounts
+from finops_ingest import accounts, aws_bindings
 from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT, enrolled
 from finops_ingest.composition import (
@@ -232,3 +232,27 @@ def test_the_inventory_reads_every_active_account_in_every_region_and_globally(
         "provider": Provider.AWS.value,
         "status": AccountStatus.ACTIVE.value,
     }
+
+
+@pytest.mark.parametrize(
+    ("name", "adapter", "service"),
+    [
+        ("commitment", "CostExplorerCommitmentReport", "ce"),
+        ("org_tree", "AwsAccountDiscovery", "organizations"),
+    ],
+)
+def test_what_only_the_payer_answers_is_read_as_the_payer(
+    name: str, adapter: str, service: str, deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ISS-294 and ISS-296: Cost Explorer's commitments and Organizations, as the org reader."""
+    asked: list[str] = []
+
+    def payer(_settings: Settings, wanted: str, _region: str) -> Any:
+        asked.append(wanted)
+        return SimpleNamespace()
+
+    monkeypatch.setattr(aws_bindings, "payer_client", payer)
+    built = AWS_BUILDERS[name](context(name, deployed))
+    (found,) = [one for one in reachable(built) if type(one).__name__ == adapter]
+    found._factory()
+    assert asked == [service]

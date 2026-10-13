@@ -43,7 +43,7 @@ Modelled at the pace of P13: seven tasks of size M and three of size S, about ni
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.8, ISS-294 |
 | Delivers | FEAT-086 |
 | Depends on | Nothing |
@@ -51,12 +51,22 @@ Modelled at the pace of P13: seven tasks of size M and three of size S, about ni
 
 **Acceptance criteria.**
 
-- [ ] The management stack's organization reader role gains the Cost Explorer commitment reads,
+- [x] The management stack's organization reader role gains the Cost Explorer commitment reads,
       use, coverage and the two purchase recommendations, and nothing that buys, held by a test
-- [ ] `CostExplorerCommitmentReport` assumes that role through the Cost Explorer endpoint the hub
+- [x] `CostExplorerCommitmentReport` assumes that role through the Cost Explorer endpoint the hub
       already has, and a missing payer setting reads as Misconfigured
-- [ ] `make first-contact` probes the commitment reads as the payer
-- [ ] FEAT-024 and the deployment document say what changed
+- [x] `make first-contact` probes the commitment reads as the payer
+- [x] FEAT-024 and the deployment document say what changed
+
+**Delivered 2026-10-13.** `AwsCredentialBroker.payer_session` assumes the organization reader role
+with the ExternalId, through STS in the hub's first collection Region, cached apart from the
+management account's collector role; `finops_providers.aws.reach.payer_client` makes a client on it
+on first use; the commitment collector and, because it had the same defect, account discovery are
+bound to it, ISS-294 and ISS-296. `infra/terraform/management/main.tf` grants the five Cost Explorer
+commitment reports and AWS's two purchase recommendations, and
+`tests/contract/test_no_commitment_purchases.py` holds that grant exact and fails the build on any
+role, relay call or module that could buy a commitment. First contact probes both as the payer.
+Nothing applied, ISS-002.
 
 ---
 

@@ -106,11 +106,19 @@ def test_a_read_whose_setting_is_empty_is_not_tried_and_says_which(deployed: Set
     ]
 
 
-def test_a_read_at_the_payer_is_not_tried_when_no_payer_is_named(deployed: Settings) -> None:
+@pytest.mark.parametrize(
+    "reads",
+    [
+        "Invoicing, through the relay",
+        "AWS Organizations, as the payer",
+        "Cost Explorer's commitment reports, as the payer",
+    ],
+)
+def test_a_read_at_the_payer_is_not_tried_when_no_payer_is_named(
+    deployed: Settings, reads: str
+) -> None:
     nameless = deployed.model_copy(update={"org_reader_role_arn": ""})
-    (answer,) = first_contact.contact(
-        (probe("Invoicing, through the relay"),), target(nameless), lambda *_a: None
-    )
+    (answer,) = first_contact.contact((probe(reads),), target(nameless), lambda *_a: None)
     assert (answer.outcome, answer.detail) == (
         "not tried",
         "METER_ORG_READER_ROLE_ARN names no payer",
@@ -165,7 +173,9 @@ def test_each_read_goes_the_way_the_deployed_composition_reaches_aws(
     monkeypatch.setattr(boto3, "client", refuse)
     client_for = first_contact.clients(target(deployed))
     assert isinstance(client_for(probe("Service Quotas"), target(deployed)), LazyClient)
-    assert isinstance(client_for(probe("AWS Organizations"), target(deployed)), LazyClient)
+    assert isinstance(
+        client_for(probe("AWS Organizations, as the payer"), target(deployed)), LazyClient
+    )
     relayed = client_for(probe("Budgets, through the relay"), target(deployed))
     assert isinstance(relayed, RelayClient)
     assert PAYER in vars(relayed).values()
