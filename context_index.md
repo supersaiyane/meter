@@ -993,9 +993,9 @@ a duplicate.
 | `cost_trend` | function | `finops_api/routes/cost.py:409` | Effective cost per day inside the period, oldest first. | nothing in this tree |
 | `cost_anomalies` | function | `finops_api/routes/cost.py:443` | Days that did not look like the days before them. | nothing in this tree |
 | `cost_budgets` | function | `finops_api/routes/cost.py:533` | What was budgeted, what has been spent against it, and whether that is on course. | nothing in this tree |
-| `cost_commitments` | function | `finops_api/routes/cost.py:637` | What was committed, what it consumed, and what it covered. | nothing in this tree |
-| `cost_commitments_daily` | function | `finops_api/routes/cost.py:745` | Each kind of commitment, day by day, for the last thirty days. TASK-P8-013. | nothing in this tree |
-| `cost_showback` | function | `finops_api/routes/cost.py:805` | One period at the grain finance asks for: account, service and tag value. FEAT-045. | nothing in this tree |
+| `cost_commitments` | function | `finops_api/routes/cost.py:642` | What was committed, what it consumed, and what it covered. | nothing in this tree |
+| `cost_commitments_daily` | function | `finops_api/routes/cost.py:750` | Each kind of commitment, day by day, for the last thirty days. TASK-P8-013. | nothing in this tree |
+| `cost_showback` | function | `finops_api/routes/cost.py:810` | One period at the grain finance asks for: account, service and tag value. FEAT-045. | nothing in this tree |
 | `asked_filters` | function | `finops_api/routes/explore.py:87` | The column filters as asked, one parameter per column in `EXPLORABLE`. | nothing in this tree |
 | `cost_explore` | function | `finops_api/routes/explore.py:168` | Cost grouped two ways over a period, set against the one immediately before it. | nothing in this tree |
 | `cost_forecast` | function | `finops_api/routes/forecast.py:77` | This month's total and the next three months', each a range or the reason none is shown. | nothing in this tree |
