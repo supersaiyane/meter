@@ -105,6 +105,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-13 | Budgets coverage in payers, CHG-0183 | Done | GET /cost/budgets reports one payer of one, so the front page no longer calls a whole estate partial, ISS-293; lesson on internal terms | finops_api/routes/cost.py:615, tests/api/test_cost_budgets.py:200, tasks/lessons.md:780 |
 | 2026-10-13 | P14 Commitments specified and planned, CHG-0184 | Done | Owner chose commitments and answered OPEN-35 to OPEN-39; spec, plan of ten tasks, ADR-0037 amending ADR-0035, FEAT-086 to 090; ISS-294 and ISS-295 raised | docs/specs/2026-10-13-p14-commitments-design.md:1, docs/plans/P14-implementation-plan.md:1, docs/adr/ADR-0037-daily-reads-through-the-relay.md:1 |
 | 2026-10-13 | TASK-P14-001, the payer path, CHG-0185 | Done | Broker payer_session and reach.payer_client; commitment and account discovery bound to the payer, ISS-294 and ISS-296 fixed; management role grants the Cost Explorer commitment reads; first contact probes them; contract test forbids buying | finops_providers/aws/credentials.py:93, finops_providers/aws/reach.py:112, finops_ingest/aws_bindings.py:157, infra/terraform/management/main.tf:85, tests/contract/test_no_commitment_purchases.py:1 |
+| 2026-10-13 | TASK-P14-002, the inventory for Savings Plans, EC2 and RDS, CHG-0186 | Done | HeldCommitment and CommitmentHoldings; AWS adapter through the relay and the EC2 endpoint; migration 0054; collector reading plans once per account; relay allow list and member role reads; fake estate; first contact probes | finops_core/domain/commitments.py:1, finops_providers/aws/commitment_inventory.py:1, finops_ingest/collectors/commitment_inventory.py:1, migrations/versions/0054_commitment_inventory.py:1 |
 
 ## Next action
 
@@ -114,7 +115,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green, one
 after another without stopping except for an owner decision.
 
-1. **TASK-P14-002**, the inventory for Savings Plans, EC2 and RDS. TASK-P14-001 is done.
+1. **TASK-P14-003**, the inventory for ElastiCache, OpenSearch, Redshift and MemoryDB. TASK-P14-001 and 002 are done.
 2. Meter never buys: no purchase, exchange or sale call is made, allow listed or granted.
 
 P13, FinOps for AI, is delivered against fakes; ISS-285 closes with `make first-contact` against one

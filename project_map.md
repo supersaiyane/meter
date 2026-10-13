@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 59 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 53 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 263 | test_*.py under tests/ |
-| Test functions | 3168 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 39 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 54 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 266 | test_*.py under tests/ |
+| Test functions | 3183 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -505,7 +505,8 @@ meter/
 │       ├── cloudwatch_estate.py
 │       │                      CloudWatchEstate, what CloudWatch holds rather than
 │       │                      the values in it. A fake and no adapter, ISS-240
-│       ├── commitment.py      CommitmentReport, two methods on purpose.
+│       ├── commitment.py      CommitmentReport, two methods on purpose, and since
+│       │                      TASK-P14-002 CommitmentHoldings, what each account holds.
 │       │                      Utilization is per commitment, coverage is per
 │       │                      service, because a covered dollar cannot be
 │       │                      attributed to one of several overlapping plans.
@@ -552,6 +553,9 @@ meter/
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
 │   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
 │   │   │                      a key with nothing under it is NoData, not SchemaDrift
+│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Savings Plans and RDS
+│   │   │                      reservations through the relay, EC2 through its endpoint,
+│   │   │                      each as the account's role; every page read
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report
@@ -1266,6 +1270,8 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Daily per account and
+│       │                      Region; Savings Plans only in the first Region's unit
 │       ├── commitment.py      two reads, two upserts, one transaction. A window is
 │       │                      replaced rather than accumulated, and NoData is absorbed
 │       │                      because a payer with no commitments is a fact rather
@@ -1622,6 +1628,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0054_commitment_inventory.py  TASK-P14-002. What each account holds,
+│       │                      and the collector's cadence
 │       ├── 0053_ai_spend_screen.py  TASK-P13-008. /analyze/ai admitted as a saved
 │       │                      view's screen
 │       ├── 0052_gpu_utilization_daily.py  TASK-P13-006. A day's GPU utilization per
@@ -1888,6 +1896,9 @@ meter/
 │   │                          cost row can carry, and nothing that names a vendor,
 │   │                          ADR-0028; AiUsage, ProviderAccount, GpuUtilization; and
 │   │                          accelerated_instance_type, read from the family
+│   ├── commitments.py         FEAT-086, in finops_core/domain/. HeldCommitment: a
+│   │                          Savings Plan or a reservation, exactly one of quantity
+│   │                          and hourly commitment, and its real term and end
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is

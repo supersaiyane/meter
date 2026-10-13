@@ -547,6 +547,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0.001",
     ),
     ScheduleEntry(
+        collector="commitment_inventory",
+        cadence_seconds=DAILY,
+        reason=(
+            "What each member account holds, P14 spec section 5.3. Daily: a commitment's term, "
+            "end and state change at most once a day, and the calendar counts months. Savings "
+            "Plans and RDS reservations come through the relay, ADR-0037, EC2 reservations "
+            "through its endpoint, as each account's collector role: modelled at about 0.00001 "
+            "USD a run in Lambda and S3 requests, and not measured until an account is read, "
+            "ISS-002. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.00001",
+    ),
+    ScheduleEntry(
         collector="bedrock_invocations",
         cadence_seconds=DAILY,
         reason=(

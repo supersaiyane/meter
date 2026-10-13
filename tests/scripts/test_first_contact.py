@@ -275,3 +275,21 @@ def test_a_providers_client_reads_its_key_only_when_the_request_is_made(
         probe("Anthropic's cost report, with the key named"), where
     )
     assert isinstance(built, AnthropicReports)
+
+
+def test_a_relayed_read_of_what_an_account_holds_is_made_as_that_account(
+    deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ADR-0037: Savings Plans and RDS reservations through the relay, as the member's role."""
+
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("a client was made before it was used")
+
+    monkeypatch.setattr(boto3, "client", refuse)
+    for reads in (
+        "Savings Plans the account holds, through the relay",
+        "RDS reservations the account holds, through the relay",
+    ):
+        relayed = first_contact.clients(target(deployed))(probe(reads), target(deployed))
+        assert isinstance(relayed, RelayClient), reads
+        assert ACCOUNT in vars(relayed).values(), reads

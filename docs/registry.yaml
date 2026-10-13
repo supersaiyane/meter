@@ -649,7 +649,7 @@ features:
 - id: FEAT-086
   name: The commitment inventory, every commitment's real term, end and payment
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-086-commitment-inventory.md
 - id: FEAT-087
@@ -2608,6 +2608,12 @@ changes:
   what: TASK-P14-001, what only the payer answers is read as the payer
   commit: pending
   detail: 'The credential broker gains payer_session, the organization reader role assumed with the ExternalId through STS in the hub''s first collection Region and cached apart from the management account''s collector role. finops_providers.aws.reach.payer_client makes a client on it on first use. The commitment collector''s Cost Explorer reads, ISS-294, and account discovery''s Organizations reads, ISS-296, are bound to it. The management stack grants the five Cost Explorer commitment reports and AWS''s two purchase recommendations. make first-contact probes Organizations and Cost Explorer as the payer. tests/contract/test_no_commitment_purchases.py fails the build if any role, the relay or production code could buy a commitment'
+- id: CHG-0186
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-002, the commitment inventory for Savings Plans, EC2 and RDS
+  commit: pending
+  detail: 'HeldCommitment and the CommitmentHoldings port; an AWS adapter reading Savings Plans and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the account''s collector role, every page read on both paths; migration 0054 creating commitment_inventory, payer wide, with exactly one of quantity and hourly commitment, and the collector''s cadence for existing tenants; the collector, reading Savings Plans once per account in the first collection Region''s unit and restating only the scope it read; the relay''s allow list and the member collector role gain the three reads, ADR-0037; a fake estate and both compositions; first contact probes all three, the relayed reads as the member account'
 issues:
 - id: ISS-189
   severity: LOW
