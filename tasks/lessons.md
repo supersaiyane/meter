@@ -778,3 +778,18 @@ where things stand in one line between tasks, never as a stopping point.
 **Triggers:** "automated way", "do it automatically", "go ahead with the rest", a plan with tasks
 left after a merge, the pull to summarise and wait once a gate goes green.
 
+
+## 2026-10-13: internal terms in a question to the owner
+
+**Mistake:** I asked the owner "Which sub project should come next?" without saying what a sub
+project is. It is the roadmap's own word for a numbered build phase, P0 to P13, and the owner did
+not recognise it in a question.
+
+**Correction:** The owner answered: "what do you mean by sub projects ???".
+
+**Rule:** In a question or a summary for the owner, name the thing in plain words the first time
+it appears: "the next capability to build, P14 in the roadmap", not "the next sub project". A
+project term may follow once its meaning has been given in the same message.
+
+**Triggers:** AskUserQuestion, a closing summary, a choice between proposals, any of the
+project's own terms: sub project, gate, exit criteria, scan record, worktree.

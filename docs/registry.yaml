@@ -2550,6 +2550,12 @@ changes:
   what: What the local stack found when the demo was run on it after P13
   commit: pending
   detail: 'Run on the local stack on 2026-10-13 to answer whether the product is ready to demonstrate. Cost Explorer and the anomalies count the cloud bill''s accounts only, so the front page no longer reads 1 of 8 accounts on an estate of five, ISS-290. make up and make dispatch build the dispatcher image before running it, ISS-291. A tile''s headline figure wraps at its spaces, so a forecast interval stays inside its tile, ISS-292. The fake Anthropic default workspace''s key is named key-default rather than key-'
+- id: CHG-0183
+  date: '2026-10-13'
+  type: Fix
+  what: Budgets count their coverage in payers, so a whole estate is never called partial
+  commit: pending
+  detail: 'The front page read 1 of 5 accounts after CHG-0182 for a reader who sees all five, because GET /cost/budgets passed one visible account against every account in the organization. A budget belongs to the payer, so its coverage is now one payer of one, as commitments and reconciliation already said, ISS-293. A lesson recorded for an internal term left unexplained in a question to the owner'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5095,6 +5101,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-293
+  severity: MEDIUM
+  status: FIXED
+  summary: The budgets read called a whole estate partial, 1 of 5 accounts
+  detail: 'Found 2026-10-13 on the local stack after ISS-290 was fixed, the other half of the 1 of 8 the front page showed. GET /cost/budgets is payer wide and passed visible 1 with the default unit, accounts, so for a reader who sees every account the coverage read 1 of 5 and the shell drew the estate as partial. Predates P13. Fixed the same day, CHG-0183: coverage is one payer of one, held by tests/api/test_cost_budgets.py'
 - id: ISS-292
   severity: LOW
   status: FIXED
