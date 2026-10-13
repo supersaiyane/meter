@@ -45,7 +45,7 @@ from finops_providers.aws.accounts import AwsAccountDiscovery
 from finops_providers.aws.bedrock_invocations import BedrockInvocationLogs
 from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
-from finops_providers.aws.commitment import CostExplorerCommitmentReport
+from finops_providers.aws.commitment import COST_EXPLORER_REGION, CostExplorerCommitmentReport
 from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
@@ -62,6 +62,7 @@ from finops_providers.aws.reach import (
     PerAccountCatalogue,
     hub_client,
     member_clients,
+    payer_client,
     payer_of,
     relay,
     session_clients,
@@ -155,8 +156,14 @@ def _budgets(context: CollectorContext) -> CollectorRunner:
 
 
 def _commitment(context: CollectorContext) -> CollectorRunner:
+    # As the payer: Cost Explorer reports the organization's commitments only there, ISS-294.
+    settings = context.settings
     return CommitmentCollector(
-        CostExplorerCommitmentReport(context.settings, context.unit.tenant_id)
+        CostExplorerCommitmentReport(
+            settings,
+            context.unit.tenant_id,
+            client_factory=lambda: payer_client(settings, "ce", COST_EXPLORER_REGION),
+        )
     )
 
 
@@ -216,7 +223,13 @@ def _invoices(context: CollectorContext) -> CollectorRunner:
 
 
 def _org_tree(context: CollectorContext) -> CollectorRunner:
-    return OrgTreeCollector(AwsAccountDiscovery(context.settings))
+    # As the payer: Organizations lists the accounts only to the management account, ISS-296.
+    settings = context.settings
+    return OrgTreeCollector(
+        AwsAccountDiscovery(
+            settings, client_factory=lambda: payer_client(settings, "organizations", GLOBAL_REGION)
+        )
+    )
 
 
 def _ownership(context: CollectorContext) -> CollectorRunner:

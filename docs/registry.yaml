@@ -2602,6 +2602,12 @@ changes:
   what: P14 Commitments specified and planned, OPEN-35 to OPEN-39 answered
   commit: pending
   detail: 'The owner chose commitments, proposal 5 of next-in-scope.txt, as the next build and answered five questions: purchase plans from Meter and from AWS side by side; approval recorded and a person buys; the inventory covering every reservable service, Savings Plans, EC2 and RDS first; a cautious ladder by default, 80 percent coverage, one year, no upfront and one twelfth; and the relay for reads made once a day, ADR-0037 amending ADR-0035. Specifying it found ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them, and ISS-295, DynamoDB reserved capacity with no read API. Ten tasks, FEAT-086 to FEAT-090'
+- id: CHG-0185
+  date: '2026-10-13'
+  type: Fix
+  what: TASK-P14-001, what only the payer answers is read as the payer
+  commit: pending
+  detail: 'The credential broker gains payer_session, the organization reader role assumed with the ExternalId through STS in the hub''s first collection Region and cached apart from the management account''s collector role. finops_providers.aws.reach.payer_client makes a client on it on first use. The commitment collector''s Cost Explorer reads, ISS-294, and account discovery''s Organizations reads, ISS-296, are bound to it. The management stack grants the five Cost Explorer commitment reports and AWS''s two purchase recommendations. make first-contact probes Organizations and Cost Explorer as the payer. tests/contract/test_no_commitment_purchases.py fails the build if any role, the relay or production code could buy a commitment'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5147,6 +5153,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-296
+  severity: HIGH
+  status: FIXED
+  summary: Account discovery read Organizations with the hub's own credentials, which list nothing outside the management account
+  detail: 'Found 2026-10-13 building TASK-P14-001, the same shape as ISS-294. AwsAccountDiscovery was built with no client, so it called Organizations as the hub task role; Organizations lists the accounts only to the management account or a delegated administrator, and the organization reader role that grants the reads was assumed by nothing in the hub. Once deployed, account discovery, and every collector that reads accounts from it, would have failed. Fixed the same day, CHG-0185: the credential broker gains a payer session, assumed with the ExternalId, and account discovery and the commitment reads are bound to it. Held by tests/ingest/test_aws_bindings.py'
 - id: ISS-295
   severity: LOW
   status: OPEN
@@ -5154,9 +5165,9 @@ issues:
   detail: 'Found 2026-10-13 specifying P14. botocore''s DynamoDB service model has no operation that describes reserved capacity; it is bought and listed in the console only. The inventory lists it as unreadable rather than as none held, and its discount is still seen in the bill''s commitment columns. Closes if AWS publishes a read'
 - id: ISS-294
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: The Cost Explorer commitment reads are made as the hub, and no role grants them
-  detail: 'Found 2026-10-13 specifying P14. CostExplorerCommitmentReport calls Cost Explorer with the hub task role''s own credentials, and no Terraform grants ce:GetSavingsPlansUtilization, its details, ce:GetSavingsPlansCoverage, ce:GetReservationUtilization or ce:GetReservationCoverage to any role. Cost Explorer answers for the organization only in the management account, so even a granted hub would see its own account alone. Once deployed, the commitments screen would read AccessDenied. TASK-P14-001 makes the reads as the organization reader role, which gains exactly those actions'
+  detail: 'Found 2026-10-13 specifying P14. CostExplorerCommitmentReport calls Cost Explorer with the hub task role''s own credentials, and no Terraform grants ce:GetSavingsPlansUtilization, its details, ce:GetSavingsPlansCoverage, ce:GetReservationUtilization or ce:GetReservationCoverage to any role. Cost Explorer answers for the organization only in the management account, so even a granted hub would see its own account alone. Once deployed, the commitments screen would read AccessDenied. Fixed 2026-10-13 by TASK-P14-001, CHG-0185: the reads are made as the organization reader role, which gains exactly those actions and the two purchase recommendations, held by tests/contract/test_no_commitment_purchases.py'
 - id: ISS-293
   severity: MEDIUM
   status: FIXED

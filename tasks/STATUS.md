@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 90 total, 16 specified, 13 in build, 58 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 184 recorded |
-| Issues | 184 fixed, 108 open, 0 parked |
+| Changes | 185 recorded |
+| Issues | 186 fixed, 107 open, 0 parked |
 | Open questions | 39 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -145,7 +145,9 @@ owner then chose commitments as P14, proposal 5 of next-in-scope.txt, and answer
 purchase plans from Meter and from AWS side by side, approval recorded while a person buys, every
 reservable service in the inventory, a cautious ladder by default, and the relay for reads made once a
 day, ADR-0037. P14 is specified and planned, ten tasks, FEAT-086 to FEAT-090; specifying it found
-ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them.
+ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them. TASK-P14-001
+read what only the payer answers as the payer, fixing ISS-294 and, found beside it, ISS-296: account
+discovery listed Organizations with the hub's own credentials.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -323,7 +325,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
-| P14 | 0 | 0 | 0 | 0 | 10 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P14 | 1 | 0 | 0 | 0 | 9 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -612,6 +614,12 @@ ISS-003.
 | `TASK-P13-007` | Done 2026-10-13 | the AI endpoints |
 | `TASK-P13-008` | Done 2026-10-13 | the AI spend screen |
 | `TASK-P13-009` | Done 2026-10-13 | the local stack, first contact, proof and documents |
+
+**P14, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P14-001` | Done 2026-10-13 | Cost Explorer's commitment reads, as the payer |
 
 <!-- generated:task-status end -->
 

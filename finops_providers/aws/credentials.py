@@ -26,14 +26,17 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 from finops_core.config import Settings
 from finops_core.constants import SESSION_REFRESH_MARGIN_SECONDS
-from finops_core.domain.account import AccountKey
-from finops_providers.aws.client import botocore_config, role_arn, translate
+from finops_core.domain.account import AccountKey, Provider
+from finops_core.errors import Misconfigured
+from finops_providers.aws.client import botocore_config, role_account, role_arn, translate
 
 Clock = Callable[[], datetime]
 ClientFactory = Callable[[str, str], object]
 
 COLLECTOR = "credential_broker"
 SESSION_NAME = "meter-collector"
+#: Where a payer session is cached, apart from any collector session in the same account.
+PAYER = "payer"
 
 
 def _system_clock() -> datetime:
@@ -63,6 +66,8 @@ class AwsCredentialBroker:
         self._clock = clock
         self._config = botocore_config(settings)
         self._factory = client_factory or self._default_client
+        #: Keyed by the role's ARN and the Region, so the management account's collector role and
+        #: its organization reader role are never served for each other.
         self._cache: dict[tuple[str, str], AwsSession] = {}
         self._external_id: str | None = None
 
@@ -87,16 +92,39 @@ class AwsCredentialBroker:
         return self._external_id
 
     def session_for(self, account: AccountKey, region: str) -> AwsSession:
-        key = (account.account_id, region)
+        role = role_arn(account.account_id, self._settings.collector_role_name, region)
+        return self._assume(role, account, region, f"{account}:{region}")
+
+    def payer_session(self) -> AwsSession:
+        """The organization reader role in the management account, ISS-294 and ISS-296.
+
+        Cost Explorer and Organizations answer for the whole organization only in the management
+        account. Assumed with the same ExternalId as every collector role, through STS in the hub's
+        first collection Region, where the hub already reaches STS and Secrets Manager.
+        """
+        arn = self._settings.org_reader_role_arn
+        payer = role_account(arn)
+        if payer is None:
+            raise Misconfigured(
+                scope_key=PAYER,
+                collector=COLLECTOR,
+                detail="METER_ORG_READER_ROLE_ARN is not an IAM role's ARN, so the payer's "
+                "organization reader role cannot be assumed",
+            )
+        region = self._settings.region_list[0]
+        account = AccountKey(provider=Provider.AWS, account_id=payer)
+        return self._assume(arn, account, region, f"{PAYER}:{region}")
+
+    def _assume(self, role: str, account: AccountKey, region: str, scope_key: str) -> AwsSession:
+        key = (role, region)
         cached = self._cache.get(key)
         if cached is not None and self._is_fresh(cached):
             return cached
 
-        scope_key = f"{account}:{region}"
         client = self._factory("sts", region)
         try:
             response = client.assume_role(  # type: ignore[attr-defined]
-                RoleArn=role_arn(account.account_id, self._settings.collector_role_name, region),
+                RoleArn=role,
                 RoleSessionName=SESSION_NAME,
                 ExternalId=self.external_id(region),
             )

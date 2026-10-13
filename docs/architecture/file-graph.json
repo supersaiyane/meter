@@ -777,6 +777,7 @@
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_llm_provider.py",
     "tests/contract/test_network_paths.py",
+    "tests/contract/test_no_commitment_purchases.py",
     "tests/contract/test_no_llm_writes.py",
     "tests/contract/test_no_quota_writes.py",
     "tests/contract/test_ownership_contract.py",
@@ -11661,6 +11662,11 @@
     },
     {
       "s": "finops_providers/aws/credentials.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -13861,6 +13867,11 @@
     },
     {
       "s": "tests/contract/test_network_paths.py",
+      "t": "finops_relay/relay.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_no_commitment_purchases.py",
       "t": "finops_relay/relay.py",
       "k": "python"
     },
