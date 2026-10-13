@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P14 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), section 5.2 |
 | Tasks | TASK-P14-008 and TASK-P14-009 |
 | Decisions | OPEN-36 |

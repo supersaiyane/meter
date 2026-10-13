@@ -125,7 +125,7 @@ subprojects:
   depends_on: P12
 - id: P14
   name: Commitments
-  status: 'In build. Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, and chosen the same day as the next priority, proposal 5 of next-in-scope.txt. Every commitment with its real term, the effective savings rate as the headline, a renewal calendar against a ladder, and purchase plans from Meter and from AWS side by side for a person to approve, buy and see verified. Meter never buys'
+  status: 'Delivered on 2026-10-13 against fakes, proven by TASK-P14-010 against the seeded demo through the API. Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, and OPEN-40 while it was built, and chosen the same day as the next priority, proposal 5 of next-in-scope.txt. No account has been read, ISS-002, and four of Cost Explorer''s service names are unverified, ISS-297. Every commitment with its real term, the effective savings rate as the headline, a renewal calendar against a ladder, and purchase plans from Meter and from AWS side by side for a person to approve, buy and see verified. Meter never buys'
   spec: specs/2026-10-13-p14-commitments-design.md
   plan: plans/P14-implementation-plan.md
   depends_on: P13
@@ -649,31 +649,31 @@ features:
 - id: FEAT-086
   name: The commitment inventory, every commitment's real term, end and payment
   subproject: P14
-  status: In build
+  status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-086-commitment-inventory.md
 - id: FEAT-087
   name: The effective savings rate as the headline, measured from the bill
   subproject: P14
-  status: In build
+  status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-087-effective-savings-rate.md
 - id: FEAT-088
   name: The renewal calendar and the ladder
   subproject: P14
-  status: In build
+  status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-088-renewal-calendar.md
 - id: FEAT-089
   name: Purchase plans, Meter's and AWS's side by side
   subproject: P14
-  status: In build
+  status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-089-purchase-plans.md
 - id: FEAT-090
   name: Plan approval, the purchase recorded and verified against the bill
   subproject: P14
-  status: In build
+  status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-090-plan-approval.md
 adrs:
@@ -2656,6 +2656,12 @@ changes:
   what: TASK-P14-009, the commitments screen
   commit: pending
   detail: 'The commitments screen opens on the effective savings rate by billing month, a month with no List Cost saying so in the API''s words, and gains what the payer holds, what ends each month against the ladder, and Meter''s purchase plan beside AWS''s with the difference in words, each panel with its freshness and every figure measured or modelled. The payer panels are read only for a reader whose scope is the whole organization with no account chosen, and anyone else is told why. The plan''s actions offer only the steps its status allows, each with a note. The Overview''s savings rate tile reads the same route by the same twelve months, so the two screens cannot disagree'
+- id: CHG-0194
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-010, the local stack, first contact, proof and documents
+  commit: pending
+  detail: 'The demo seed runs the commitment inventory in each account, AWS''s purchase advice and Meter''s plan after the bill and P9''s rates they read, the refusing account refusing here too, and its test asserts the demo carries what is held, a rate, the advice and a plan that buys something. tests/scripts/test_p14_exit_criteria.py proves exit criteria 2 to 6 over the seeded demo through the API, criterion 1 being held by the Terraform contract test. docs/runbooks/commitments.md names the owner''s steps for the reads, the policy and a plan. P14 and FEAT-086 to FEAT-090 are delivered against fakes; ISS-002 and ISS-297 remain open'
 issues:
 - id: ISS-189
   severity: LOW

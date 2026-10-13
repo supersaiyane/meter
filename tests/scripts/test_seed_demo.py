@@ -19,6 +19,8 @@ from pathlib import Path
 
 import pytest
 
+from finops_core.config import Settings as RealSettings
+
 # Loaded by path, not imported as a package, because `scripts/` deliberately is
 # not one. `tests/scripts/test_check_index.py` does the same, and importing it
 # as `scripts.demo.seed_demo` makes mypy resolve one file under two module names.
@@ -125,6 +127,18 @@ class Settings:
     @property
     def owner_tag_key_list(self) -> tuple[str, ...]:
         return tuple(p.strip() for p in self.owner_tag_keys.split(",") if p.strip())
+
+    # FEAT-089, TASK-P14-010. The services AWS's purchase advice is asked for, the real setting's
+    # own default, so the stub cannot drift from it.
+    commitment_recommendation_services: str = RealSettings.model_fields[
+        "commitment_recommendation_services"
+    ].default
+
+    @property
+    def recommendation_services(self) -> tuple[str, ...]:
+        return tuple(
+            p.strip() for p in self.commitment_recommendation_services.split(",") if p.strip()
+        )
 
     def model_copy(self, *, update: dict[str, object] | None = None) -> Settings:
         """The stub's own copy, because the seed uses it to override the state locations.
@@ -807,3 +821,65 @@ def test_the_demo_carries_ai_spend_from_every_source(engine: object) -> None:
             tenant,
         ).scalars()
         assert "NotOptedIn" in set(refused)
+
+
+def test_the_demo_carries_what_is_held_the_rate_the_advice_and_a_plan(engine: object) -> None:
+    """P14, TASK-P14-010: the commitments screen on the local stack shows what this seeded.
+
+    The lesson of the parking and commitment action assertions above: a collector wired into the
+    seed that produces nothing passes every other test and leaves a panel empty. So each is
+    asserted, and so is the absence the inventory exists to say: the refusing account holds no
+    rows rather than reading as holding nothing.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), _now())
+    tenant = {"t": DEMO_TENANT}
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        held = dict(
+            connection.execute(
+                sql(
+                    "SELECT commitment_id, account_id FROM commitment_inventory "
+                    "WHERE tenant_id = :t"
+                ),
+                tenant,
+            ).all()
+        )
+        assert "sp-fake-compute-0001" in held
+        refused = connection.execute(
+            sql(
+                "SELECT count(*) FROM ingest_run WHERE tenant_id = :t "
+                "AND collector = 'commitment_inventory' AND status = 'FAILED'"
+            ),
+            tenant,
+        ).scalar_one()
+        assert refused >= 1, "the refusing account's read is a failed run, not an empty one"
+        listed = connection.execute(
+            sql(
+                "SELECT count(*) FROM cost_focus_daily WHERE tenant_id = :t "
+                "AND charge_category = 'Usage' AND list_cost IS NOT NULL"
+            ),
+            tenant,
+        ).scalar_one()
+        assert listed > 0, "the savings rate needs usage lines that carry a List Cost"
+        advice = connection.execute(
+            sql(
+                "SELECT recommended FROM purchase_recommendation WHERE tenant_id = :t "
+                "AND kind = 'savings_plan' AND program = 'Compute'"
+            ),
+            tenant,
+        ).scalar_one()
+        assert advice is True
+        plan = connection.execute(
+            sql(
+                "SELECT plan_id, status, no_purchase_reason FROM purchase_plan "
+                "WHERE tenant_id = :t ORDER BY plan_month DESC LIMIT 1"
+            ),
+            tenant,
+        ).one()
+        assert (plan.status, plan.no_purchase_reason) == ("DRAFT", None)
+        lines = connection.execute(
+            sql("SELECT count(*) FROM purchase_plan_line WHERE plan_id = :p"),
+            {"p": plan.plan_id},
+        ).scalar_one()
+        assert lines > 0, "the demo's plan buys nothing, so the plans panel would be empty"
