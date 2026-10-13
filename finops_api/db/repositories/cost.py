@@ -35,6 +35,9 @@ from finops_core.domain.cost import AWS_EXPORT
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
 
+#: FOCUS's ChargeCategory for usage at a rate, as against a purchase, a tax or a credit.
+USAGE = "Usage"
+
 #: Columns a caller may group by. Named rather than accepted as a string,
 #: because a grouping column arriving from a request is an injection unless
 #: something refuses everything that is not on a list this short.
@@ -126,6 +129,41 @@ class CostRepository(ScopedRepository):
         )
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
+
+    def savings_rate_months(
+        self, scope: Scope, first: date, last: date
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
+        """Per billing month: Effective and List Cost over the usage lines carrying a List Cost.
+
+        FEAT-087, TASK-P14-004. The cloud bill's usage lines only: a purchase line is the price of
+        a commitment rather than usage at a rate, and a provider's line carries no List Cost. With
+        the lines and the Effective Cost that carry none, and both timestamps, constraint 10.
+        """
+        c = self.table.c
+        listed = c.list_cost.is_not(None)
+        unlisted = c.list_cost.is_(None)
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                c.billing_period_start,
+                func.coalesce(func.sum(c.effective_cost).filter(listed), 0),
+                func.coalesce(func.sum(c.list_cost), 0),
+                func.count(),
+                func.count().filter(unlisted),
+                func.coalesce(func.sum(c.effective_cost).filter(unlisted), 0),
+                func.min(c.as_of),
+                func.max(c.collected_at),
+            )
+            .where(
+                c.billing_period_start >= first,
+                c.billing_period_start <= last,
+                c.ingest_source == AWS_EXPORT,
+                c.charge_category == USAGE,
+            )
+            .group_by(c.billing_period_start)
+            .order_by(c.billing_period_start)
+        )
+        return _fetch(self, scope, statement)
 
     def period_total(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """One row: effective, billed, line items and both timestamps.

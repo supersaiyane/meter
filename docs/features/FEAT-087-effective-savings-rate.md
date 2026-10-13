@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P14 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), sections 5.7 and 8 |
 | Tasks | TASK-P14-004 and TASK-P14-009 |
 | Decisions | None |
@@ -20,7 +20,13 @@ Utilization and coverage say how well a commitment is used and how much is cover
 
 ## How it works
 
-Not built yet. A query over `cost_focus_daily` sums Effective Cost and List Cost by billing month on every line that carries a List Cost, and counts the lines that carry none.
+Built: the API, TASK-P14-004; the screen follows in TASK-P14-009. `CostRepository.savings_rate_months`
+sums, per billing month, Effective Cost and List Cost over the cloud bill's usage lines that carry a
+List Cost, and counts the lines that carry none with what they cost. `finops_query/savings_rate.py`
+makes the rate, one minus Effective over List Cost, to a hundredth of a percent; a month whose lines
+carry no List Cost has no rate and the reason, and usage dearer than list is a rate below zero rather
+than one hidden. `GET /v1/commitments/savings-rate?months=12` returns the months oldest first,
+exportable, scoped as the bill is.
 
 ## Data sources and freshness
 

@@ -357,6 +357,7 @@
     "finops_api/routes/ai.py",
     "finops_api/routes/assistant.py",
     "finops_api/routes/catalog.py",
+    "finops_api/routes/commitments.py",
     "finops_api/routes/cost.py",
     "finops_api/routes/explore.py",
     "finops_api/routes/forecast.py",
@@ -594,6 +595,7 @@
     "finops_query/realized.py",
     "finops_query/redaction.py",
     "finops_query/remediation.py",
+    "finops_query/savings_rate.py",
     "finops_query/score.py",
     "finops_query/severity.py",
     "finops_query/targets.py",
@@ -730,6 +732,7 @@
     "tests/api/test_assistant_remediation.py",
     "tests/api/test_assistant_routes.py",
     "tests/api/test_catalog_routes.py",
+    "tests/api/test_commitments_routes.py",
     "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
@@ -977,6 +980,7 @@
     "tests/query/test_realized.py",
     "tests/query/test_redaction.py",
     "tests/query/test_remediation.py",
+    "tests/query/test_savings_rate.py",
     "tests/query/test_score.py",
     "tests/query/test_severity.py",
     "tests/query/test_targets.py",
@@ -8324,6 +8328,46 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_query/savings_rate.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/cost.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -12929,6 +12973,41 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_query/savings_rate.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_container_routes.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -17026,6 +17105,11 @@
     {
       "s": "tests/query/test_remediation.py",
       "t": "finops_query/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_savings_rate.py",
+      "t": "finops_query/savings_rate.py",
       "k": "python"
     },
     {

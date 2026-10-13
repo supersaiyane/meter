@@ -107,6 +107,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-13 | TASK-P14-001, the payer path, CHG-0185 | Done | Broker payer_session and reach.payer_client; commitment and account discovery bound to the payer, ISS-294 and ISS-296 fixed; management role grants the Cost Explorer commitment reads; first contact probes them; contract test forbids buying | finops_providers/aws/credentials.py:93, finops_providers/aws/reach.py:112, finops_ingest/aws_bindings.py:157, infra/terraform/management/main.tf:85, tests/contract/test_no_commitment_purchases.py:1 |
 | 2026-10-13 | TASK-P14-002, the inventory for Savings Plans, EC2 and RDS, CHG-0186 | Done | HeldCommitment and CommitmentHoldings; AWS adapter through the relay and the EC2 endpoint; migration 0054; collector reading plans once per account; relay allow list and member role reads; fake estate; first contact probes | finops_core/domain/commitments.py:1, finops_providers/aws/commitment_inventory.py:1, finops_ingest/collectors/commitment_inventory.py:1, migrations/versions/0054_commitment_inventory.py:1 |
 | 2026-10-13 | TASK-P14-003, every other reservable service, CHG-0187 | Done | One table driven reader; ElastiCache, OpenSearch, Redshift and MemoryDB through the relay; relay and member role reads; first contact probes; DynamoDB named unreadable | finops_providers/aws/commitment_inventory.py:100, finops_ingest/aws_bindings.py:170, finops_relay/relay.py:84 |
+| 2026-10-13 | TASK-P14-004, the effective savings rate, CHG-0188 | Done | finops_query/savings_rate.py; CostRepository.savings_rate_months over usage lines with a List Cost; GET /v1/commitments/savings-rate on the new commitments router | finops_query/savings_rate.py:1, finops_api/db/repositories/cost.py:130, finops_api/routes/commitments.py:1 |
 
 ## Next action
 
@@ -116,7 +117,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green, one
 after another without stopping except for an owner decision.
 
-1. **TASK-P14-004**, the effective savings rate. TASK-P14-001 to 003 are done.
+1. **TASK-P14-005**, the policy and the renewal calendar. TASK-P14-001 to 004 are done.
 2. Meter never buys: no purchase, exchange or sale call is made, allow listed or granted.
 
 P13, FinOps for AI, is delivered against fakes; ISS-285 closes with `make first-contact` against one

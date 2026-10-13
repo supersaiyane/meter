@@ -655,7 +655,7 @@ features:
 - id: FEAT-087
   name: The effective savings rate as the headline, measured from the bill
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-087-effective-savings-rate.md
 - id: FEAT-088
@@ -2620,6 +2620,12 @@ changes:
   what: TASK-P14-003, the inventory for every other reservable service
   commit: pending
   detail: 'One table driven reader, RESERVED, for every reserved service, EC2 and RDS moved onto it unchanged; ElastiCache, OpenSearch, Redshift and MemoryDB read through the relay as each account''s collector role, ADR-0037, OpenSearch''s payment enum stored as the others spell it and a currency the API does not state read as AWS''s list currency, US dollars. The relay''s allow list and the member role gain the four reads; first contact probes each. DynamoDB reserved capacity is named unreadable, ISS-295'
+- id: CHG-0188
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-004, the effective savings rate, measured from the bill
+  commit: pending
+  detail: 'GET /v1/commitments/savings-rate, the first route of P14''s commitments router: per billing month, one minus Effective Cost over List Cost on the cloud bill''s usage lines carrying a List Cost, with both sums, the lines left out and what they cost, measured and scoped by account as the bill is. A month with no List Cost has no rate and says why, never nought; usage dearer than list is a rate below zero'
 issues:
 - id: ISS-189
   severity: LOW
