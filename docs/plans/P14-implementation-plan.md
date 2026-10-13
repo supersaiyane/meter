@@ -252,7 +252,7 @@ daily, and TASK-P14-010 seeds them.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.2, OPEN-36 |
 | Delivers | FEAT-090 |
 | Depends on | TASK-P14-007 |
@@ -260,11 +260,20 @@ daily, and TASK-P14-010 seeds them.
 
 **Acceptance criteria.**
 
-- [ ] `POST` approve, bought and withdraw, each an event with the principal, the time and a note,
+- [x] `POST` approve, bought and withdraw, each an event with the principal, the time and a note,
       for a global principal only; a narrowed principal is refused
-- [ ] A transition out of order is refused by the database as well as the API
-- [ ] The plan collector matches a bought line to a new commitment and verifies the plan, and a
+- [x] A transition out of order is refused by the database as well as the API
+- [x] The plan collector matches a bought line to a new commitment and verifies the plan, and a
       line matched to nothing stays bought, shown as not yet seen
+
+**Delivered 2026-10-13.** `POST /v1/commitments/plans/{id}/approve`, `/bought` and `/withdraw`,
+each with a required note, made by a person whose scope is the organization and audited, a
+narrowed person refused with a 403 audited DENIED and a step out of order with a 409 that says why;
+`PurchasePlanRepository.transition`, which changes a status only if it is still what was read;
+`finops_query.purchase_plan.match`, pure, and the collector's daily verification of a bought plan's
+own month's lines against the inventory; migration `0058_purchase_plan_match`, one line per
+commitment; the steps in `GET /v1/commitments/plans`; and erasure replacing a person's name on
+their steps. What a person approves and buys is the plan's own month's tranche.
 
 ---
 

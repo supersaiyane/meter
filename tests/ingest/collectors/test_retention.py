@@ -492,6 +492,43 @@ def test_an_erasure_anonymises_and_leaves_the_audit_trail_intact(
     )
 
 
+def test_an_erasure_keeps_a_plans_steps_and_takes_the_name_off_them(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """TASK-P14-008. A plan's history is the payer's record of a commitment; the person goes."""
+    plan = uuid4()
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+        connection.execute(
+            text(
+                "INSERT INTO purchase_plan (plan_id, tenant_id, ingest_run_id, plan_month, "
+                "target_coverage, term_years, payment_option, ladder_limit, window_start, "
+                "window_end, days_held, currency, as_of, collected_at) VALUES (:plan, :t, :plan, "
+                "'2026-10-01', 0.8, 1, 'No Upfront', 0.0833, '2026-09-13', '2026-10-13', 30, "
+                "'USD', :at, :at)"
+            ),
+            {"plan": plan, "t": tenant_id, "at": AT},
+        )
+        connection.execute(
+            text(
+                "INSERT INTO purchase_plan_event (event_id, plan_id, tenant_id, from_status, "
+                "to_status, principal, at, note) VALUES (:event, :plan, :t, 'DRAFT', 'APPROVED', "
+                ":who, :at, 'within the ladder')"
+            ),
+            {"event": uuid4(), "plan": plan, "t": tenant_id, "who": str(principal), "at": AT},
+        )
+        report = erase_principal.erase(
+            connection, tenant_id, principal, "operator-1", "ticket-9", clock=at
+        )
+        step = connection.execute(
+            text("SELECT principal, note FROM purchase_plan_event WHERE plan_id = :plan"),
+            {"plan": plan},
+        ).one()
+
+    assert report.plan_steps_reattributed == 1
+    assert (step.principal, step.note) == (TOMBSTONE, "within the ladder")
+
+
 def test_the_report_says_out_loud_that_nothing_was_removed_from_the_audit_log() -> None:
     report = erase_principal.ErasureReport(uuid4(), 1, 0, 0, 2)
     assert any("never removed, by design" in line for line in report.lines())

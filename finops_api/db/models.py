@@ -2128,6 +2128,14 @@ purchase_plan_line = Table(
     Column("matched_commitment_id", Text),
     CheckConstraint("program IN ('Compute', 'EC2Instance')", name="ck_purchase_plan_line__program"),
     CheckConstraint("hourly_commitment > 0", name="ck_purchase_plan_line__buys_something"),
+    # Migration 0058, TASK-P14-008: a commitment pays for one line at most.
+    Index(
+        "uq_purchase_plan_line__matched_once",
+        "tenant_id",
+        "matched_commitment_id",
+        unique=True,
+        postgresql_where=text("matched_commitment_id IS NOT NULL"),
+    ),
 )
 
 purchase_plan_event = Table(

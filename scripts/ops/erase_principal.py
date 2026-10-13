@@ -71,6 +71,8 @@ class ErasureReport:
     recipient_lists_changed: int = 0
     #: TASK-P14-005. The commitment policy they last changed: the decision kept, the name gone.
     policies_reattributed: int = 0
+    #: TASK-P14-008. The steps they took on a purchase plan: each step kept, the name gone.
+    plan_steps_reattributed: int = 0
     #: Always zero. Present so the report says out loud what was left alone,
     #: rather than leaving the reader to infer it from an absence.
     audit_events_removed: int = 0
@@ -89,6 +91,7 @@ class ErasureReport:
             f"  report schedules paused        {self.schedules_paused}",
             f"  recipient lists changed        {self.recipient_lists_changed}",
             f"  commitment policies reattributed {self.policies_reattributed}",
+            f"  purchase plan steps reattributed {self.plan_steps_reattributed}",
             f"  audit events written           {self.audit_events_written}",
             f"  audit events removed           {self.audit_events_removed}"
             " (never removed, by design)",
@@ -198,6 +201,17 @@ def erase(
         {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
     ).rowcount
 
+    # The steps a person took on a purchase plan, approving, recording a purchase or withdrawing:
+    # a plan's history is the payer's record of a commitment and stays, and only the name goes.
+    # TASK-P14-008.
+    step_rows = connection.execute(
+        text(
+            "UPDATE purchase_plan_event SET principal = :tombstone "
+            "WHERE tenant_id = :tenant AND principal = :who"
+        ),
+        {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
+    ).rowcount
+
     reached = _reach_personal_tables(connection, tenant_id, str(principal_id))
 
     _audit(connection, tenant_id, principal_id, "erasure.completed", request_id, requested_by, at)
@@ -208,6 +222,7 @@ def erase(
         scope_rows_removed=scope_rows or 0,
         schedule_rows_reattributed=schedule_rows or 0,
         policies_reattributed=policy_rows or 0,
+        plan_steps_reattributed=step_rows or 0,
         audit_events_written=2,
         **reached,
     )
