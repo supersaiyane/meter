@@ -81,8 +81,22 @@ const ESTATE: Readonly<Record<string, ApiEnvelope<unknown>>> = {
   '/api/v1/reports/schedules': { data: SCHEDULES, meta: metaOf() },
   '/api/v1/platform/cost': { data: [], meta: metaOf() },
   '/api/v1/cost/explore': { data: exploreOf(), meta: metaOf() },
-  '/api/v1/cost/explore?metric=list_cost': {
-    data: exploreOf({ total_this_period: '6000.00' }),
+  '/api/v1/commitments/savings-rate?months=12': {
+    data: {
+      months: [
+        {
+          period: '2026-08-01',
+          effective_cost: '4512.71',
+          list_cost: '6000.00',
+          rate: '0.2479',
+          rate_basis: 'measured',
+          lines: 120,
+          lines_without_list_cost: 0,
+          effective_cost_without_list_cost: '0',
+          reason: null,
+        },
+      ],
+    },
     meta: metaOf(),
   },
   '/api/v1/cost/forecast': { data: forecastOf(), meta: metaOf() },

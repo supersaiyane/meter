@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { commitmentTypeName } from '../components/displayNames';
 
-import { useCommitmentDays, useCostCommitments } from '../api/queries';
+import { useChosenAccount } from '../api/account';
+import { useCommitmentDays, useCostCommitments, useMe } from '../api/queries';
 import { ChartPanel } from '../components/ChartPanel';
 import { Heatmap, StackedArea } from '../components/charts';
 import { DataTable } from '../components/DataTable';
@@ -12,6 +13,9 @@ import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { committedEachDay, coverageEachDay, dayByDay } from './commitmentDays';
 import { surfaceStateFor } from './surfaceStateFor';
+import { CalendarPanel, InventoryPanel } from './CommitmentHoldingsPanels';
+import { PurchasePlanPanel } from './PurchasePlanPanel';
+import { SavingsRatePanel } from './SavingsRatePanel';
 import { riskLabel, type RiskVerdict } from '../components/actionRisk';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { severityLevel } from './querySeverity';
@@ -39,6 +43,12 @@ import type {
  * A missing percentage is a sentence, never a zero. A commitment that has not
  * started has consumed nothing of nothing, and rendering that as zero percent
  * would say the money was wasted.
+ *
+ * P14, TASK-P14-009. The screen opens on the effective savings rate, measured from
+ * the bill, and closes on what the payer holds, when it ends, and what to buy:
+ * Meter's plan beside AWS's. Those three are the payer's alone, ADR-0025, so they
+ * are read only for a reader whose scope is the whole organization with no account
+ * chosen, and anyone else is told why rather than shown an error.
  */
 
 function money(amount: string): number {
@@ -140,6 +150,9 @@ function dollars(value: number): string {
 }
 
 export function CostCommitmentsScreen() {
+  const me = useMe();
+  const chosen = useChosenAccount();
+  const payer = me.data?.data.is_global === true && chosen === null;
   const query = useCostCommitments();
   const envelope = query.data?.data;
   const found = envelope?.data;
@@ -276,6 +289,7 @@ export function CostCommitmentsScreen() {
 
   return (
     <section aria-label="Commitments">
+      <SavingsRatePanel />
       {/*
         Outside the boundary, like the anomalies screen and for the same reason:
         this sentence is about what the screen can answer at all, and the boundary
@@ -413,6 +427,19 @@ export function CostCommitmentsScreen() {
           )}
         </>
       </StateBoundary>
+
+      {me.isPending ? null : payer ? (
+        <>
+          <InventoryPanel />
+          <CalendarPanel />
+          <PurchasePlanPanel mayAct={payer} />
+        </>
+      ) : (
+        <p data-testid="commitment-payer-only">
+          What the payer holds, when it ends and what to buy belong to the payer alone, so they
+          show to a reader whose scope is the whole organization, with no account chosen
+        </p>
+      )}
     </section>
   );
 }

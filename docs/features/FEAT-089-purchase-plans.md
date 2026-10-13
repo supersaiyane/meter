@@ -54,7 +54,7 @@ Visible at global scope only. Each recommendation request costs USD 0.01, modell
 
 ## Interface
 
-`GET /v1/commitments/plans`, built: the newest plan, its lines as the rows of a file export, the unpriced shares, AWS's recommendations, and the difference in words. Global scope only. The plans panel is TASK-P14-009.
+`GET /v1/commitments/plans`, built: the newest plan, its lines as the rows of a file export, the unpriced shares, AWS's recommendations, and the difference in words. Global scope only. The plans panel, TASK-P14-009, shows Meter's plan by tranche beside AWS's recommendations, the difference as sentences, and each unpriced share named.
 
 ## Not doing
 

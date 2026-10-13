@@ -46,7 +46,7 @@ Only a principal whose scope is global may approve, record a purchase or withdra
 
 ## Interface
 
-`POST /v1/commitments/plans/{id}/approve`, `/bought` and `/withdraw`, built, each taking a note and answering with the plan, its lines with any matched commitment, and its steps. `GET /v1/commitments/plans` carries the steps too. The plans panel's actions are TASK-P14-009.
+`POST /v1/commitments/plans/{id}/approve`, `/bought` and `/withdraw`, built, each taking a note and answering with the plan, its lines with any matched commitment, and its steps. `GET /v1/commitments/plans` carries the steps too. The plans panel's actions, TASK-P14-009, offer only the steps the plan's status allows, each with a required note, to a payer only, and show a refusal in the API's own words.
 
 ## Not doing
 

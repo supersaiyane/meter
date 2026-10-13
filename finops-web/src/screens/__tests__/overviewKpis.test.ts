@@ -117,19 +117,37 @@ describe('the forecast to month end', () => {
 });
 
 describe('the effective savings rate', () => {
-  it('is one minus effective cost over list cost', () => {
-    const kpi = effectiveSavingsRate(exploreOf(), exploreOf({ total_this_period: '6000.00' }));
-    expect(kpi.value).toBeCloseTo(1 - 4512.71 / 6000, 6);
+  const month = (period: string, rate: string | null, reason: string | null = null) => ({
+    period,
+    effective_cost: '0',
+    list_cost: '0',
+    rate,
+    rate_basis: 'measured' as const,
+    lines: 1,
+    lines_without_list_cost: rate === null ? 1 : 0,
+    effective_cost_without_list_cost: '0',
+    reason,
+  });
+
+  it('is the newest billing month against the one before, read from the route', () => {
+    const kpi = effectiveSavingsRate({
+      months: [month('2026-09-01', '0.2000'), month('2026-10-01', '0.2480')],
+    });
+    expect(kpi.value).toBe(0.248);
+    expect(kpi.previous).toBe(0.2);
     expect(kpi.formula).toContain('on demand equivalent');
   });
 
-  it('says why when the bill carries no list cost, and shows no figure', () => {
-    const kpi = effectiveSavingsRate(
-      exploreOf({ metrics_available: ['effective_cost', 'billed_cost'] }),
-      undefined,
-    );
+  it('says why when the month carries no list cost, and shows no figure', () => {
+    const kpi = effectiveSavingsRate({
+      months: [month('2026-10-01', null, 'No usage line this month carries a List Cost')],
+    });
     expect(kpi.value).toBeNull();
-    expect(kpi.unsupported).toContain('no List Cost');
+    expect(kpi.unsupported).toContain('carries a List Cost');
+  });
+
+  it('has no figure before a month is collected', () => {
+    expect(effectiveSavingsRate(undefined).value).toBeNull();
   });
 });
 

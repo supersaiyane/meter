@@ -20,7 +20,7 @@ A commitment that ends unnoticed puts its usage back on demand the next day. A m
 
 ## How it works
 
-Built: the API, TASK-P14-005; the screen follows in TASK-P14-009. `commitment_policy` holds each
+Built: the API, TASK-P14-005, and the calendar panel, TASK-P14-009. `commitment_policy` holds each
 tenant's target coverage, term, payment option and ladder limit, the cautious default of 80 percent,
 one year, no upfront and one twelfth installed for every tenant by migration 0055 and for a new one
 by `install_default_policy`. `GET /v1/commitments/policy` reads it, or the default nobody changed;
