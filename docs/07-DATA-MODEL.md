@@ -1242,6 +1242,29 @@ its usage went back on demand the day it ended, which the renewal calendar exist
 run restates the scope it read, the account and Region's reservations and, in the first collection
 Region's unit only, the account's Savings Plans; a read that fails removes nothing.
 
+### Commitment policy, P14
+
+```sql
+-- P14, FEAT-088, migration 0055. What a tenant's purchase plans aim for, one row per tenant, the
+-- cautious default installed for every one, OPEN-38. Payer wide, ADR-0025.
+CREATE TABLE commitment_policy (
+    tenant_id        UUID          NOT NULL REFERENCES tenant(tenant_id),
+    target_coverage  NUMERIC(4, 3) NOT NULL,   -- of the steady baseline, above 0, at most 1
+    term_years       INTEGER       NOT NULL,   -- 1 or 3, the terms AWS sells
+    payment_option   TEXT          NOT NULL,   -- No Upfront, Partial Upfront or All Upfront
+    ladder_limit     NUMERIC(5, 4) NOT NULL,   -- the most of the commitment ending in a month
+    reason           TEXT          NOT NULL,   -- a policy is a decision, so it says why
+    updated_by       TEXT          NOT NULL,   -- the person, or the migration or seed
+    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    CONSTRAINT pk_commitment_policy PRIMARY KEY (tenant_id)
+    -- and a check on each bound, so a policy no plan could follow cannot be stored
+);
+```
+
+Changed through `PUT /v1/commitments/policy` by a person whose scope is the organization, with a
+reason, audited ALLOWED or DENIED. An erasure keeps the policy and replaces `updated_by`, as it does
+a cadence's.
+
 ### AI provider organizations, P13
 
 ```sql

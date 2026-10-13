@@ -161,7 +161,7 @@ reads the new route from TASK-P14-009 and the two screens cannot disagree.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.4 and 8, OPEN-38 |
 | Delivers | FEAT-088 |
 | Depends on | TASK-P14-002 |
@@ -169,12 +169,21 @@ reads the new route from TASK-P14-009 and the two screens cannot disagree.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `commitment_policy`, installed for new tenants and for every existing one
+- [x] A migration creates `commitment_policy`, installed for new tenants and for every existing one
       with the cautious default
-- [ ] `GET` and `PUT /v1/commitments/policy`, a change requiring a reason and a global principal,
+- [x] `GET` and `PUT /v1/commitments/policy`, a change requiring a reason and a global principal,
       audited
-- [ ] `GET /v1/commitments/calendar` returns twelve months of expiring commitment with each month's
+- [x] `GET /v1/commitments/calendar` returns twelve months of expiring commitment with each month's
       share, flagging a month above the ladder limit
+
+**Delivered 2026-10-13.** `CommitmentPolicy` and `DEFAULT_POLICY` in the domain; migration
+`0055_commitment_policy` with a check on every bound and the default for every tenant;
+`install_default_policy` and `policy_for` in `finops_ingest/commitment_policy.py`, the seed
+installing it beside the schedule; `finops_query/commitment_calendar.py`; the inventory and policy
+repositories, the change audited; and `GET /v1/commitments/inventory`, `GET /v1/commitments/calendar`
+and `GET` and `PUT /v1/commitments/policy`, each answering a narrowed reader with a 404 that says
+commitments need the payer, and refusing a narrowed change with a 403 audited DENIED. An erasure keeps
+the policy and replaces the name on it, and `docs/09-DATA-CLASSIFICATION.md` says so.
 
 ---
 

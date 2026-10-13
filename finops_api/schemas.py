@@ -2668,3 +2668,91 @@ class SavingsRateOut(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     months: list[SavingsRateMonthOut]
+
+
+class HeldCommitmentOut(BaseModel):
+    """One commitment the organization holds, as the service that sold it says. FEAT-086."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: str
+    commitment_id: str
+    program: str
+    account_id: str
+    region_id: str | None
+    applies_to: str | None
+    #: A reservation's count, or a Savings Plan's amount an hour: exactly one, never both.
+    quantity: int | None
+    hourly_commitment: Decimal | None
+    term_months: int
+    payment_option: str
+    upfront_amount: Decimal
+    recurring_hourly: Decimal
+    currency: str
+    starts_at: datetime
+    ends_at: datetime
+    state: str
+
+
+class CommitmentInventoryOut(BaseModel):
+    """Every commitment held, the soonest ending first, and what cannot be read. TASK-P14-005."""
+
+    model_config = ConfigDict(frozen=True)
+
+    commitments: list[HeldCommitmentOut]
+    #: Reserved services no API reads, named so none is mistaken for none held, ISS-295.
+    unreadable: list[str]
+
+
+class CalendarMonthOut(BaseModel):
+    """What ends in one month, and its share of the hourly commitment held. FEAT-088."""
+
+    model_config = ConfigDict(frozen=True)
+
+    month: date
+    commitments: list[str]
+    hourly_value: Decimal
+    #: Null where nothing is held to take a share of, never nought for want of a denominator.
+    share: Decimal | None
+    #: Measured for Savings Plans; modelled where a reservation's hourly value is in the month.
+    basis: Basis
+    over_limit: bool
+
+
+class CommitmentCalendarOut(BaseModel):
+    """The next months' endings against the tenant's ladder limit. FEAT-088, TASK-P14-005."""
+
+    model_config = ConfigDict(frozen=True)
+
+    months: list[CalendarMonthOut]
+    ladder_limit: Decimal
+    total_hourly_value: Decimal
+    total_basis: Basis
+
+
+class CommitmentPolicyOut(BaseModel):
+    """What the tenant's purchase plans aim for. FEAT-088, OPEN-38."""
+
+    model_config = ConfigDict(frozen=True)
+
+    target_coverage: Decimal
+    term_years: int
+    payment_option: str
+    ladder_limit: Decimal
+    reason: str
+    #: The person who set it, or None for the default nobody has changed.
+    updated_by: str | None
+    updated_at: datetime | None
+    is_default: bool
+
+
+class CommitmentPolicyIn(BaseModel):
+    """A change to the policy. A reason is required, because a policy is a decision."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    target_coverage: Decimal = Field(gt=0, le=1)
+    term_years: Literal[1, 3]
+    payment_option: Literal["No Upfront", "Partial Upfront", "All Upfront"]
+    ladder_limit: Decimal = Field(gt=0, le=1)
+    reason: str = Field(min_length=3, max_length=500)

@@ -90,7 +90,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-90 features across 15 sub projects. 14 specified, 3 planned, 15 in build, 58 delivered.
+90 features across 15 sub projects. 13 specified, 3 planned, 16 in build, 58 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -175,7 +175,7 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-086](docs/features/FEAT-086-commitment-inventory.md) | The commitment inventory, every commitment's real term, end and payment | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-087](docs/features/FEAT-087-effective-savings-rate.md) | The effective savings rate as the headline, measured from the bill | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
-| [FEAT-088](docs/features/FEAT-088-renewal-calendar.md) | The renewal calendar and the ladder | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-088](docs/features/FEAT-088-renewal-calendar.md) | The renewal calendar and the ladder | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-089](docs/features/FEAT-089-purchase-plans.md) | Purchase plans, Meter's and AWS's side by side | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-090](docs/features/FEAT-090-plan-approval.md) | Plan approval, the purchase recorded and verified against the bill | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md) |
 
@@ -509,6 +509,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0186 | 2026-10-13 | Feature | TASK-P14-002, the commitment inventory for Savings Plans, EC2 and RDS | `pending` | HeldCommitment and the CommitmentHoldings port; an AWS adapter reading Savings Plans and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the account's collector role, every page read on both paths; migration 0054 creating commitment_inventory, payer wide, with exactly one of quantity and hourly commitment, and the collector's cadence for existing tenants; the collector, reading Savings Plans once per account in the first collection Region's unit and restating only the scope it read; the relay's allow list and the member collector role gain the three reads, ADR-0037; a fake estate and both compositions; first contact probes all three, the relayed reads as the member account |
 | CHG-0187 | 2026-10-13 | Feature | TASK-P14-003, the inventory for every other reservable service | `pending` | One table driven reader, RESERVED, for every reserved service, EC2 and RDS moved onto it unchanged; ElastiCache, OpenSearch, Redshift and MemoryDB read through the relay as each account's collector role, ADR-0037, OpenSearch's payment enum stored as the others spell it and a currency the API does not state read as AWS's list currency, US dollars. The relay's allow list and the member role gain the four reads; first contact probes each. DynamoDB reserved capacity is named unreadable, ISS-295 |
 | CHG-0188 | 2026-10-13 | Feature | TASK-P14-004, the effective savings rate, measured from the bill | `pending` | GET /v1/commitments/savings-rate, the first route of P14's commitments router: per billing month, one minus Effective Cost over List Cost on the cloud bill's usage lines carrying a List Cost, with both sums, the lines left out and what they cost, measured and scoped by account as the bill is. A month with no List Cost has no rate and says why, never nought; usage dearer than list is a rate below zero |
+| CHG-0189 | 2026-10-13 | Feature | TASK-P14-005, the commitment policy and the renewal calendar | `pending` | Migration 0055 creates commitment_policy, one row per tenant with a check on every bound, and installs the cautious default for every tenant, OPEN-38; install_default_policy gives a new tenant the same. GET /v1/commitments/inventory lists what is held, the soonest ending first, naming DynamoDB unreadable; GET /v1/commitments/calendar groups it by the month it ends, a Savings Plan's hourly amount measured and a reservation's hourly value modelled, each month's share flagged above the ladder limit; GET and PUT /v1/commitments/policy, a change needing a person whose scope is the organization and a reason, audited ALLOWED or DENIED. A narrowed reader is told commitments need the payer. An erasure keeps the policy and replaces the name on it |
 
 <!-- generated:changes end -->
 

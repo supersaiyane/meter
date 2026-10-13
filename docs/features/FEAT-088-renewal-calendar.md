@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P14 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), sections 5.4 and 8 |
 | Tasks | TASK-P14-005 and TASK-P14-009 |
 | Decisions | OPEN-38 |
@@ -20,7 +20,16 @@ A commitment that ends unnoticed puts its usage back on demand the next day. A m
 
 ## How it works
 
-Not built yet. `commitment_policy` holds each tenant's target coverage, term, payment option and ladder limit, the cautious default of 80 percent, one year, no upfront and one twelfth. The calendar groups the inventory by the month each commitment ends.
+Built: the API, TASK-P14-005; the screen follows in TASK-P14-009. `commitment_policy` holds each
+tenant's target coverage, term, payment option and ladder limit, the cautious default of 80 percent,
+one year, no upfront and one twelfth installed for every tenant by migration 0055 and for a new one
+by `install_default_policy`. `GET /v1/commitments/policy` reads it, or the default nobody changed;
+`PUT` changes it, for a person whose scope is the organization, with a reason, audited.
+`finops_query/commitment_calendar.py` groups the inventory by the month each commitment ends: a
+Savings Plan's hourly amount is measured, and a reservation's hourly value is modelled, its count
+times its recurring charge and its upfront price over 730 hours a month. Each month's share of the
+hourly commitment held now is flagged above the ladder limit. `GET /v1/commitments/calendar` returns
+twelve months, every one present, a month in which nothing ends a measured nought.
 
 ## Data sources and freshness
 

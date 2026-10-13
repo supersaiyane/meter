@@ -321,6 +321,7 @@
     "finops_api/db/repositories/assistant.py",
     "finops_api/db/repositories/base.py",
     "finops_api/db/repositories/catalog.py",
+    "finops_api/db/repositories/commitments.py",
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/explore.py",
@@ -514,6 +515,7 @@
     "finops_ingest/collectors/waste_compute.py",
     "finops_ingest/collectors/waste_parking.py",
     "finops_ingest/collectors/waste_volumes.py",
+    "finops_ingest/commitment_policy.py",
     "finops_ingest/composition.py",
     "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
@@ -578,6 +580,7 @@
     "finops_query/blast_radius.py",
     "finops_query/classify.py",
     "finops_query/commitment.py",
+    "finops_query/commitment_calendar.py",
     "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/digest.py",
@@ -694,6 +697,7 @@
     "migrations/versions/0052_gpu_utilization_daily.py",
     "migrations/versions/0053_ai_spend_screen.py",
     "migrations/versions/0054_commitment_inventory.py",
+    "migrations/versions/0055_commitment_policy.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -962,6 +966,7 @@
     "tests/query/test_blast_radius.py",
     "tests/query/test_classify.py",
     "tests/query/test_commitment.py",
+    "tests/query/test_commitment_calendar.py",
     "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_digest.py",
@@ -7488,6 +7493,31 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/commitments.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/commitments.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/commitments.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/commitments.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/commitments.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/containers.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -8334,6 +8364,11 @@
     },
     {
       "s": "finops_api/routes/commitments.py",
+      "t": "finops_api/db/repositories/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
       "t": "finops_api/db/repositories/cost.py",
       "k": "python"
     },
@@ -8359,7 +8394,17 @@
     },
     {
       "s": "finops_api/routes/commitments.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/commitments.py",
+      "t": "finops_query/commitment_calendar.py",
       "k": "python"
     },
     {
@@ -11303,6 +11348,11 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/commitment_policy.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/composition.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -12248,6 +12298,11 @@
       "k": "python"
     },
     {
+      "s": "finops_query/commitment_calendar.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/containers.py",
       "t": "finops_core/domain/containers.py",
       "k": "python"
@@ -12600,6 +12655,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/waste_volumes.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/commitment_policy.py",
       "k": "python"
     },
     {
@@ -12979,7 +13039,22 @@
     },
     {
       "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/collectors/commitment_inventory.py",
       "k": "python"
     },
     {
@@ -12990,6 +13065,11 @@
     {
       "s": "tests/api/test_commitments_routes.py",
       "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_commitments_routes.py",
+      "t": "finops_ingest/commitment_policy.py",
       "k": "python"
     },
     {
@@ -16880,6 +16960,16 @@
     {
       "s": "tests/query/test_commitment.py",
       "t": "finops_query/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_commitment_calendar.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_commitment_calendar.py",
+      "t": "finops_query/commitment_calendar.py",
       "k": "python"
     },
     {
