@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 90 total, 11 specified, 18 in build, 58 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 192 recorded |
+| Changes | 193 recorded |
 | Issues | 186 fixed, 108 open, 0 parked |
 | Open questions | 40 awaiting a decision |
 
@@ -162,7 +162,9 @@ purchase plan daily from the bill, P9's rates and the inventory, split by stabil
 answered OPEN-40, and `GET /v1/commitments/plans` shows it beside AWS's with the difference in words.
 The seed does not run the P14 collectors yet; TASK-P14-010 does. TASK-P14-008 lets a person whose scope
 is the organization approve a plan, record it bought and withdraw it, each step named and audited,
-and the collector verifies a bought plan when the inventory holds its purchase.
+and the collector verifies a bought plan when the inventory holds its purchase. TASK-P14-009 puts it on
+the commitments screen: the savings rate first, then what is held, when it ends and what to buy,
+with the plan's steps for a payer; the Overview's savings rate tile reads the same route.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -340,7 +342,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
-| P14 | 8 | 0 | 0 | 0 | 2 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P14 | 9 | 0 | 0 | 0 | 1 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -642,6 +644,7 @@ ISS-003.
 | `TASK-P14-006` | Done 2026-10-13 | AWS's purchase recommendations |
 | `TASK-P14-007` | Done 2026-10-13 | Meter's purchase plan |
 | `TASK-P14-008` | Done 2026-10-13 | approval, the purchase recorded, and verification |
+| `TASK-P14-009` | Done 2026-10-13 | the commitments screen |
 
 <!-- generated:task-status end -->
 

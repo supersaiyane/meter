@@ -47,6 +47,10 @@ import {
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import { aiCallersFixture, aiGpuFixture, aiSpendFixture } from './fixtures/ai';
 import type {
+  ApiCommitmentCalendar,
+  ApiCommitmentInventory,
+  ApiPurchasePlans,
+  ApiSavingsRate,
   ApiAiCallers,
   ApiAiGpuFleet,
   ApiAiGrouping,
@@ -1028,5 +1032,78 @@ export function useDeleteSchedule() {
   return useMutation({
     mutationFn: (scheduleId: string) => client.delete<ApiSchedule>(schedulePath(scheduleId)),
     onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
+  });
+}
+
+/* --- P14 commitments, TASK-P14-009 ---------------------------------------------------------- */
+
+/**
+ * The effective savings rate by billing month, FEAT-087. Scoped as the bill is, so it narrows to a
+ * chosen account like every cost read; the screen's headline and the overview's tile read it, and
+ * nothing computes the rate a second way.
+ */
+export function useSavingsRate(months = 12) {
+  return useRead<ApiSavingsRate>(
+    ['commitment-savings-rate', months],
+    '/api/v1/commitments/savings-rate',
+    `/api/v1/commitments/savings-rate?months=${String(months)}`,
+  );
+}
+
+/**
+ * What the payer holds, what ends when, and what to buy: the payer's alone, ADR-0025. The API
+ * answers a narrowed reader with a 404 that says so, so these are read only when the caller says
+ * the reader's scope is the whole organization, and the screen says why otherwise.
+ */
+export function useCommitmentInventory(enabled: boolean) {
+  return useRead<ApiCommitmentInventory>(
+    ['commitment-inventory'],
+    '/api/v1/commitments/inventory',
+    enabled ? '/api/v1/commitments/inventory' : '',
+    { enabled },
+  );
+}
+
+export function useCommitmentCalendar(enabled: boolean) {
+  return useRead<ApiCommitmentCalendar>(
+    ['commitment-calendar'],
+    '/api/v1/commitments/calendar',
+    enabled ? '/api/v1/commitments/calendar' : '',
+    { enabled },
+  );
+}
+
+const PLANS_KEY = ['commitment-plans'] as const;
+
+export function useCommitmentPlans(enabled: boolean) {
+  return useRead<ApiPurchasePlans>(
+    PLANS_KEY,
+    '/api/v1/commitments/plans',
+    enabled ? '/api/v1/commitments/plans' : '',
+    { enabled, title: 'Purchase plan' },
+  );
+}
+
+/** A person's step in a plan's lifecycle, FEAT-090. Meter records it; a person buys in AWS. */
+export type PlanStep = 'approve' | 'bought' | 'withdraw';
+
+export function usePlanStep() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      planId,
+      step,
+      note,
+    }: {
+      readonly planId: string;
+      readonly step: PlanStep;
+      readonly note: string;
+    }) =>
+      client.post<ApiPurchasePlans>(
+        `/api/v1/commitments/plans/${encodeURIComponent(planId)}/${step}`,
+        { note },
+      ),
+    onSettled: () => queries.invalidateQueries({ queryKey: PLANS_KEY }),
   });
 }

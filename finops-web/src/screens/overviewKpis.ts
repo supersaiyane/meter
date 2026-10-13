@@ -7,6 +7,7 @@ import type {
   ApiForecast,
   ApiReconciliation,
   ApiRecommendation,
+  ApiSavingsRate,
 } from '../api/types';
 import { wasteClassName } from '../components/displayNames';
 import { DAY_MS, exploreQuery } from './exploreSeries';
@@ -49,9 +50,8 @@ const UNALLOCATED = 'unallocated';
 /** A budget scope covering every account, the only one a pace for the whole estate can use. */
 const ESTATE = 'ALL';
 
-/** Cost Explorer's own default view, this month to date by service, and its List Cost twin. */
+/** Cost Explorer's own default view, this month to date by service. */
 export const MONTH_BY_SERVICE = exploreQuery();
-export const MONTH_LIST_COST = exploreQuery({ metric: 'list_cost' });
 
 /** The tag the allocation screen reads by default, and the one the drawing allocates by. */
 export const ALLOCATION_TAG = 'team';
@@ -172,34 +172,35 @@ export function forecastToMonthEnd(
 }
 
 /**
- * Effective savings rate: one minus actual spend with discounts over the same use at the on
- * demand rate, the KPI library's definition. FOCUS List Cost is that on demand equivalent, and
- * a bill without it cannot support the figure at all.
+ * Effective savings rate: one minus Effective Cost over List Cost, the KPI library's definition,
+ * FEAT-087. Read from `/v1/commitments/savings-rate`, the one place the rate is computed, so the
+ * overview and the commitments screen cannot disagree: over the bill's usage lines that carry a
+ * List Cost, the newest billing month against the one before it. A month with no List Cost has
+ * no figure, and says why in the API's own words.
  */
-export function effectiveSavingsRate(
-  effective: ApiExplore | undefined,
-  list: ApiExplore | undefined,
-): KpiFacts {
+export function effectiveSavingsRate(rate: ApiSavingsRate | undefined): KpiFacts {
   const formula =
-    'One minus FOCUS Effective Cost over FOCUS List Cost, month to date. List Cost is the on ' +
-    'demand equivalent';
-  const base = { value: null, previous: null, period: 'the on demand equivalent', formula };
-  if (effective === undefined) {
+    'One minus FOCUS Effective Cost over FOCUS List Cost, over the usage lines that carry a ' +
+    'List Cost, this billing month. List Cost is the on demand equivalent';
+  const base = { value: null, previous: null, period: 'last month', formula };
+  const months = rate?.months ?? [];
+  const latest = months.at(-1);
+  if (latest === undefined) {
     return base;
   }
-  if (!effective.metrics_available.includes('list_cost')) {
+  if (latest.rate === null) {
     return {
       ...base,
       unsupported:
-        'The bill carries no List Cost, so there is no on demand equivalent to measure it against',
+        latest.reason ?? 'No usage line this month carries a List Cost to measure it against',
     };
   }
-  const spent = amount(effective.total_this_period);
-  const onDemand = amount(list?.total_this_period);
-  if (spent === null || onDemand === null || onDemand === 0) {
-    return base;
-  }
-  return { ...base, value: 1 - spent / onDemand };
+  const before = months.at(-2);
+  return {
+    ...base,
+    value: Number(latest.rate),
+    previous: before === undefined || before.rate === null ? null : Number(before.rate),
+  };
 }
 
 /** Spend covered by commitments over the spend they could cover, and how well they are used. */

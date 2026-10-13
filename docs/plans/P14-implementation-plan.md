@@ -281,7 +281,7 @@ their steps. What a person approves and buys is the plan's own month's tranche.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 8 |
 | Delivers | FEAT-087, FEAT-088, FEAT-089, FEAT-090 |
 | Depends on | TASK-P14-004 to TASK-P14-008 |
@@ -289,11 +289,19 @@ their steps. What a person approves and buys is the plan's own month's tranche.
 
 **Acceptance criteria.**
 
-- [ ] The commitments screen opens on the effective savings rate and gains the inventory, the
+- [x] The commitments screen opens on the effective savings rate and gains the inventory, the
       calendar and the plans, each panel with its freshness
-- [ ] The plans panel offers approve, bought and withdraw to a principal who may take them, and
+- [x] The plans panel offers approve, bought and withdraw to a principal who may take them, and
       says why to one who may not
-- [ ] Every figure says measured or modelled; unit tests and a Playwright journey
+- [x] Every figure says measured or modelled; unit tests and a Playwright journey
+
+**Delivered 2026-10-13.** The commitments screen opens on `SavingsRatePanel`, the effective savings
+rate by billing month, and closes on `InventoryPanel`, `CalendarPanel` and `PurchasePlanPanel`, each
+with its own freshness. The three are read only for a reader whose scope is the whole organization
+with no account chosen; anyone else is told why. `PlanActions` offers only the steps the plan's
+status allows, each with a note. The Overview's savings rate tile now reads the same route, so the
+two cannot disagree. Unit tests in `CommitmentPanels.test.tsx` and a Playwright journey,
+`e2e/commitments.spec.ts`, against stubs; the seeded demo is TASK-P14-010.
 
 ---
 

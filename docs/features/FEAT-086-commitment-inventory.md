@@ -57,7 +57,7 @@ Read only. The relay's allow list and the member collector role gain only the de
 
 ## Interface
 
-`GET /v1/commitments/inventory`, and the inventory panel of the commitments screen.
+`GET /v1/commitments/inventory`, and the inventory panel of the commitments screen, built in TASK-P14-009, which names what has no read API rather than showing it as none held.
 
 ## Not doing
 

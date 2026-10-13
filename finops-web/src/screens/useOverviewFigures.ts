@@ -1,13 +1,18 @@
 import { useMemo } from 'react';
 
-import { useBudgets, useCostAllocation, useCostExplore, useCostForecast } from '../api/queries';
+import {
+  useBudgets,
+  useCostAllocation,
+  useCostExplore,
+  useCostForecast,
+  useSavingsRate,
+} from '../api/queries';
 import type { ApiBudget, ApiCostSlice, ApiExplore, ApiForecast } from '../api/types';
 import type { SurfaceState } from '../components/surfaceState';
 import { useReportMeta } from '../shell/metaRegistry';
 import {
   ALLOCATION_TAG,
   MONTH_BY_SERVICE,
-  MONTH_LIST_COST,
   budgetConsumed,
   costAllocated,
   effectiveCost,
@@ -73,15 +78,18 @@ export function useOverviewFigures(): OverviewFigures {
   useReportMeta('overview-month', month.data?.meta);
   const monthState = surfaceStateFor(month, month.data?.meta, 1, 'none', 'cost_focus_daily');
 
-  // List Cost only when the bill carries it: asking for it otherwise is refused, and the tile
-  // says why instead.
-  const listed = monthView?.metrics_available.includes('list_cost') === true;
-  const listCost = useCostExplore(MONTH_LIST_COST, { enabled: listed, offered: false });
-  // Waiting on, or refused, the List Cost the rate needs: either one stands in for the figure.
-  const savingsState =
-    listed && listCost.data === undefined
-      ? surfaceStateFor(listCost, undefined, 1, 'none', 'cost_focus_daily')
-      : monthState;
+  // FEAT-087. The rate the commitments screen opens on, read from the one route that computes
+  // it and by the same twelve months, so the two share one answer: the newest billing month
+  // against the one before.
+  const savingsRate = useSavingsRate();
+  useReportMeta('overview-savings-rate', savingsRate.data?.meta);
+  const savingsState = surfaceStateFor(
+    savingsRate,
+    savingsRate.data?.meta,
+    1,
+    'none',
+    'cost_focus_daily',
+  );
 
   const forecastQuery = useCostForecast();
   const forecast = forecastQuery.data?.data;
@@ -141,7 +149,7 @@ export function useOverviewFigures(): OverviewFigures {
       state: budgetState,
     },
     savings: {
-      facts: effectiveSavingsRate(monthView, listCost.data?.data),
+      facts: effectiveSavingsRate(savingsRate.data?.data),
       state: savingsState,
     },
     allocated: { facts: costAllocated(slices, ALLOCATION_TAG), state: allocationState },

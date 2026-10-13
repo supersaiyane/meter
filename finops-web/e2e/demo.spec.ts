@@ -30,7 +30,7 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   await expect(page.getByRole('link', { name: 'Effective Cost', exact: true })).toBeVisible();
   await expect(
     page.getByRole('region', { name: 'Effective savings rate' }).getByTestId('kpi-unsupported'),
-  ).toContainText('no List Cost');
+  ).toContainText('carries a List Cost');
   // P1 filled three home slots and left them saying "arrives with P1" until
   // 2026-09-20, on the front page of the demo.
   await expect(page.getByText('P1 Cost Intelligence')).toHaveCount(0);

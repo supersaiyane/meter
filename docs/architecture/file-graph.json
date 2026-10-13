@@ -24,6 +24,7 @@
     "finops-web/e2e/account.spec.ts",
     "finops-web/e2e/ai.spec.ts",
     "finops-web/e2e/assistant.spec.ts",
+    "finops-web/e2e/commitments.spec.ts",
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
@@ -157,6 +158,7 @@
     "finops-web/src/screens/AssistantScreen.tsx",
     "finops-web/src/screens/BudgetsScreen.tsx",
     "finops-web/src/screens/ClustersScreen.tsx",
+    "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
     "finops-web/src/screens/ContainerCostScreen.tsx",
     "finops-web/src/screens/ContainerWasteScreen.tsx",
     "finops-web/src/screens/CostAllocationScreen.tsx",
@@ -181,7 +183,9 @@
     "finops-web/src/screens/OverviewExecutive.tsx",
     "finops-web/src/screens/OverviewFinOps.tsx",
     "finops-web/src/screens/OverviewParts.tsx",
+    "finops-web/src/screens/PlanActions.tsx",
     "finops-web/src/screens/PlatformScreen.tsx",
+    "finops-web/src/screens/PurchasePlanPanel.tsx",
     "finops-web/src/screens/QueryAdhocScreen.tsx",
     "finops-web/src/screens/QueryFindingDetailScreen.tsx",
     "finops-web/src/screens/QueryFindingsScreen.tsx",
@@ -194,6 +198,7 @@
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ReportLibraryScreen.tsx",
     "finops-web/src/screens/ResourceListScreen.tsx",
+    "finops-web/src/screens/SavingsRatePanel.tsx",
     "finops-web/src/screens/ScheduledReportsScreen.tsx",
     "finops-web/src/screens/TopologyScreen.tsx",
     "finops-web/src/screens/WasteSavingsScreen.tsx",
@@ -204,6 +209,7 @@
     "finops-web/src/screens/__tests__/AssistantScreen.test.tsx",
     "finops-web/src/screens/__tests__/BudgetsScreen.test.tsx",
     "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
     "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
     "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
@@ -257,6 +263,7 @@
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/accountHealth.ts",
     "finops-web/src/screens/commitmentDays.ts",
+    "finops-web/src/screens/commitmentFormat.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/exploreSeries.ts",
@@ -1185,6 +1192,11 @@
     },
     {
       "s": "finops-web/e2e/ai.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/commitments.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
     },
@@ -2884,6 +2896,61 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/PercentCell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ContainerCostScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -3115,6 +3182,11 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
     },
@@ -3171,6 +3243,21 @@
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/CommitmentHoldingsPanels.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/SavingsRatePanel.tsx",
       "k": "typescript"
     },
     {
@@ -4229,6 +4316,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/PlanActions.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PlanActions.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PlanActions.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/PlatformScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -4285,6 +4387,61 @@
     },
     {
       "s": "finops-web/src/screens/PlatformScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/screens/PlanActions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PurchasePlanPanel.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -4884,6 +5041,61 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/PercentCell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/SavingsRatePanel.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
       "t": "finops-web/src/api/apiContext.ts",
       "k": "typescript"
@@ -5341,6 +5553,41 @@
     {
       "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/screens/PlanActions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CommitmentPanels.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
     {
@@ -6621,6 +6868,11 @@
     {
       "s": "finops-web/src/screens/commitmentDays.ts",
       "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentFormat.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
