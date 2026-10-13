@@ -74,7 +74,7 @@ Nothing applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.3, 5.5 and 6, OPEN-37, OPEN-39, ADR-0037 |
 | Delivers | FEAT-086 |
 | Depends on | TASK-P14-001 |
@@ -82,13 +82,24 @@ Nothing applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `commitment_inventory` with its checks, and installs the
+- [x] A migration creates `commitment_inventory` with its checks, and installs the
       `commitment_inventory` cadence for existing tenants
-- [ ] A port, and adapters for Savings Plans through the relay, EC2 reservations through the EC2
+- [x] A port, and adapters for Savings Plans through the relay, EC2 reservations through the EC2
       endpoint, and RDS reservations through the relay, each typed for every failure
-- [ ] The relay's allow list and the member collector role gain exactly the three reads
-- [ ] The collector is scheduled, composed in both modes and has a fake estate with a commitment
+- [x] The relay's allow list and the member collector role gain exactly the three reads
+- [x] The collector is scheduled, composed in both modes and has a fake estate with a commitment
       ending next month and an account that refuses
+
+**Delivered 2026-10-13.** `HeldCommitment` in `finops_core/domain/commitments.py` and the
+`CommitmentHoldings` port; `finops_providers/aws/commitment_inventory.py`, which reads Savings Plans
+and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the
+account's collector role, every page on both paths, failures typed; migration
+`0054_commitment_inventory` with its checks and the cadence for existing tenants; the collector,
+which reads Savings Plans only in the first collection Region's unit and restates only the scope it
+read; the relay's allow list and the member role gain the three reads and nothing that buys; a fake
+estate with a plan ending in three weeks, a retired plan and the refusing account; both
+compositions; and three first contact probes, the relayed ones as the member account. Nothing
+applied, ISS-002.
 
 ---
 

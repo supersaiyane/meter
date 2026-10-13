@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P14 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), sections 5.3, 5.5, 5.8 and 6 |
 | Tasks | TASK-P14-001, TASK-P14-002 and TASK-P14-003 |
 | Decisions | OPEN-37, OPEN-39, ADR-0037 |
@@ -20,7 +20,15 @@ FEAT-024 infers a commitment's term from the reporting window, so no renewal dat
 
 ## How it works
 
-Not built yet. The `commitment_inventory` collector reads each member account through its collector role: Savings Plans and the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay, ADR-0037, and EC2 reservations through the EC2 endpoint. It writes `commitment_inventory`, `PayerWide`, ADR-0025. TASK-P14-001 first makes the existing Cost Explorer reads run as the payer, ISS-294.
+Built for Savings Plans, EC2 and RDS, TASK-P14-002; TASK-P14-001 first made the existing Cost
+Explorer reads run as the payer, ISS-294. The `commitment_inventory` collector reads each member
+account as its collector role, per account and collection Region: EC2 reservations through the EC2
+endpoint, and Savings Plans and RDS reservations through the relay, ADR-0037, every page read on
+both paths. A Savings Plan has no Region, so it is read once per account, in the first collection
+Region's unit. It writes `commitment_inventory`, `PayerWide`, ADR-0025: exactly one of quantity and
+hourly commitment, the real start, end, term and payment, and the state, retired ones included.
+`make first-contact` probes all three reads. ElastiCache, OpenSearch, Redshift and MemoryDB follow
+in TASK-P14-003.
 
 ## Data sources and freshness
 

@@ -203,6 +203,30 @@ PROBES: Final[tuple[Probe, ...]] = (
         ),
     ),
     Probe(
+        "EC2 reservations the account holds",
+        "commitment_inventory",
+        "member",
+        "ec2",
+        lambda c, _t: c.describe_reserved_instances(),
+    ),
+    Probe(
+        "Savings Plans the account holds, through the relay",
+        "commitment_inventory",
+        "relay-member",
+        "savingsplans",
+        lambda c, _t: c.describe_savings_plans(maxResults=1),
+        needs=RELAYED,
+        region=GLOBAL_REGION,
+    ),
+    Probe(
+        "RDS reservations the account holds, through the relay",
+        "commitment_inventory",
+        "relay-member",
+        "rds",
+        lambda c, _t: c.describe_reserved_db_instances(MaxRecords=20),
+        needs=RELAYED,
+    ),
+    Probe(
         "Bedrock's invocation logging configuration",
         "bedrock_invocations",
         "member",
@@ -368,6 +392,11 @@ def clients(target: Target) -> ClientFor:
         if probe.reach == "relay":
             account = where.payer if probe.service in {"budgets", "invoicing"} else None
             return relay(where.settings, service=probe.service, region=region, account_id=account)
+        if probe.reach == "relay-member":
+            # Through the relay as the account's own collector role, ADR-0037.
+            return relay(
+                where.settings, service=probe.service, region=region, account_id=where.account
+            )
         return hub_client(where.settings, probe.service, probe.region)
 
     return client_for

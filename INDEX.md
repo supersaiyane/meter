@@ -90,7 +90,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-90 features across 15 sub projects. 16 specified, 3 planned, 13 in build, 58 delivered.
+90 features across 15 sub projects. 15 specified, 3 planned, 14 in build, 58 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -173,7 +173,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-086](docs/features/FEAT-086-commitment-inventory.md) | The commitment inventory, every commitment's real term, end and payment | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
+| [FEAT-086](docs/features/FEAT-086-commitment-inventory.md) | The commitment inventory, every commitment's real term, end and payment | In build | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-087](docs/features/FEAT-087-effective-savings-rate.md) | The effective savings rate as the headline, measured from the bill | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-088](docs/features/FEAT-088-renewal-calendar.md) | The renewal calendar and the ladder | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md) |
 | [FEAT-089](docs/features/FEAT-089-purchase-plans.md) | Purchase plans, Meter's and AWS's side by side | Specified | [P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md) |
@@ -506,6 +506,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0183 | 2026-10-13 | Fix | Budgets count their coverage in payers, so a whole estate is never called partial | `pending` | The front page read 1 of 5 accounts after CHG-0182 for a reader who sees all five, because GET /cost/budgets passed one visible account against every account in the organization. A budget belongs to the payer, so its coverage is now one payer of one, as commitments and reconciliation already said, ISS-293. A lesson recorded for an internal term left unexplained in a question to the owner |
 | CHG-0184 | 2026-10-13 | Docs | P14 Commitments specified and planned, OPEN-35 to OPEN-39 answered | `pending` | The owner chose commitments, proposal 5 of next-in-scope.txt, as the next build and answered five questions: purchase plans from Meter and from AWS side by side; approval recorded and a person buys; the inventory covering every reservable service, Savings Plans, EC2 and RDS first; a cautious ladder by default, 80 percent coverage, one year, no upfront and one twelfth; and the relay for reads made once a day, ADR-0037 amending ADR-0035. Specifying it found ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them, and ISS-295, DynamoDB reserved capacity with no read API. Ten tasks, FEAT-086 to FEAT-090 |
 | CHG-0185 | 2026-10-13 | Fix | TASK-P14-001, what only the payer answers is read as the payer | `pending` | The credential broker gains payer_session, the organization reader role assumed with the ExternalId through STS in the hub's first collection Region and cached apart from the management account's collector role. finops_providers.aws.reach.payer_client makes a client on it on first use. The commitment collector's Cost Explorer reads, ISS-294, and account discovery's Organizations reads, ISS-296, are bound to it. The management stack grants the five Cost Explorer commitment reports and AWS's two purchase recommendations. make first-contact probes Organizations and Cost Explorer as the payer. tests/contract/test_no_commitment_purchases.py fails the build if any role, the relay or production code could buy a commitment |
+| CHG-0186 | 2026-10-13 | Feature | TASK-P14-002, the commitment inventory for Savings Plans, EC2 and RDS | `pending` | HeldCommitment and the CommitmentHoldings port; an AWS adapter reading Savings Plans and RDS reservations through the relay and EC2 reservations through the EC2 endpoint, each as the account's collector role, every page read on both paths; migration 0054 creating commitment_inventory, payer wide, with exactly one of quantity and hourly commitment, and the collector's cadence for existing tenants; the collector, reading Savings Plans once per account in the first collection Region's unit and restating only the scope it read; the relay's allow list and the member collector role gain the three reads, ADR-0037; a fake estate and both compositions; first contact probes all three, the relayed reads as the member account |
 
 <!-- generated:changes end -->
 

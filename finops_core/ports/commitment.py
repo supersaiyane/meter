@@ -26,6 +26,8 @@ from collections.abc import Iterable
 from datetime import date
 from typing import Protocol, runtime_checkable
 
+from finops_core.domain.account import AccountKey
+from finops_core.domain.commitments import HeldCommitment
 from finops_core.domain.cost import CommitmentCoverage, CommitmentDay, CommitmentUse
 
 
@@ -85,4 +87,31 @@ class CommitmentReport(Protocol):
             AccessDenied, NotOptedIn, Throttled, Unreachable: as for `utilization`.
             NoData: Nothing was committed or covered on any day in the window.
         """
+        ...
+
+
+@runtime_checkable
+class CommitmentHoldings(Protocol):
+    """What each member account holds, from the service that sold it. FEAT-086, TASK-P14-002.
+
+    A port of its own rather than a third method on `CommitmentReport`, because it is a different
+    source at a different grain: Cost Explorer reports use and coverage for the organization, as
+    the payer; this reads each account's own commitments, as that account's collector role, and a
+    commitment belongs to the account that bought it.
+
+    **Two methods, because Savings Plans have no Region and reservations do.** A Savings Plan is
+    read once per account; a reservation in every Region the account is read in. One method taking
+    an optional Region would let a caller read the Savings Plans once per Region and count each
+    plan as many times.
+
+    Every failure is a typed `CollectionError`. An account that refuses is AccessDenied, never an
+    account that holds nothing.
+    """
+
+    def savings_plans(self, account: AccountKey) -> Iterable[HeldCommitment]:
+        """Every Savings Plan the account holds, in every state, retired ones included."""
+        ...
+
+    def reservations(self, account: AccountKey, region: str) -> Iterable[HeldCommitment]:
+        """Every reservation the account holds in the Region, for each service read."""
         ...

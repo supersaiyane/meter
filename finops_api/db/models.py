@@ -1958,6 +1958,49 @@ gpu_utilization_daily = Table(
     CheckConstraint("collected_at >= as_of", name="ck_gpu_utilization_daily__collected_after_true"),
 )
 
+#: P14, 0054. What each member account holds, from the service that sold it, FEAT-086: a Savings
+#: Plan or a reservation with its real term and end. Exactly one of quantity and hourly commitment.
+commitment_inventory = Table(
+    "commitment_inventory",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("kind", Text, primary_key=True),
+    Column("commitment_id", Text, primary_key=True),
+    Column("program", Text, nullable=False),
+    Column("account_id", Text, nullable=False),
+    Column("region_id", Text),
+    Column("applies_to", Text),
+    Column("quantity", Integer),
+    Column("hourly_commitment", Numeric(20, 10)),
+    Column("term_months", Integer, nullable=False),
+    Column("payment_option", Text, nullable=False),
+    Column("upfront_amount", Numeric(20, 10), nullable=False),
+    Column("recurring_hourly", Numeric(20, 10), nullable=False),
+    Column("currency", Text, nullable=False),
+    Column("starts_at", DateTime(timezone=True), nullable=False),
+    Column("ends_at", DateTime(timezone=True), nullable=False),
+    Column("state", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "kind IN ('savings_plan', 'reservation')", name="ck_commitment_inventory__kind"
+    ),
+    CheckConstraint(
+        "(quantity IS NULL) <> (hourly_commitment IS NULL)",
+        name="ck_commitment_inventory__one_measure",
+    ),
+    CheckConstraint(
+        "term_months > 0 AND (quantity IS NULL OR quantity > 0) "
+        "AND (hourly_commitment IS NULL OR hourly_commitment > 0) "
+        "AND upfront_amount >= 0 AND recurring_hourly >= 0",
+        name="ck_commitment_inventory__positive",
+    ),
+    CheckConstraint("ends_at > starts_at", name="ck_commitment_inventory__ends_after_start"),
+    CheckConstraint("collected_at >= as_of", name="ck_commitment_inventory__collected_after_true"),
+    Index("ix_commitment_inventory__ends", "tenant_id", "ends_at"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept
