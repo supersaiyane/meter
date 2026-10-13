@@ -1,0 +1,49 @@
+# FEAT-088: The renewal calendar and the ladder
+
+| Field | Value |
+| --- | --- |
+| Sub project | P14 |
+| Status | Specified |
+| Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), sections 5.4 and 8 |
+| Tasks | TASK-P14-005 and TASK-P14-009 |
+| Decisions | OPEN-38 |
+| Issues addressed | None yet |
+| Refresh cadence | Reads what the inventory collector wrote |
+
+## What it does
+
+Shows what expires in each of the next twelve months and its share of the organization's hourly commitment, against the tenant's ladder limit.
+
+## Why it exists
+
+A commitment that ends unnoticed puts its usage back on demand the next day. A month in which much of the estate's commitment ends at once is a cliff, and a ladder keeps any one month small.
+
+## How it works
+
+Not built yet. `commitment_policy` holds each tenant's target coverage, term, payment option and ladder limit, the cautious default of 80 percent, one year, no upfront and one twelfth. The calendar groups the inventory by the month each commitment ends.
+
+## Data sources and freshness
+
+| Source | Cadence | Best possible freshness |
+| --- | --- | --- |
+| The inventory | Daily | The day before |
+
+## Measured or modelled
+
+Measured: the end dates and amounts are the inventory's. The ladder limit is the tenant's policy.
+
+## Failure behaviour
+
+A month whose expiring share passes the limit is flagged. With the inventory unread, the calendar says so rather than showing empty months.
+
+## Security considerations
+
+Visible at global scope only. A policy change needs a reason and a global principal, and is audited.
+
+## Interface
+
+`GET /v1/commitments/calendar`, `GET` and `PUT /v1/commitments/policy`, and the calendar panel.
+
+## Not doing
+
+Renewing anything. The calendar shows; a person decides.

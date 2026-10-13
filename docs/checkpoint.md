@@ -103,20 +103,21 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-13 | TASK-P13-009, the local stack, first contact and P13's proof, CHG-0181 | Done | Demo and local stack bill Bedrock and GPU lines through cur.with_ai, connect fake OpenAI and Anthropic, run every AI collector; first contact reads the GPU agent and a named provider key; runbook ai-providers.md; exit criteria through the API over the demo; ISS-289 fixed, callers carry project and key | scripts/demo/seed_demo.py:369, scripts/ops/first_contact.py:120, tests/scripts/test_p13_exit_criteria.py:1, finops_query/ai.py:345, docs/runbooks/ai-providers.md:1 |
 | 2026-10-13 | The demo run on the local stack, CHG-0182 | Done | Explore and anomalies count cloud accounts only, ISS-290; make up and make dispatch build the dispatcher, ISS-291; a tile's figure wraps, ISS-292; fake default key named | finops_api/db/repositories/explore.py:110, finops_api/db/repositories/cost.py:342, Makefile:325, finops-web/src/layout.css:2284, finops-web/e2e/overview.spec.ts:60 |
 | 2026-10-13 | Budgets coverage in payers, CHG-0183 | Done | GET /cost/budgets reports one payer of one, so the front page no longer calls a whole estate partial, ISS-293; lesson on internal terms | finops_api/routes/cost.py:615, tests/api/test_cost_budgets.py:200, tasks/lessons.md:780 |
+| 2026-10-13 | P14 Commitments specified and planned, CHG-0184 | Done | Owner chose commitments and answered OPEN-35 to OPEN-39; spec, plan of ten tasks, ADR-0037 amending ADR-0035, FEAT-086 to 090; ISS-294 and ISS-295 raised | docs/specs/2026-10-13-p14-commitments-design.md:1, docs/plans/P14-implementation-plan.md:1, docs/adr/ADR-0037-daily-reads-through-the-relay.md:1 |
 
 ## Next action
 
-**P13, FinOps for AI, is delivered against fakes**, nine tasks on 2026-10-12 and 2026-10-13, each
-merged into `next-build` once `make verify` was green. Its exit criteria are read through the API
-over the seeded demo by `tests/scripts/test_p13_exit_criteria.py`. No provider has been called and no
-invocation log read: ISS-285 closes with `make first-contact` against one organization of each
-provider, by the owner's steps in `docs/runbooks/ai-providers.md`.
+**P14, Commitments, is in build**, chosen by the owner on 2026-10-13, proposal 5 of
+`next-in-scope.txt`, and specified and planned the same day with OPEN-35 to OPEN-39 answered:
+`docs/specs/2026-10-13-p14-commitments-design.md` and `docs/plans/P14-implementation-plan.md`, ten
+tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green, one
+after another without stopping except for an owner decision.
 
-1. **The owner chooses the next sub project.** Proposals 1 to 3 of `next-in-scope.txt` are built, P10,
-   P13 and P11. Proposal 4, graded autonomy through pull requests, waits on OPEN-13; proposal 5,
-   commitments, does not.
-2. Never read a prompt or a response from an invocation log, and never let a provider key leave
-   Secrets Manager: P13's two rules, each held by a test.
+1. **TASK-P14-001**, Cost Explorer's commitment reads as the payer, ISS-294.
+2. Meter never buys: no purchase, exchange or sale call is made, allow listed or granted.
+
+P13, FinOps for AI, is delivered against fakes; ISS-285 closes with `make first-contact` against one
+organization of each provider, `docs/runbooks/ai-providers.md`.
 
 **Three owner decisions stand between P12 and a first deployment**, each recorded with its options:
 ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its

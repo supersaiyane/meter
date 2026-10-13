@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 85 total, 11 specified, 13 in build, 58 delivered |
-| Decisions | 36 architecture decision records |
-| Changes | 183 recorded |
-| Issues | 184 fixed, 106 open, 0 parked |
-| Open questions | 34 awaiting a decision |
+| Features | 90 total, 16 specified, 13 in build, 58 delivered |
+| Decisions | 37 architecture decision records |
+| Changes | 184 recorded |
+| Issues | 184 fixed, 108 open, 0 parked |
+| Open questions | 39 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -140,7 +140,12 @@ seeded demo; proving them found ISS-289, a provider's usage reaching the callers
 fixed it. P13 is delivered against fakes; ISS-285 closes with a real key. Running the demo on the local stack the
 same day found three more and fixed them: the front page counting a provider's projects as accounts,
 ISS-290; make up dispatching with a stale image, ISS-291; and the forecast tile losing a digit, ISS-292. The
-budgets read then still called the whole estate partial, 1 of 5 accounts, and was fixed, ISS-293.
+budgets read then still called the whole estate partial, 1 of 5 accounts, and was fixed, ISS-293. The
+owner then chose commitments as P14, proposal 5 of next-in-scope.txt, and answered OPEN-35 to OPEN-39:
+purchase plans from Meter and from AWS side by side, approval recorded while a person buys, every
+reservable service in the inventory, a cautious ladder by default, and the relay for reads made once a
+day, ADR-0037. P14 is specified and planned, ten tasks, FEAT-086 to FEAT-090; specifying it found
+ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -318,6 +323,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
+| P14 | 0 | 0 | 0 | 0 | 10 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
