@@ -667,7 +667,7 @@ features:
 - id: FEAT-089
   name: Purchase plans, Meter's and AWS's side by side
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-089-purchase-plans.md
 - id: FEAT-090
@@ -2632,6 +2632,12 @@ changes:
   what: TASK-P14-005, the commitment policy and the renewal calendar
   commit: pending
   detail: 'Migration 0055 creates commitment_policy, one row per tenant with a check on every bound, and installs the cautious default for every tenant, OPEN-38; install_default_policy gives a new tenant the same. GET /v1/commitments/inventory lists what is held, the soonest ending first, naming DynamoDB unreadable; GET /v1/commitments/calendar groups it by the month it ends, a Savings Plan''s hourly amount measured and a reservation''s hourly value modelled, each month''s share flagged above the ladder limit; GET and PUT /v1/commitments/policy, a change needing a person whose scope is the organization and a reason, audited ALLOWED or DENIED. A narrowed reader is told commitments need the payer. An erasure keeps the policy and replaces the name on it'
+- id: CHG-0190
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-006, AWS's purchase recommendations
+  commit: pending
+  detail: 'Migration 0056 creates purchase_recommendation, one row per tenant, kind and program, with checks that a row is an answer or a failure and never both, and installs the daily cadence for every tenant, modelled at USD 0.08 a run. CostExplorerRecommendations asks Cost Explorer, as the payer, for the Compute and EC2 Instance Savings Plans and each service in METER_COMMITMENT_RECOMMENDATION_SERVICES, in the tenant policy''s term and payment option, reading every page. The collector writes a type or service that failed as a row with its typed cause beside the ones that answered, and fails only when every read failed. The fake advises a Compute Savings Plan and EC2 and RDS reservations. make first-contact asks for both kinds as the payer. The relay allow list test learned that OpenSearch is granted under the es prefix'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5177,6 +5183,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-297
+  severity: MEDIUM
+  status: OPEN
+  summary: Cost Explorer's service names for four reservation recommendations are unverified
+  detail: 'Found 2026-10-13 building TASK-P14-006. GetReservationPurchaseRecommendation takes a Service name, and AWS documents Amazon Elastic Compute Cloud - Compute, Amazon Relational Database Service, Amazon ElastiCache, Amazon OpenSearch Service and Amazon Redshift in different places, and Amazon MemoryDB nowhere found. The names are the setting METER_COMMITMENT_RECOMMENDATION_SERVICES rather than code, a name Cost Explorer refuses costs that service alone and is written as a row with its cause, and make first-contact asks for the first name as the payer. Closes when a first contact against a real payer has answered for every name'
 - id: ISS-296
   severity: HIGH
   status: FIXED

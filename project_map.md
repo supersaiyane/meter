@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 59 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 39 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 55 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 269 | test_*.py under tests/ |
-| Test functions | 3205 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 40 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 56 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 271 | test_*.py under tests/ |
+| Test functions | 3220 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -553,6 +553,9 @@ meter/
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
 │   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
 │   │   │                      a key with nothing under it is NoData, not SchemaDrift
+│   │   ├── commitment_recommendations.py  FEAT-089, TASK-P14-006. AWS's purchase
+│   │   │                      advice from Cost Explorer as the payer, in the policy's
+│   │   │                      terms; every page of a reservation answer read
 │   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002 and 003. Savings Plans and
 │   │   │                      the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB
 │   │   │                      reservations through the relay, EC2 through its endpoint,
@@ -1273,6 +1276,9 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── purchase_recommendation.py  FEAT-089, TASK-P14-006. Daily, organization
+│       │                      wide; one row per type and service, a failed one written
+│       │                      with its cause beside those that answered
 │       ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Daily per account and
 │       │                      Region; Savings Plans only in the first Region's unit
 │       ├── commitment.py      two reads, two upserts, one transaction. A window is
@@ -1636,6 +1642,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0056_purchase_recommendation.py  TASK-P14-006. AWS's purchase advice, and
+│       │                      the collector's cadence at a modelled USD 0.08 a run
 │       ├── 0055_commitment_policy.py  TASK-P14-005. What purchase plans aim for, the
 │       │                      cautious default for every tenant
 │       ├── 0054_commitment_inventory.py  TASK-P14-002. What each account holds,

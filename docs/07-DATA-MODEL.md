@@ -1265,6 +1265,40 @@ Changed through `PUT /v1/commitments/policy` by a person whose scope is the orga
 reason, audited ALLOWED or DENIED. An erasure keeps the policy and replaces `updated_by`, as it does
 a cadence's.
 
+### AWS's purchase recommendations, P14
+
+```sql
+-- P14, FEAT-089, migration 0056. AWS's advice for each Savings Plans type and reserved service, in
+-- the tenant's policy's terms, one row each. Payer wide, ADR-0025.
+CREATE TABLE purchase_recommendation (
+    tenant_id                  UUID           NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id              UUID           NOT NULL,
+    kind                       TEXT           NOT NULL,   -- savings_plan | reservation
+    program                    TEXT           NOT NULL,   -- the plan type, or Cost Explorer's service name
+    term_years                 INTEGER        NOT NULL,   -- as the policy asked
+    payment_option             TEXT           NOT NULL,
+    lookback_days              INTEGER        NOT NULL,
+    recommended                BOOLEAN,                   -- false: AWS looked and advises nothing
+    hourly_commitment          NUMERIC(20, 10),           -- a Savings Plan's, never a reservation's
+    units                      NUMERIC(20, 4),            -- a reservation's, never a Savings Plan's
+    estimated_monthly_savings  NUMERIC(20, 10),           -- AWS's estimate, labelled so
+    estimated_savings_percent  NUMERIC(10, 4),
+    upfront_cost               NUMERIC(20, 10),
+    currency                   TEXT,
+    failure_cause              TEXT,                      -- a typed cause, or null for an answer
+    failure_detail             TEXT,
+    as_of                      TIMESTAMPTZ    NOT NULL,   -- when AWS generated it
+    collected_at               TIMESTAMPTZ    NOT NULL,
+    CONSTRAINT pk_purchase_recommendation PRIMARY KEY (tenant_id, kind, program)
+    -- and checks: an answer or a failure, never both; each measure on its own kind; collected
+    -- after true
+);
+```
+
+A read that failed is a row with its cause and no figures, so one service Cost Explorer refuses is
+seen beside the ones that answered and never drawn as advice to buy nothing. A run restates every
+row; a type or service no longer asked about leaves.
+
 ### AI provider organizations, P13
 
 ```sql

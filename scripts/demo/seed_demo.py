@@ -170,6 +170,8 @@ DEMO_TABLES = (
     "commitment_inventory",
     # P14, FEAT-088. What the tenant's purchase plans aim for; the tenant only.
     "commitment_policy",
+    # P14, FEAT-089. AWS's purchase advice; the tenant only.
+    "purchase_recommendation",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so

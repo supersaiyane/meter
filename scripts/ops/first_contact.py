@@ -40,11 +40,19 @@ import boto3
 from finops_core.config import Settings
 from finops_core.constants import ENV_PREFIX
 from finops_core.domain.ai import ProviderAccount
+from finops_core.domain.commitments import DEFAULT_POLICY
 from finops_core.errors import CollectionError
 from finops_core.ports.ai import AiProviderReports
 from finops_providers.anthropic.reports import COLLECTOR as ANTHROPIC_COLLECTOR
 from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.client import translate
+from finops_providers.aws.commitment_recommendations import (
+    ACCOUNT_SCOPE,
+    LOOKBACK,
+    PAYMENTS,
+    SAVINGS_PLANS_TYPES,
+    TERMS,
+)
 from finops_providers.aws.gpu_metrics import METRIC as GPU_METRIC
 from finops_providers.aws.reach import (
     GLOBAL_REGION,
@@ -116,6 +124,16 @@ def _yesterday(target: Target) -> dict[str, str]:
     }
 
 
+def _advice_terms() -> dict[str, str]:
+    """The cautious ladder's terms, OPEN-38, which is what a tenant's first recommendation asks."""
+    return {
+        "TermInYears": TERMS[DEFAULT_POLICY.term_years],
+        "PaymentOption": PAYMENTS[DEFAULT_POLICY.payment_option],
+        "LookbackPeriodInDays": LOOKBACK,
+        "AccountScope": ACCOUNT_SCOPE,
+    }
+
+
 def _first_state(target: Target) -> dict[str, str]:
     """The first configured Terraform state location, `s3://bucket/key`, as a head request."""
     location = urlsplit(target.settings.iac_locations[0])
@@ -177,6 +195,28 @@ PROBES: Final[tuple[Probe, ...]] = (
         "payer",
         "ce",
         lambda c, t: c.get_savings_plans_utilization(TimePeriod=_yesterday(t)),
+        region=GLOBAL_REGION,
+    ),
+    Probe(
+        "Cost Explorer's Savings Plans purchase recommendation, as the payer",
+        "purchase_recommendation",
+        "payer",
+        "ce",
+        lambda c, _t: c.get_savings_plans_purchase_recommendation(
+            SavingsPlansType=SAVINGS_PLANS_TYPES["Compute"], **_advice_terms()
+        ),
+        region=GLOBAL_REGION,
+    ),
+    # The first service the setting names, because a name Cost Explorer does not know is refused
+    # here before a daily run writes it as a failure, ISS-297.
+    Probe(
+        "Cost Explorer's reservation purchase recommendation, as the payer",
+        "purchase_recommendation",
+        "payer",
+        "ce",
+        lambda c, t: c.get_reservation_purchase_recommendation(
+            Service=t.settings.recommendation_services[0], **_advice_terms()
+        ),
         region=GLOBAL_REGION,
     ),
     Probe(

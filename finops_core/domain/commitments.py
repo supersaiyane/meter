@@ -150,3 +150,37 @@ DEFAULT_POLICY: Final = CommitmentPolicy(
     ladder_limit=Decimal("0.0833"),
 )
 DEFAULT_POLICY_REASON: Final = "The cautious ladder, the owner's default, OPEN-38"
+
+
+@dataclass(frozen=True, kw_only=True)
+class PurchaseRecommendation(Fact):
+    """One of AWS's purchase recommendations, as AWS gave it. FEAT-089, TASK-P14-006.
+
+    AWS's estimate and labelled so: its savings are its own model, not Meter's. `recommended` is
+    False where AWS looked and advises buying nothing, which is an answer, not an absence.
+    """
+
+    tenant_id: UUID
+    kind: str
+    #: The Savings Plans type, or the service as Cost Explorer names it.
+    program: str
+    term_years: int
+    payment_option: str
+    lookback_days: int
+    recommended: bool
+    #: What a Savings Plan recommendation commits an hour. None for a reservation.
+    hourly_commitment: Decimal | None
+    #: How many instances or nodes a reservation recommendation buys, summed. None for a plan.
+    units: Decimal | None
+    estimated_monthly_savings: Decimal
+    estimated_savings_percent: Decimal | None
+    upfront_cost: Decimal
+    currency: str
+
+    def __post_init__(self) -> None:
+        if self.kind not in KINDS:
+            raise ValueError(
+                f"a recommendation is for a savings plan or a reservation, not {self.kind!r}"
+            )
+        if self.collected_at < self.as_of:
+            raise ValueError("a recommendation was collected before it was generated")

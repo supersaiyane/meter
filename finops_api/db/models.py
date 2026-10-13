@@ -2026,6 +2026,52 @@ commitment_policy = Table(
     CheckConstraint("length(trim(reason)) > 0", name="ck_commitment_policy__reason"),
 )
 
+#: P14, 0056. AWS's purchase recommendations, FEAT-089: a row per Savings Plans type or reserved
+#: service, as AWS last recommended it, or the typed cause it could not be read with.
+purchase_recommendation = Table(
+    "purchase_recommendation",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("kind", Text, primary_key=True),
+    Column("program", Text, primary_key=True),
+    Column("term_years", Integer, nullable=False),
+    Column("payment_option", Text, nullable=False),
+    Column("lookback_days", Integer, nullable=False),
+    Column("recommended", Boolean),
+    Column("hourly_commitment", Numeric(20, 10)),
+    Column("units", Numeric(20, 4)),
+    Column("estimated_monthly_savings", Numeric(20, 10)),
+    Column("estimated_savings_percent", Numeric(10, 4)),
+    Column("upfront_cost", Numeric(20, 10)),
+    Column("currency", Text),
+    Column("failure_cause", Text),
+    Column("failure_detail", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "kind IN ('savings_plan', 'reservation')", name="ck_purchase_recommendation__kind"
+    ),
+    CheckConstraint(
+        "(failure_cause IS NULL AND recommended IS NOT NULL AND estimated_monthly_savings IS NOT "
+        "NULL AND upfront_cost IS NOT NULL AND currency IS NOT NULL) OR (failure_cause IS NOT "
+        "NULL AND recommended IS NULL AND hourly_commitment IS NULL AND units IS NULL AND "
+        "estimated_monthly_savings IS NULL)",
+        name="ck_purchase_recommendation__read_or_failed",
+    ),
+    CheckConstraint(
+        "hourly_commitment IS NULL OR kind = 'savings_plan'",
+        name="ck_purchase_recommendation__measure_of_its_kind",
+    ),
+    CheckConstraint(
+        "units IS NULL OR kind = 'reservation'",
+        name="ck_purchase_recommendation__units_of_its_kind",
+    ),
+    CheckConstraint(
+        "collected_at >= as_of", name="ck_purchase_recommendation__collected_after_true"
+    ),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept
