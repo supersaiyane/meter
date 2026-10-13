@@ -356,8 +356,11 @@ class AnomalyRepository(ScopedRepository):
         # Through the guard's own constructor rather than a hand rolled select. It is
         # the only thing that stamps the applied mark, and a query built any other way
         # is the case `assert_scoped` exists to catch.
-        statement = scoped_select(daily, scope).with_only_columns(
-            func.count(func.distinct(daily.c.sub_account_id))
+        # The cloud bill's accounts only: a provider's sub account is a project, ISS-288.
+        statement = (
+            scoped_select(daily, scope)
+            .with_only_columns(func.count(func.distinct(daily.c.sub_account_id)))
+            .where(daily.c.ingest_source == AWS_EXPORT)
         )
         rows = self._connection.execute(statement).all()
         return int(rows[0][0] or 0) if rows else 0

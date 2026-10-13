@@ -331,7 +331,8 @@ class FakeProviderReports:
                             usage_date=day.date(),
                             model=use.model,
                             workspace=use.project,
-                            api_key_id=f"key-{use.project}",
+                            # The default workspace has no id, and its key still has one.
+                            api_key_id=f"key-{use.project or 'default'}",
                             caller=user,
                             input_tokens=int(
                                 (use.input_tokens - use.cached_tokens) * drift * share

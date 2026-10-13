@@ -2544,6 +2544,12 @@ changes:
   what: TASK-P13-009, AI spend on the local stack, first contact for each source, and P13's proof
   commit: pending
   detail: 'The demo seed bills the Bedrock and GPU lines in the one bill its cost rows and invoices are built from, through finops_fakes.cur.with_ai, connects a fake OpenAI and a fake Anthropic organization and runs both provider collectors, the invocation logs in each Bedrock account, one of which reads NotOptedIn, and the GPU agent; the local stack''s composition bills the same lines. make first-contact reads the GPU agent''s metrics and, when a key''s secret is named, a provider''s day of costs through the worker''s own key reader; a provider not named is not read and the report says so. docs/runbooks/ai-providers.md has the owner''s steps for a provider key, invocation logging and the GPU agent. The callers endpoint and screen carry a provider''s project or workspace and its key, ISS-289. tests/scripts/test_p13_exit_criteria.py reads the exit criteria through the API over the seeded demo'
+- id: CHG-0182
+  date: '2026-10-13'
+  type: Fix
+  what: What the local stack found when the demo was run on it after P13
+  commit: pending
+  detail: 'Run on the local stack on 2026-10-13 to answer whether the product is ready to demonstrate. Cost Explorer and the anomalies count the cloud bill''s accounts only, so the front page no longer reads 1 of 8 accounts on an estate of five, ISS-290. make up and make dispatch build the dispatcher image before running it, ISS-291. A tile''s headline figure wraps at its spaces, so a forecast interval stays inside its tile, ISS-292. The fake Anthropic default workspace''s key is named key-default rather than key-'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5089,6 +5095,21 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-292
+  severity: LOW
+  status: FIXED
+  summary: The front page's month end forecast ran out of its tile and lost a digit
+  detail: 'Found 2026-10-13 on the local stack at 1440 pixels. A tile''s headline figure inherited the numeral''s nowrap, and a forecast is an interval, two amounts and a word, so $17,522 to $23,568 ran 46 pixels out of its tile and read $23,56. Fixed the same day, CHG-0182: the figure wraps at its spaces, each amount whole. Held by a journey in finops-web/e2e/overview.spec.ts'
+- id: ISS-291
+  severity: MEDIUM
+  status: FIXED
+  summary: make up dispatched with a stale image, because the dispatcher's profile kept it out of the build
+  detail: 'Found 2026-10-13 running make up after P13. The dispatcher sits behind the dispatch profile, so compose up --build never rebuilt it, and make up and make dispatch ran the image built five days earlier, which predated P13 and failed importing finops_core.domain.ai. Any change to the code the dispatcher runs reached the local stack only when somebody rebuilt it by hand. Fixed the same day, CHG-0182: both targets run it with --build'
+- id: ISS-290
+  severity: MEDIUM
+  status: FIXED
+  summary: Cost Explorer and the anomalies still counted a provider's projects as accounts
+  detail: 'Found 2026-10-13 on the local stack, the rest of ISS-288. The front page read 1 of 8 accounts on an estate of five: Cost Explorer''s window facts and the anomalies'' accounts judged counted every sub account in the bill, and since TASK-P13-004 a provider''s line names a project there, three of them in the demo. ISS-288 fixed the cost summary and the AI routes and missed these two. Fixed the same day, CHG-0182: both count the cloud bill''s lines only, held by tests/api/test_ai_routes.py, which reads every route that counts accounts from the bill'
 - id: ISS-289
   severity: MEDIUM
   status: FIXED
