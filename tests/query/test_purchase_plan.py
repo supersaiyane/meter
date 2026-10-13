@@ -8,8 +8,9 @@ already expires. OPEN-40: steady families buy family bound plans, usage that mov
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
+from typing import Any
 
 import pytest
 
@@ -18,12 +19,15 @@ from finops_query.purchase_plan import (
     FAMILY_BOUND,
     FLEXIBLE,
     Advice,
+    Bought,
     Held,
     Plan,
     Rate,
+    Seen,
     Usage,
     difference,
     draft,
+    match,
     months_after,
     tenth_percentile,
 )
@@ -305,3 +309,80 @@ def test_a_provider_advising_nothing_says_so() -> None:
     plan = plan_of(every_day("1"))
     sentences = said(plan, [Advice(FLEXIBLE, 30, None, failed=False)])
     assert sentences[-1] == "The provider recommends buying no Savings Plan."
+
+
+APPROVED_AT = datetime(2026, 10, 14, 9, tzinfo=UTC)
+
+
+def bought(line_no: int = 1, hourly: str = "0.480", **overrides: object) -> Bought:
+    values: dict[str, object] = {
+        "plan_id": "plan-1",
+        "line_no": line_no,
+        "program": FAMILY_BOUND,
+        "family": "m6i",
+        "region": "r1",
+        "hourly_commitment": Decimal(hourly),
+        "term_months": 12,
+        "payment_option": "No Upfront",
+        "approved_at": APPROVED_AT,
+    }
+    values.update(overrides)
+    return Bought(**values)  # type: ignore[arg-type]
+
+
+def seen(commitment_id: str, hourly: str = "0.480", **overrides: object) -> Seen:
+    values: dict[str, object] = {
+        "commitment_id": commitment_id,
+        "program": FAMILY_BOUND,
+        "family": "m6i",
+        "region": "r1",
+        "hourly_commitment": Decimal(hourly),
+        "term_months": 12,
+        "payment_option": "No Upfront",
+        "starts_at": APPROVED_AT + timedelta(hours=3),
+    }
+    values.update(overrides)
+    return Seen(**values)  # type: ignore[arg-type]
+
+
+def test_a_bought_line_matches_the_commitment_that_is_its_purchase() -> None:
+    assert match([bought()], [seen("sp-1", "0.4848")]) == {("plan-1", 1): "sp-1"}
+
+
+def test_a_commitment_more_than_one_percent_away_is_not_the_purchase() -> None:
+    assert match([bought()], [seen("sp-1", "0.4850")]) == {}
+
+
+def test_a_commitment_bought_before_the_approval_is_not_the_purchase() -> None:
+    early = seen("sp-1", starts_at=APPROVED_AT - timedelta(minutes=1))
+    assert match([bought()], [early]) == {}
+
+
+@pytest.mark.parametrize(
+    "different",
+    [
+        {"family": "c6i"},
+        {"region": "r2"},
+        {"term_months": 36},
+        {"payment_option": "All Upfront"},
+        {"program": FLEXIBLE, "family": None, "region": None},
+    ],
+)
+def test_a_family_bound_line_needs_its_own_family_region_term_and_payment(
+    different: dict[str, Any],
+) -> None:
+    assert match([bought()], [seen("sp-1", **different)]) == {}
+
+
+def test_a_flexible_line_matches_whatever_family_and_region() -> None:
+    line = bought(program=FLEXIBLE, family=None, region=None)
+    assert match([line], [seen("sp-1", program=FLEXIBLE, family=None, region=None)]) == {
+        ("plan-1", 1): "sp-1"
+    }
+
+
+def test_each_commitment_is_matched_once_and_to_the_closest_line() -> None:
+    lines = [bought(1, "0.480"), bought(2, "0.300")]
+    found = match(lines, [seen("sp-far", "0.4801"), seen("sp-near", "0.4800"), seen("sp-b", "0.3")])
+    assert found == {("plan-1", 1): "sp-near", ("plan-1", 2): "sp-b"}
+    assert match([*lines[:1], bought(3)], [seen("sp-only")]) == {("plan-1", 1): "sp-only"}

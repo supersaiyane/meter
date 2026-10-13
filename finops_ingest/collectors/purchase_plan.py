@@ -5,6 +5,12 @@ an earlier month that nobody approved, so a plan is never approved against usage
 drafts this month's plan, or redrafts it while it is still a draft. A plan somebody has acted on is
 left as it is. The arithmetic is `finops_query.purchase_plan`, pure; this module gathers its inputs.
 
+**A bought plan is verified against the inventory, TASK-P14-008.** Each line of the month a person
+recorded as bought is matched to a Savings Plan the inventory holds that is that purchase, and the
+plan becomes verified when every line has one. A line matched to nothing stays bought, which the
+screen shows as not yet seen and never as verified: the purchase may not have been made, or may sit
+in an account outside the organization.
+
 **What it reads.** The last 30 days of the bill's eligible usage, EC2 instances in shared tenancy,
 at its on demand equivalent: what a commitment did not cover at its Effective Cost, and what one
 did at its List Cost. P9's on demand price for each usage type, by the bill's SKU, or by the usage
@@ -37,13 +43,16 @@ from finops_query.commitment_calendar import hourly_value
 from finops_query.purchase_plan import (
     FAMILY_BOUND,
     FLEXIBLE,
+    Bought,
     Held,
     Line,
     Plan,
     Rate,
+    Seen,
     Usage,
     draft,
     first_of_month,
+    match,
 )
 
 COLLECTOR = "purchase_plan"
@@ -65,6 +74,7 @@ PRODUCTS: Final = {
     "SUSE": "SUSE Linux",
 }
 LAPSED_NOTE: Final = "Nobody approved it within its month, and its usage is now a month old."
+VERIFIED_NOTE: Final = "Every line it bought is a commitment the inventory now holds."
 
 LAPSE = text(
     "UPDATE purchase_plan SET status = 'LAPSED' WHERE tenant_id = :tenant AND status = 'DRAFT' "
@@ -128,6 +138,34 @@ WRITE_PLAN = text(
     "no_purchase_reason = EXCLUDED.no_purchase_reason, currency = EXCLUDED.currency, "
     "as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at"
 )
+BOUGHT_LINES = text(
+    "SELECT l.plan_id, l.line_no, l.program, l.instance_family, l.region_id, "
+    "l.hourly_commitment, p.term_years, p.payment_option, "
+    "(SELECT max(e.at) FROM purchase_plan_event e WHERE e.plan_id = p.plan_id "
+    "AND e.to_status = 'APPROVED') AS approved_at "
+    "FROM purchase_plan p JOIN purchase_plan_line l ON l.plan_id = p.plan_id "
+    "WHERE p.tenant_id = :tenant AND p.status = 'BOUGHT' AND l.tranche_month = p.plan_month "
+    "AND l.matched_commitment_id IS NULL"
+)
+UNMATCHED = text(
+    "SELECT commitment_id, program, applies_to, region_id, hourly_commitment, term_months, "
+    "payment_option, starts_at FROM commitment_inventory "
+    "WHERE tenant_id = :tenant AND kind = :plan AND hourly_commitment IS NOT NULL "
+    "AND commitment_id NOT IN (SELECT matched_commitment_id FROM purchase_plan_line "
+    "WHERE tenant_id = :tenant AND matched_commitment_id IS NOT NULL)"
+)
+SET_MATCH = text(
+    "UPDATE purchase_plan_line SET matched_commitment_id = :commitment "
+    "WHERE plan_id = :plan AND line_no = :line AND matched_commitment_id IS NULL"
+)
+VERIFY = text(
+    "UPDATE purchase_plan p SET status = 'VERIFIED' WHERE p.tenant_id = :tenant "
+    "AND p.status = 'BOUGHT' AND EXISTS (SELECT 1 FROM purchase_plan_line l "
+    "WHERE l.plan_id = p.plan_id AND l.tranche_month = p.plan_month) "
+    "AND NOT EXISTS (SELECT 1 FROM purchase_plan_line l "
+    "WHERE l.plan_id = p.plan_id AND l.tranche_month = p.plan_month "
+    "AND l.matched_commitment_id IS NULL) RETURNING p.plan_id"
+)
 CLEAR_LINES = text("DELETE FROM purchase_plan_line WHERE plan_id = :plan")
 WRITE_LINE = text(
     "INSERT INTO purchase_plan_line (plan_id, line_no, tenant_id, program, instance_family, "
@@ -186,9 +224,10 @@ class PurchasePlanCollector:
         lapsed = connection.execute(LAPSE, {"tenant": tenant, "month": month}).scalars().all()
         for plan_id in lapsed:
             _event(connection, plan_id, tenant, ("DRAFT", "LAPSED"), now, LAPSED_NOTE)
+        settled = _verify(connection, tenant, now) + len(lapsed)
         current = connection.execute(CURRENT, {"tenant": tenant, "month": month}).one_or_none()
         if current is not None and current.status != "DRAFT":
-            return CollectorOutcome(items_written=len(lapsed), items_removed=0)
+            return CollectorOutcome(items_written=settled, items_removed=0)
 
         policy = policy_for(connection, tenant)
         start = today - WINDOW
@@ -216,8 +255,49 @@ class PurchasePlanCollector:
                 [_line_row(line, index, plan_id, tenant) for index, line in enumerate(plan.lines)],
             )
         return CollectorOutcome(
-            items_written=1 + len(plan.lines) + len(lapsed), items_removed=int(removed)
+            items_written=1 + len(plan.lines) + settled, items_removed=int(removed)
         )
+
+
+def _verify(connection: Any, tenant: UUID, now: datetime) -> int:
+    """Match each bought line to the commitment that is its purchase, then verify whole plans."""
+    waiting = [
+        Bought(
+            plan_id=row.plan_id,
+            line_no=row.line_no,
+            program=row.program,
+            family=row.instance_family,
+            region=row.region_id,
+            hourly_commitment=row.hourly_commitment,
+            term_months=12 * row.term_years,
+            payment_option=row.payment_option,
+            approved_at=row.approved_at,
+        )
+        for row in connection.execute(BOUGHT_LINES, {"tenant": tenant})
+        if row.approved_at is not None
+    ]
+    if not waiting:
+        return 0
+    held = [
+        Seen(
+            commitment_id=row.commitment_id,
+            program=row.program,
+            family=family_of(row.applies_to) if row.applies_to else None,
+            region=row.region_id,
+            hourly_commitment=row.hourly_commitment,
+            term_months=row.term_months,
+            payment_option=row.payment_option,
+            starts_at=row.starts_at,
+        )
+        for row in connection.execute(UNMATCHED, {"tenant": tenant, "plan": SAVINGS_PLAN})
+    ]
+    matched = match(waiting, held)
+    for (plan_id, line_no), commitment in matched.items():
+        connection.execute(SET_MATCH, {"plan": plan_id, "line": line_no, "commitment": commitment})
+    verified = connection.execute(VERIFY, {"tenant": tenant}).scalars().all()
+    for plan_id in verified:
+        _event(connection, plan_id, tenant, ("BOUGHT", "VERIFIED"), now, VERIFIED_NOTE)
+    return len(matched) + len(verified)
 
 
 def _event(

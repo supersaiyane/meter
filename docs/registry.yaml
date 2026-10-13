@@ -673,7 +673,7 @@ features:
 - id: FEAT-090
   name: Plan approval, the purchase recorded and verified against the bill
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-090-plan-approval.md
 adrs:
@@ -2644,6 +2644,12 @@ changes:
   what: TASK-P14-007, Meter's purchase plan
   commit: pending
   detail: 'finops_query/purchase_plan.py drafts a plan, pure: the tenth percentile of 30 days of the bill''s EC2 instance hours at their on demand equivalent, split by stability under OPEN-40 into EC2 Instance plans for each steady family and Region and a Compute plan for usage that moves, priced by P9''s rates, the policy''s coverage less what is held past the month, and laddered so at most the limit of the completed commitment ends in any month; a share with no rate is named and never priced at zero. Migration 0057 creates purchase_plan, purchase_plan_line and purchase_plan_event, with a trigger and a check refusing a transition out of order, and the daily cadence at no cost a run. The purchase_plan collector lapses an earlier month''s draft and drafts or redrafts this month''s. GET /v1/commitments/plans returns the plan beside AWS''s recommendations with the difference in words. The fake bill''s EC2 lines name their usage type. purchase_recommendation, missed by TASK-P14-006, is classified in docs/09-DATA-CLASSIFICATION.md'
+- id: CHG-0192
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-008, plan approval, the purchase recorded, and verification
+  commit: pending
+  detail: 'POST /v1/commitments/plans/{id}/approve, /bought and /withdraw, each with a required note, by a person whose scope is the organization, audited ALLOWED, a narrowed person refused with a 403 audited DENIED and a step out of order with a 409 that says why; the status changes only if it is still what was read. The plan collector matches each line of a bought plan''s own month to a Savings Plan in the inventory with the same program, term, payment option, family and Region for an EC2 Instance line, an hourly commitment within one percent and a start after the approval, and verifies the plan when every line is matched; a line matched to nothing stays bought. Migration 0058 lets one commitment pay for one line at most. GET /v1/commitments/plans carries the steps. An erasure replaces the person''s name on their steps'
 issues:
 - id: ISS-189
   severity: LOW

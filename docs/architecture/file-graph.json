@@ -704,6 +704,7 @@
     "migrations/versions/0055_commitment_policy.py",
     "migrations/versions/0056_purchase_recommendation.py",
     "migrations/versions/0057_purchase_plan.py",
+    "migrations/versions/0058_purchase_plan_match.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",

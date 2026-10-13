@@ -2777,6 +2777,8 @@ class PlanLineOut(BaseModel):
     #: Below this share of today's usage the commitment costs more than it saves, FEAT-055.
     usage_floor_percent: Decimal
     upfront_cost: Decimal
+    #: The commitment the inventory holds that is this line's purchase, once one is seen, FEAT-090.
+    matched_commitment_id: str | None = None
     basis: Basis = "modelled"
 
 
@@ -2844,6 +2846,19 @@ class ProviderRecommendationOut(BaseModel):
     collected_at: datetime
 
 
+class PlanEventOut(BaseModel):
+    """One step of a plan's lifecycle and who took it. FEAT-090, OPEN-36."""
+
+    model_config = ConfigDict(frozen=True)
+
+    from_status: str | None
+    to_status: str
+    #: The person, or the collector for a draft, a lapse or a verification.
+    principal: str
+    at: datetime
+    note: str | None
+
+
 class PurchasePlansOut(BaseModel):
     """Meter's plan beside the provider's recommendations, and why they differ. OPEN-35."""
 
@@ -2855,3 +2870,12 @@ class PurchasePlansOut(BaseModel):
     lines: list[PlanLineOut]
     provider: list[ProviderRecommendationOut]
     difference: list[str]
+    events: list[PlanEventOut] = []
+
+
+class PlanTransitionIn(BaseModel):
+    """A person's step in a plan's lifecycle. A note is required, because it is a decision."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    note: str = Field(min_length=3, max_length=500)

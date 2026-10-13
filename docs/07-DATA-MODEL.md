@@ -1338,6 +1338,11 @@ lifecycle does not allow, so no path can write a plan bought before it was appro
 The collector redrafts a draft in place, replacing its lines, and lapses a draft from an earlier
 month; a plan in any other status is left as it is.
 
+Migration 0058, TASK-P14-008, adds `uq_purchase_plan_line__matched_once`, a unique index on
+`(tenant_id, matched_commitment_id)` where it is set, so one commitment never pays for two lines.
+A bought plan's own month's lines are matched daily to Savings Plans in `commitment_inventory`, and
+the plan is verified when every one is matched.
+
 ### AI provider organizations, P13
 
 ```sql
