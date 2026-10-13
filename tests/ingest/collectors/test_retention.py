@@ -440,6 +440,14 @@ def test_an_erasure_anonymises_and_leaves_the_audit_trail_intact(
             ),
             {"t": tenant_id, "who": str(principal)},
         )
+        connection.execute(
+            text(
+                "INSERT INTO commitment_policy (tenant_id, target_coverage, term_years, "
+                "payment_option, ladder_limit, reason, updated_by) VALUES (:t, 0.8, 1, "
+                "'No Upfront', 0.0833, 'steady usage', :who)"
+            ),
+            {"t": tenant_id, "who": str(principal)},
+        )
 
         report = erase_principal.erase(
             connection, tenant_id, principal, "operator-1", "ticket-9", clock=at
@@ -461,6 +469,10 @@ def test_an_erasure_anonymises_and_leaves_the_audit_trail_intact(
             text("SELECT updated_by FROM collector_schedule WHERE tenant_id = :t"),
             {"t": tenant_id},
         ).scalar_one()
+        policy = connection.execute(
+            text("SELECT updated_by, reason FROM commitment_policy WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).one()
 
     assert report.principals_anonymised == 1
     assert report.scope_rows_removed == 1
@@ -472,6 +484,12 @@ def test_an_erasure_anonymises_and_leaves_the_audit_trail_intact(
         "the pre-existing read must survive alongside the two erasure records"
     )
     assert (scopes, attributed) == (0, TOMBSTONE)
+    # The policy stays the tenant's decision; only the name on it goes. TASK-P14-005.
+    assert (report.policies_reattributed, policy.updated_by, policy.reason) == (
+        1,
+        TOMBSTONE,
+        "steady usage",
+    )
 
 
 def test_the_report_says_out_loud_that_nothing_was_removed_from_the_audit_log() -> None:

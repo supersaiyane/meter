@@ -661,7 +661,7 @@ features:
 - id: FEAT-088
   name: The renewal calendar and the ladder
   subproject: P14
-  status: Specified
+  status: In build
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-088-renewal-calendar.md
 - id: FEAT-089
@@ -2626,6 +2626,12 @@ changes:
   what: TASK-P14-004, the effective savings rate, measured from the bill
   commit: pending
   detail: 'GET /v1/commitments/savings-rate, the first route of P14''s commitments router: per billing month, one minus Effective Cost over List Cost on the cloud bill''s usage lines carrying a List Cost, with both sums, the lines left out and what they cost, measured and scoped by account as the bill is. A month with no List Cost has no rate and says why, never nought; usage dearer than list is a rate below zero'
+- id: CHG-0189
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P14-005, the commitment policy and the renewal calendar
+  commit: pending
+  detail: 'Migration 0055 creates commitment_policy, one row per tenant with a check on every bound, and installs the cautious default for every tenant, OPEN-38; install_default_policy gives a new tenant the same. GET /v1/commitments/inventory lists what is held, the soonest ending first, naming DynamoDB unreadable; GET /v1/commitments/calendar groups it by the month it ends, a Savings Plan''s hourly amount measured and a reservation''s hourly value modelled, each month''s share flagged above the ladder limit; GET and PUT /v1/commitments/policy, a change needing a person whose scope is the organization and a reason, audited ALLOWED or DENIED. A narrowed reader is told commitments need the payer. An erasure keeps the policy and replaces the name on it'
 issues:
 - id: ISS-189
   severity: LOW

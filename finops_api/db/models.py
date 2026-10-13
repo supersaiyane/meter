@@ -2001,6 +2001,31 @@ commitment_inventory = Table(
     Index("ix_commitment_inventory__ends", "tenant_id", "ends_at"),
 )
 
+#: P14, 0055. What a tenant's purchase plans aim for, FEAT-088: a row per tenant, the cautious
+#: default installed for every one.
+commitment_policy = Table(
+    "commitment_policy",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("target_coverage", Numeric(4, 3), nullable=False),
+    Column("term_years", Integer, nullable=False),
+    Column("payment_option", Text, nullable=False),
+    Column("ladder_limit", Numeric(5, 4), nullable=False),
+    Column("reason", Text, nullable=False),
+    Column("updated_by", Text, nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    CheckConstraint(
+        "target_coverage > 0 AND target_coverage <= 1", name="ck_commitment_policy__coverage"
+    ),
+    CheckConstraint("term_years IN (1, 3)", name="ck_commitment_policy__term"),
+    CheckConstraint(
+        "payment_option IN ('No Upfront', 'Partial Upfront', 'All Upfront')",
+        name="ck_commitment_policy__payment",
+    ),
+    CheckConstraint("ladder_limit > 0 AND ladder_limit <= 1", name="ck_commitment_policy__ladder"),
+    CheckConstraint("length(trim(reason)) > 0", name="ck_commitment_policy__reason"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept
