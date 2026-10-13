@@ -572,6 +572,17 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0.08",
     ),
     ScheduleEntry(
+        collector="purchase_plan",
+        cadence_seconds=DAILY,
+        reason=(
+            "Meter's own purchase plan, P14 spec section 5.6. Daily, after the bill, the "
+            "inventory and P9's rates it reads: it drafts this month's plan, redrafts a plan "
+            "nobody has approved yet, and lapses a draft from an earlier month. It reads only "
+            "Meter's own tables, so its cost per run is zero. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="bedrock_invocations",
         cadence_seconds=DAILY,
         reason=(

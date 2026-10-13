@@ -132,6 +132,25 @@ figure in it can be traced:
    honest figure, below which the commitment costs more than it saves: all modelled, each with
    the inputs it came from.
 
+**Settled while building it, TASK-P14-007, 2026-10-13.**
+
+- **Which plans, OPEN-40.** Split by stability, answered by the owner: the steady part of each
+  instance family in each Region, its own tenth percentile, is bought as an EC2 Instance Savings
+  Plan, and steady usage that moves between families or Regions, the estate's tenth percentile
+  less the families', as a Compute Savings Plan. The recommendation was Compute only.
+- **What is held, and where it lands.** A commitment ending within 30 days of the draft does not
+  count. A family bound commitment, an EC2 Instance plan or an EC2 reservation, counts against its
+  own family and Region, and what it holds beyond that target covers only usage that moves. A
+  Compute plan covers anything: the flexible part first, then each family's.
+- **The ladder's denominator.** The limit is a share of the organization's hourly commitment once
+  the plan is complete, held and planned. A share of what is held today alone would never let a
+  payer holding nothing buy. Twelve tranches are named, and what they cannot place is reported.
+- **The bill's days.** A baseline needs at least 14 of the 30 days in the bill; with fewer the plan
+  says so and buys nothing.
+- **Eligible usage.** EC2 instance hours on demand in shared tenancy, the usage P9 holds Savings
+  Plans rates for. A usage type priced for two operating systems with no SKU on the bill to choose
+  between them is unpriced, never priced at another system's rate.
+
 ### 5.7 The effective savings rate is measured from the bill
 
 One minus Effective Cost over List Cost, by month, on every line that carries a List Cost, the
@@ -221,7 +240,8 @@ database. The screen has unit tests and a Playwright journey on the seeded demo.
 
 ## 11. Open questions
 
-OPEN-35 to OPEN-39, all answered by the owner on 2026-10-13, sections 5.1 to 5.5.
+OPEN-35 to OPEN-39, all answered by the owner on 2026-10-13, sections 5.1 to 5.5, and OPEN-40,
+answered the same day while TASK-P14-007 was built, section 5.6.
 
 ## 12. Features delivered
 

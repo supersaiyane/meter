@@ -283,6 +283,7 @@ def _row(
     resource: str | None,
     daily_usd: Decimal,
     at: datetime,
+    usage_type: str | None = None,
 ) -> CostRecord:
     """One line item. The caller decides what it is about and what it costs.
 
@@ -355,6 +356,7 @@ def _row(
         billing_currency=CURRENCY,
         pricing_unit="Hrs",
         invoice_id=invoice_id_for(period) if invoiced else None,
+        x_usage_type=usage_type,
     )
 
 
@@ -473,6 +475,17 @@ def estate(
     return tuple(rows)
 
 
+def _usage_type(service: str, spec: utilization.Spec) -> str | None:
+    """An EC2 instance's hours on demand, as the price list and the Savings Plans rates name them.
+
+    TASK-P14-007. Meter's purchase plan prices the bill's usage by its usage type, and the fake
+    catalog prices every type the estate runs under `BoxUsage:<type>`, so the demo's plan is priced
+    from the same rates the catalog screens show.
+    """
+    instance = spec.config.get("instance_type") if service == "AmazonEC2" else None
+    return f"BoxUsage:{instance}" if isinstance(instance, str) else None
+
+
 def _lines(
     *, account: str, service: str, day: date, period: date, drift: Decimal, at: datetime
 ) -> tuple[CostRecord, ...]:
@@ -497,6 +510,7 @@ def _lines(
                 resource=spec.resource_id,
                 daily_usd=prices.daily_usd(spec),
                 at=at,
+                usage_type=_usage_type(service, spec),
             )
             for spec in specs
         )

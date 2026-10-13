@@ -2756,3 +2756,102 @@ class CommitmentPolicyIn(BaseModel):
     payment_option: Literal["No Upfront", "Partial Upfront", "All Upfront"]
     ladder_limit: Decimal = Field(gt=0, le=1)
     reason: str = Field(min_length=3, max_length=500)
+
+
+class PlanLineOut(BaseModel):
+    """One purchase in one tranche of Meter's plan. Every figure modelled. FEAT-089."""
+
+    model_config = ConfigDict(frozen=True)
+
+    line_no: int
+    program: str
+    #: A family bound line's family and Region; null on a flexible line.
+    instance_family: str | None
+    region_id: str | None
+    tranche_month: date
+    hourly_commitment: Decimal
+    discount_percent: Decimal
+    #: The on demand spend an hour the commitment pays for.
+    covers_hourly: Decimal
+    monthly_saving: Decimal
+    #: Below this share of today's usage the commitment costs more than it saves, FEAT-055.
+    usage_floor_percent: Decimal
+    upfront_cost: Decimal
+    basis: Basis = "modelled"
+
+
+class UnpricedShareOut(BaseModel):
+    """A steady share no rate prices, named rather than priced at nothing. FEAT-089."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Null for usage that moves between families and has no flexible rate.
+    instance_family: str | None
+    region_id: str | None
+    steady_hourly: Decimal
+    reason: str
+
+
+class PurchasePlanOut(BaseModel):
+    """Meter's plan for one month, under the policy it was drafted with. FEAT-089."""
+
+    model_config = ConfigDict(frozen=True)
+
+    plan_id: UUID
+    plan_month: date
+    status: str
+    target_coverage: Decimal
+    term_years: int
+    payment_option: str
+    ladder_limit: Decimal
+    window_start: date
+    window_end: date
+    days_held: int
+    #: Null where the bill held too few days for a baseline to mean anything.
+    steady_hourly: Decimal | None
+    held_hourly: Decimal | None
+    target_hourly: Decimal | None
+    #: What twelve tranches under the ladder could not place, said rather than dropped.
+    beyond_hourly: Decimal | None
+    no_purchase_reason: str | None
+    currency: str
+    unpriced: list[UnpricedShareOut]
+    as_of: datetime
+    collected_at: datetime
+
+
+class ProviderRecommendationOut(BaseModel):
+    """The provider's own purchase recommendation; its saving is its estimate. FEAT-089."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: str
+    program: str
+    term_years: int
+    payment_option: str
+    lookback_days: int
+    #: False where the provider looked and advises buying nothing; null where it failed.
+    recommended: bool | None
+    hourly_commitment: Decimal | None
+    units: Decimal | None
+    estimated_monthly_savings: Decimal | None
+    estimated_savings_percent: Decimal | None
+    upfront_cost: Decimal | None
+    currency: str | None
+    failure_cause: str | None
+    failure_detail: str | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class PurchasePlansOut(BaseModel):
+    """Meter's plan beside the provider's recommendations, and why they differ. OPEN-35."""
+
+    model_config = ConfigDict(frozen=True)
+
+    plan: PurchasePlanOut | None
+    #: Why there is no plan to show, where there is none.
+    no_plan_reason: str | None
+    lines: list[PlanLineOut]
+    provider: list[ProviderRecommendationOut]
+    difference: list[str]

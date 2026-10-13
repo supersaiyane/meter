@@ -220,7 +220,7 @@ Cost Explorer's names for them are partly undocumented, ISS-297.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.6 and 6 |
 | Delivers | FEAT-089 |
 | Depends on | TASK-P14-005, TASK-P14-006 |
@@ -228,14 +228,23 @@ Cost Explorer's names for them are partly undocumented, ISS-297.
 
 **Acceptance criteria.**
 
-- [ ] `finops_query` holds the plan's arithmetic, pure: the steady baseline, P9's rates, the target
+- [x] `finops_query` holds the plan's arithmetic, pure: the steady baseline, P9's rates, the target
       and the ladder, every figure modelled with its inputs
-- [ ] A family with no P9 rate is unpriced and named, never priced at zero; a day the bill does not
+- [x] A family with no P9 rate is unpriced and named, never priced at zero; a day the bill does not
       hold is not a day of zero
-- [ ] A migration creates the plan tables; the `purchase_plan` collector drafts a plan and lapses
+- [x] A migration creates the plan tables; the `purchase_plan` collector drafts a plan and lapses
       an old draft
-- [ ] `GET /v1/commitments/plans` returns Meter's plan beside AWS's recommendations, with the
+- [x] `GET /v1/commitments/plans` returns Meter's plan beside AWS's recommendations, with the
       difference in words
+
+**Delivered 2026-10-13.** `finops_query/purchase_plan.py`, the arithmetic, pure, tested without a
+database; migration `0057_purchase_plan` with `purchase_plan`, `purchase_plan_line` and
+`purchase_plan_event`, a trigger and a check refusing a transition out of order, and the daily
+cadence at no cost a run; the `purchase_plan` collector, composed in both modes; and
+`GET /v1/commitments/plans`. OPEN-40 was answered while it was built: split by stability, spec
+section 5.6. The fake bill's EC2 lines now name their usage type, so the demo's plan is priced from
+the fake catalog. The seed does not yet run the P14 collectors; the local stack's worker does,
+daily, and TASK-P14-010 seeds them.
 
 ---
 

@@ -1,4 +1,4 @@
-"""What the organization holds and what its purchase plans aim for. P14, FEAT-086 and FEAT-088.
+"""What the organization holds, what its plans aim for and buy. P14, FEAT-086, 088 and 089.
 
 TASK-P14-005. Both tables belong to the payer, ADR-0025, and are `PayerWide` in the guard, so a
 narrowed scope reads nothing from either. The policy is the payer's to change: its write is made
@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any, ClassVar
+from uuid import UUID
 
 from sqlalchemy import Row, Table
 from sqlalchemy.dialects.postgresql import insert
@@ -83,3 +84,46 @@ class CommitmentPolicyRepository(ScopedRepository):
     def refuse(self, scope: Scope) -> None:
         """Record a refused change, so a narrowed attempt is in the audit trail."""
         self._audit(require_scope(scope), action="change", outcome="DENIED")
+
+
+class PurchasePlanRepository(ScopedRepository):
+    """Meter's purchase plans, one a month. FEAT-089, TASK-P14-007."""
+
+    table: ClassVar[Table] = models.purchase_plan
+    resource: ClassVar[str] = "purchase_plan"
+
+    def current(self, scope: Scope) -> CommitmentRow | None:
+        """The newest month's plan, whatever its status, or None before one was drafted."""
+        statement = self.scoped_select(scope).order_by(self.table.c.plan_month.desc()).limit(1)
+        rows: Sequence[CommitmentRow] = self.fetch(scope, statement)
+        return rows[0] if rows else None
+
+
+class PurchasePlanLineRepository(ScopedRepository):
+    """The lines of one plan, in the order the plan placed them. FEAT-089."""
+
+    table: ClassVar[Table] = models.purchase_plan_line
+    resource: ClassVar[str] = "purchase_plan_line"
+
+    def of(self, scope: Scope, plan_id: UUID) -> Sequence[CommitmentRow]:
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.plan_id == plan_id)
+            .order_by(self.table.c.line_no)
+        )
+        rows: Sequence[CommitmentRow] = self.fetch(scope, statement)
+        return rows
+
+
+class PurchaseRecommendationRepository(ScopedRepository):
+    """The provider's own purchase recommendations, one per program. FEAT-089, TASK-P14-006."""
+
+    table: ClassVar[Table] = models.purchase_recommendation
+    resource: ClassVar[str] = "purchase_recommendation"
+
+    def all(self, scope: Scope) -> Sequence[CommitmentRow]:
+        statement = self.scoped_select(scope).order_by(
+            self.table.c.kind.desc(), self.table.c.program
+        )
+        rows: Sequence[CommitmentRow] = self.fetch(scope, statement)
+        return rows

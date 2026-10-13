@@ -172,6 +172,10 @@ DEMO_TABLES = (
     "commitment_policy",
     # P14, FEAT-089. AWS's purchase advice; the tenant only.
     "purchase_recommendation",
+    # P14, FEAT-089. Meter's plans; an event and a line reference their plan, so both go first.
+    "purchase_plan_event",
+    "purchase_plan_line",
+    "purchase_plan",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so
