@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 39 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 54 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 266 | test_*.py under tests/ |
-| Test functions | 3183 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 268 | test_*.py under tests/ |
+| Test functions | 3192 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -553,9 +553,10 @@ meter/
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
 │   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
 │   │   │                      a key with nothing under it is NoData, not SchemaDrift
-│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002. Savings Plans and RDS
+│   │   ├── commitment_inventory.py  FEAT-086, TASK-P14-002 and 003. Savings Plans and
+│   │   │                      the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB
 │   │   │                      reservations through the relay, EC2 through its endpoint,
-│   │   │                      each as the account's role; every page read
+│   │   │                      each as the account's role; one table driven reader
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report
@@ -1449,6 +1450,8 @@ meter/
 │   │   ├── ai.py              FEAT-081 to 085, TASK-P13-007. GET /ai/spend, grouped by
 │   │   │                      provider, model, token type, feature or caller; GET
 │   │   │                      /ai/callers; GET /ai/gpu. Every figure with its basis
+│   │   ├── commitments.py     P14, FEAT-086 to 090. GET /commitments/savings-rate, the
+│   │   │                      effective savings rate by month, measured, TASK-P14-004
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1795,6 +1798,8 @@ meter/
 │   │                          model named in a log matched to the bill's name, tokens
 │   │                          measured from the bill or modelled from a usage report,
 │   │                          a caller's cost at the bill's unit cost, the GPU fleet
+│   ├── savings_rate.py        FEAT-087, TASK-P14-004. One minus Effective over List
+│   │                          Cost on the same lines; no List Cost is no rate, never nought
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
 │   │                          own backtest or the sentence saying why it is

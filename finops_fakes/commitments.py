@@ -7,7 +7,7 @@ TASK-P14-002. Deliberately unflattering, the way an estate is:
   reservations in the fake Region.
 - `fake-platform-b` holds a Savings Plan that retired two months ago, which is a row, not an
   absence: its usage went back on demand the day it ended.
-- `fake-product-a` holds two RDS reservations, paid all upfront.
+- `fake-product-a` holds two RDS reservations, paid all upfront, and three ElastiCache nodes.
 - The account the fake estate refuses, `fixtures.DENIED_ACCOUNT_KEY`, refuses here too.
 
 Every date is placed relative to the clock the fake is given, so a seed run on any day sees the same
@@ -27,6 +27,7 @@ from finops_core.domain.commitments import (
     ACTIVE,
     ALL_UPFRONT,
     EC2,
+    ELASTICACHE,
     NO_UPFRONT,
     PARTIAL_UPFRONT,
     RDS,
@@ -140,6 +141,21 @@ HOLDINGS: Final[tuple[FakeHolding, ...]] = (
         upfront=Decimal("3504.00"),
         recurring=Decimal(0),
         started_days_ago=210,
+    ),
+    FakeHolding(
+        account="fake-product-a",
+        kind=RESERVATION,
+        commitment_id="ri-fake-cache-0001",
+        program=ELASTICACHE,
+        region=fixtures.REGION,
+        applies_to="cache.r6g.large",
+        quantity=3,
+        hourly=None,
+        term_months=36,
+        payment=PARTIAL_UPFRONT,
+        upfront=Decimal("1200.00"),
+        recurring=Decimal("0.05"),
+        started_days_ago=500,
     ),
 )
 

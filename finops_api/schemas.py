@@ -2641,3 +2641,30 @@ class AiGpuFleetOut(BaseModel):
 
     period: date | None
     instances: list[AiGpuOut]
+
+
+class SavingsRateMonthOut(BaseModel):
+    """One billing month's effective savings rate, measured from the bill. FEAT-087."""
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    #: Over the usage lines carrying a List Cost, so the two sums are over the same lines.
+    effective_cost: Decimal
+    list_cost: Decimal
+    #: One minus Effective over List Cost. Null where no line carries a List Cost, never nought.
+    rate: Decimal | None
+    rate_basis: Basis
+    lines: int
+    lines_without_list_cost: int
+    #: What the lines the rate leaves out cost, so a reader sees how much of the bill it covers.
+    effective_cost_without_list_cost: Decimal
+    reason: str | None
+
+
+class SavingsRateOut(BaseModel):
+    """The effective savings rate by billing month, the oldest first. FEAT-087, TASK-P14-004."""
+
+    model_config = ConfigDict(frozen=True)
+
+    months: list[SavingsRateMonthOut]

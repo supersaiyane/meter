@@ -107,7 +107,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.3, OPEN-37 |
 | Delivers | FEAT-086 |
 | Depends on | TASK-P14-002 |
@@ -115,9 +115,17 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
-- [ ] The relay's allow list and the member collector role gain exactly the four reads
-- [ ] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+- [x] Adapters for ElastiCache, OpenSearch, Redshift and MemoryDB reservations through the relay
+- [x] The relay's allow list and the member collector role gain exactly the four reads
+- [x] DynamoDB reserved capacity is recorded as unreadable, ISS-295, and FEAT-086 says so
+
+**Delivered 2026-10-13.** The adapter's per service readers became one, driven by `RESERVED`, a
+table of where each reserved service keeps its identifier, type, count and payment option; EC2 and
+RDS moved onto it unchanged, and ElastiCache, OpenSearch, Redshift and MemoryDB joined through the
+relay, ADR-0037. The relay's allow list and the member collector role gain exactly the four reads,
+and first contact probes each as the member account. `UNREADABLE` names DynamoDB reserved capacity,
+which no API reads, ISS-295. The fake estate holds three ElastiCache nodes. Nothing applied,
+ISS-002.
 
 ---
 
@@ -125,7 +133,7 @@ applied, ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.7 |
 | Delivers | FEAT-087 |
 | Depends on | Nothing |
@@ -133,10 +141,19 @@ applied, ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] `GET /v1/commitments/savings-rate` returns the rate by month with Effective Cost, List Cost
+- [x] `GET /v1/commitments/savings-rate` returns the rate by month with Effective Cost, List Cost
       and the lines without a List Cost, each measured
-- [ ] A month whose lines carry no List Cost has no rate and says why, never a rate of zero
-- [ ] The fake bill carries List Cost on its usage lines, so the demo shows a rate
+- [x] A month whose lines carry no List Cost has no rate and says why, never a rate of zero
+- [x] The fake bill carries List Cost on its usage lines, so the demo shows a rate
+
+**Delivered 2026-10-13.** `finops_query/savings_rate.py`, the rate over the lines carrying a List
+Cost, none with the reason where no line does; `CostRepository.savings_rate_months`, the cloud bill's
+usage lines by billing month with both timestamps; and `finops_api/routes/commitments.py`, P14's
+router, with `GET /v1/commitments/savings-rate`, exportable and scoped by account as the bill is. The
+fake bill already carries List Cost on its usage lines, 583 of the demo's 715 cloud lines on
+2026-10-13, measured; the split cost lines carry none and are counted as left out. The overview's
+tile still reads Cost Explorer's sum, which offers List Cost only when every line carries it, so it
+reads the new route from TASK-P14-009 and the two screens cannot disagree.
 
 ---
 

@@ -1,10 +1,11 @@
-"""What each member account holds: its Savings Plans and its EC2 and RDS reservations. FEAT-086.
+"""What each member account holds: its Savings Plans and its reservations. FEAT-086.
 
-TASK-P14-002, P14 spec sections 5.3 and 5.5, OPEN-37 and OPEN-39, ADR-0037. Each read is made as
-the account's own collector role, because a commitment belongs to the account that bought it.
-Savings Plans and RDS reservations come through the relay: Savings Plans have no interface
-endpoint, and RDS's is not worth paying for a read made once a day. EC2 reservations come through
-the EC2 endpoint the hub already has.
+TASK-P14-002 and TASK-P14-003, P14 spec sections 5.3 and 5.5, OPEN-37 and OPEN-39, ADR-0037.
+Each read is made as the account's own collector role, because a commitment belongs to the account
+that bought it.
+Savings Plans and the RDS, ElastiCache, OpenSearch, Redshift and MemoryDB reservations come through
+the relay: Savings Plans have no interface endpoint, and the others' are not worth paying for a
+read made once a day. EC2 reservations come through the EC2 endpoint the hub already has.
 
 **Every page, whichever path a client takes.** The relay follows a token itself where botocore has
 no paginator, and a direct client is followed here the same way, so a call that pages is read to
@@ -21,6 +22,7 @@ hold every answer to.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from functools import partial
@@ -32,7 +34,11 @@ from botocore.exceptions import BotoCoreError, ClientError, OperationNotPageable
 from finops_core.domain.account import AccountKey
 from finops_core.domain.commitments import (
     EC2,
+    ELASTICACHE,
+    MEMORYDB,
+    OPENSEARCH,
     RDS,
+    REDSHIFT,
     RESERVATION,
     SAVINGS_PLAN,
     HeldCommitment,
@@ -45,6 +51,10 @@ COLLECTOR: Final = "commitment_inventory"
 
 #: How a reservation's recurring charge is billed when it is billed every hour.
 HOURLY: Final = "Hourly"
+
+#: The currency of a reservation whose API names none, ElastiCache's and MemoryDB's: their prices
+#: are AWS's list prices, which are in US dollars.
+UNSTATED_CURRENCY: Final = "USD"
 
 #: The most pages followed by hand, as the relay's own limit, so a token that never ends is a
 #: failure rather than a loop.
@@ -99,71 +109,119 @@ def _follow(operation: Callable[..., Any], scope: str) -> list[Any]:
     )
 
 
-def _ec2(
-    tenant: UUID, held: Mapping[str, Any], account: AccountKey, region: str, at: datetime
-) -> HeldCommitment:
-    return HeldCommitment(
-        tenant_id=tenant,
-        kind=RESERVATION,
-        commitment_id=str(held["ReservedInstancesId"]),
-        program=EC2,
-        account_id=account.account_id,
-        region_id=region,
-        applies_to=str(held["InstanceType"]),
-        quantity=int(held["InstanceCount"]),
-        hourly_commitment=None,
-        term_months=term_months(int(held["Duration"])),
-        payment_option=str(held["OfferingType"]),
-        upfront_amount=_money(held.get("FixedPrice") or 0),
-        recurring_hourly=_hourly(held.get("RecurringCharges", []), "Amount", "Frequency")
-        + _money(held.get("UsagePrice") or 0),
-        currency=str(held["CurrencyCode"]),
-        starts_at=_instant(held["Start"]),
-        ends_at=_instant(held["End"]),
-        state=str(held["State"]),
-        as_of=at,
-        collected_at=at,
-    )
+@dataclass(frozen=True)
+class ReservedService:
+    """Where one reserved service keeps each field, which differs from service to service."""
+
+    program: str
+    #: The describe call, as boto3 spells it, and the list in its answer.
+    method: str
+    key: str
+    id_field: str
+    type_field: str
+    count_field: str
+    payment_field: str = "OfferingType"
 
 
-def _rds(
-    tenant: UUID, held: Mapping[str, Any], account: AccountKey, region: str, at: datetime
+def _payment(stated: str) -> str:
+    """A payment option in one spelling: `NO_UPFRONT`, as OpenSearch writes it, is `No Upfront`."""
+    return stated.replace("_", " ").title() if stated.isupper() else stated
+
+
+def _reservation(
+    service: ReservedService,
+    tenant: UUID,
+    held: Mapping[str, Any],
+    account: AccountKey,
+    region: str,
+    at: datetime,
 ) -> HeldCommitment:
-    starts = _instant(held["StartTime"])
+    starts = _instant(held.get("Start") or held["StartTime"])
     duration = int(held["Duration"])
+    charges = held.get("RecurringCharges", [])
     return HeldCommitment(
         tenant_id=tenant,
         kind=RESERVATION,
-        commitment_id=str(held["ReservedDBInstanceId"]),
-        program=RDS,
+        commitment_id=str(held[service.id_field]),
+        program=service.program,
         account_id=account.account_id,
         region_id=region,
-        applies_to=str(held["DBInstanceClass"]),
-        quantity=int(held["DBInstanceCount"]),
+        applies_to=str(held[service.type_field]),
+        quantity=int(held[service.count_field]),
         hourly_commitment=None,
         term_months=term_months(duration),
-        payment_option=str(held["OfferingType"]),
+        payment_option=_payment(str(held[service.payment_field])),
         upfront_amount=_money(held.get("FixedPrice") or 0),
-        recurring_hourly=_hourly(
-            held.get("RecurringCharges", []), "RecurringChargeAmount", "RecurringChargeFrequency"
-        )
+        # EC2 names a recurring charge's parts Amount and Frequency; every other service prefixes
+        # them with RecurringCharge.
+        recurring_hourly=_hourly(charges, "Amount", "Frequency")
+        + _hourly(charges, "RecurringChargeAmount", "RecurringChargeFrequency")
         + _money(held.get("UsagePrice") or 0),
-        currency=str(held["CurrencyCode"]),
-        # RDS states a reservation's start and its length, and never its end.
+        currency=str(held.get("CurrencyCode") or UNSTATED_CURRENCY),
         starts_at=starts,
-        ends_at=starts + timedelta(seconds=duration),
+        # EC2 states an end; the others state a start and a length, and the end is their sum.
+        ends_at=_instant(held["End"]) if held.get("End") else starts + timedelta(seconds=duration),
         state=str(held["State"]),
         as_of=at,
         collected_at=at,
     )
 
 
-Reader = Callable[[UUID, Mapping[str, Any], AccountKey, str, datetime], HeldCommitment]
-
-#: Each reserved service: the describe call, the list in its answer, and how one entry is read.
-READERS: Final[dict[str, tuple[str, str, Reader]]] = {
-    EC2: ("describe_reserved_instances", "ReservedInstances", _ec2),
-    RDS: ("describe_reserved_db_instances", "ReservedDBInstances", _rds),
+#: Each reserved service the inventory reads, OPEN-37. DynamoDB reserved capacity has no read API,
+#: ISS-295, so it is not here and is listed as unreadable rather than as none held.
+RESERVED: Final[dict[str, ReservedService]] = {
+    one.program: one
+    for one in (
+        ReservedService(
+            EC2,
+            "describe_reserved_instances",
+            "ReservedInstances",
+            "ReservedInstancesId",
+            "InstanceType",
+            "InstanceCount",
+        ),
+        ReservedService(
+            RDS,
+            "describe_reserved_db_instances",
+            "ReservedDBInstances",
+            "ReservedDBInstanceId",
+            "DBInstanceClass",
+            "DBInstanceCount",
+        ),
+        ReservedService(
+            ELASTICACHE,
+            "describe_reserved_cache_nodes",
+            "ReservedCacheNodes",
+            "ReservedCacheNodeId",
+            "CacheNodeType",
+            "CacheNodeCount",
+        ),
+        ReservedService(
+            OPENSEARCH,
+            "describe_reserved_instances",
+            "ReservedInstances",
+            "ReservedInstanceId",
+            "InstanceType",
+            "InstanceCount",
+            "PaymentOption",
+        ),
+        ReservedService(
+            REDSHIFT,
+            "describe_reserved_nodes",
+            "ReservedNodes",
+            "ReservedNodeId",
+            "NodeType",
+            "NodeCount",
+        ),
+        ReservedService(
+            MEMORYDB,
+            "describe_reserved_nodes",
+            "ReservedNodes",
+            "ReservationId",
+            "NodeType",
+            "NodeCount",
+        ),
+    )
 }
 
 
@@ -178,7 +236,7 @@ class AwsCommitmentHoldings:
         reservations_for: Mapping[str, ReservationsFor],
         clock: Clock = _system_clock,
     ) -> None:
-        unknown = set(reservations_for) - set(READERS)
+        unknown = set(reservations_for) - set(RESERVED)
         if unknown:
             raise ValueError(f"no reader for the reserved services {sorted(unknown)}")
         self._tenant_id = tenant_id
@@ -201,11 +259,13 @@ class AwsCommitmentHoldings:
         found: list[HeldCommitment] = []
         for program, client_for in sorted(self._reservations_for.items()):
             scope = f"{account}:{region}:{program}"
-            method, key, read = READERS[program]
+            service = RESERVED[program]
             client = client_for(account.account_id, region)
-            for page in self._pages(client, method, scope):
-                for held in page.get(key, []):
-                    built = partial(read, self._tenant_id, held, account, region, at)
+            for page in self._pages(client, service.method, scope):
+                for held in page.get(service.key, []):
+                    built = partial(
+                        _reservation, service, self._tenant_id, held, account, region, at
+                    )
                     found.append(self._read(scope, built))
         return tuple(found)
 
