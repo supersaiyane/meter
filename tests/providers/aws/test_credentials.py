@@ -22,6 +22,7 @@ from finops_core.constants import SESSION_REFRESH_MARGIN_SECONDS
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import (
     AccessDenied,
+    Misconfigured,
     NoData,
     NotOptedIn,
     SchemaDrift,
@@ -253,3 +254,68 @@ def test_the_partition_is_derived_from_the_region(region: str, partition: str) -
     """A literal partition only breaks where being wrong is most expensive."""
     assert partition_for(region) == partition
     assert role_arn("111122223333", "SomeRole", region).startswith(f"arn:{partition}:")
+
+
+# --- the payer, ISS-294 and ISS-296 ---------------------------------------------
+
+
+class RecordingSts(StubClient):
+    """The stub, recording each role it is asked to assume and in which Region."""
+
+    def __init__(self, expiration: datetime) -> None:
+        super().__init__(expiration)
+        self.roles: list[str] = []
+
+    def assume_role(self, **kwargs: Any) -> dict[str, Any]:
+        self.roles.append(str(kwargs["RoleArn"]))
+        assert kwargs["ExternalId"] == EXTERNAL_ID
+        return super().assume_role()
+
+
+PAYER_ROLE = "arn:aws:iam::999988887777:role/MeterOrgReader"
+
+
+def test_the_payer_session_assumes_the_org_reader_role_with_the_external_id(
+    settings: Settings,
+) -> None:
+    stub = RecordingSts(START + timedelta(hours=1))
+    regions: list[str] = []
+
+    def factory(_service: str, region: str) -> RecordingSts:
+        regions.append(region)
+        return stub
+
+    configured = settings.model_copy(update={"org_reader_role_arn": PAYER_ROLE})
+    broker = AwsCredentialBroker(configured, client_factory=factory, clock=MovableClock(START))
+    session = broker.payer_session()
+    assert stub.roles == [PAYER_ROLE]
+    assert session.account.account_id == "999988887777"
+    # Through STS in the hub's first collection Region, where it already reaches STS.
+    assert set(regions) == {configured.region_list[0]}
+
+
+def test_the_payer_and_the_management_accounts_collector_role_are_never_confused(
+    settings: Settings,
+) -> None:
+    stub = RecordingSts(START + timedelta(hours=1))
+    configured = settings.model_copy(update={"org_reader_role_arn": PAYER_ROLE})
+    broker = AwsCredentialBroker(
+        configured, client_factory=lambda _s, _r: stub, clock=MovableClock(START)
+    )
+    region = configured.region_list[0]
+    management = AccountKey(provider=Provider.AWS, account_id="999988887777")
+    broker.payer_session()
+    broker.session_for(management, region)
+    broker.payer_session()
+    assert stub.roles == [
+        PAYER_ROLE,
+        role_arn("999988887777", configured.collector_role_name, region),
+    ]
+
+
+def test_a_payer_setting_that_is_not_a_role_arn_is_misconfigured(settings: Settings) -> None:
+    broken = settings.model_copy(update={"org_reader_role_arn": "meter-org-reader"})
+    stub = StubClient(START + timedelta(hours=1))
+    with pytest.raises(Misconfigured, match="METER_ORG_READER_ROLE_ARN"):
+        broker_with(broken, stub, MovableClock(START)).payer_session()
+    assert stub.assume_calls == 0

@@ -76,7 +76,8 @@ data "aws_iam_policy_document" "relay" {
     resources = [aws_secretsmanager_secret.external_id.arn]
   }
 
-  # Support's Trusted Advisor reads, made as the member account's collector role.
+  # Support's Trusted Advisor reads, and since TASK-P14-002 each account's Savings Plans and RDS
+  # reservations, ADR-0037, made as the member account's collector role.
   statement {
     sid       = "AssumeTheCollectorRole"
     effect    = "Allow"

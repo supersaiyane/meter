@@ -1196,6 +1196,52 @@ a day replaces that day's rows for its account and Region. Which usage types are
 `accelerated_instance_type` in `finops_core/domain/ai.py`: the p, g, gr, trn, inf and dl families,
 SageMaker's `ml.` form among them, read from the family so a new size is recognised.
 
+### Commitments held, P14
+
+```sql
+-- P14, FEAT-086, migration 0054. Each commitment a member account holds, read from the service
+-- that sold it with that account's collector role: a Savings Plan or a reservation, with its real
+-- start, end, term and payment. Payer wide, ADR-0025, as commitment use and coverage are.
+CREATE TABLE commitment_inventory (
+    tenant_id          UUID            NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id      UUID            NOT NULL,
+    kind               TEXT            NOT NULL,   -- savings_plan or reservation
+    commitment_id      TEXT            NOT NULL,   -- the source's own identifier
+    program            TEXT            NOT NULL,   -- Compute, EC2Instance, EC2, RDS, ...
+    account_id         TEXT            NOT NULL,   -- the account that bought it
+    region_id          TEXT,                       -- None for a plan in every Region
+    applies_to         TEXT,                       -- the type, class or family
+    quantity           INTEGER,                    -- a reservation's count
+    hourly_commitment  NUMERIC(20, 10),            -- a Savings Plan's amount an hour
+    term_months        INTEGER         NOT NULL,
+    payment_option     TEXT            NOT NULL,
+    upfront_amount     NUMERIC(20, 10) NOT NULL,
+    recurring_hourly   NUMERIC(20, 10) NOT NULL,
+    currency           TEXT            NOT NULL,
+    starts_at          TIMESTAMPTZ     NOT NULL,
+    ends_at            TIMESTAMPTZ     NOT NULL,
+    state              TEXT            NOT NULL,   -- active, retired, queued, ...
+    as_of              TIMESTAMPTZ     NOT NULL,
+    collected_at       TIMESTAMPTZ     NOT NULL,
+    CONSTRAINT pk_commitment_inventory PRIMARY KEY (tenant_id, kind, commitment_id),
+    CONSTRAINT ck_commitment_inventory__kind CHECK (kind IN ('savings_plan', 'reservation')),
+    CONSTRAINT ck_commitment_inventory__one_measure CHECK (
+        (quantity IS NULL) <> (hourly_commitment IS NULL)),
+    CONSTRAINT ck_commitment_inventory__positive CHECK (
+        term_months > 0 AND (quantity IS NULL OR quantity > 0)
+        AND (hourly_commitment IS NULL OR hourly_commitment > 0)
+        AND upfront_amount >= 0 AND recurring_hourly >= 0),
+    CONSTRAINT ck_commitment_inventory__ends_after_start CHECK (ends_at > starts_at),
+    CONSTRAINT ck_commitment_inventory__collected_after_true CHECK (collected_at >= as_of)
+);
+```
+
+Exactly one of quantity and hourly commitment, because a reservation buys instances and a Savings
+Plan an amount an hour, and a sum of the two would mean nothing. A retired commitment stays a row:
+its usage went back on demand the day it ended, which the renewal calendar exists to see coming. A
+run restates the scope it read, the account and Region's reservations and, in the first collection
+Region's unit only, the account's Savings Plans; a read that fails removes nothing.
+
 ### AI provider organizations, P13
 
 ```sql

@@ -37,6 +37,7 @@ from finops_fakes.catalog import (
 )
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
+from finops_fakes.commitments import FakeCommitmentHoldings
 from finops_fakes.containers import FakeContainerSource
 from finops_fakes.cur import ESTATE, FakeCostExport, with_ai
 from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
@@ -57,6 +58,7 @@ from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
+from finops_ingest.collectors.commitment_inventory import CommitmentInventoryCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
@@ -179,6 +181,11 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         "budgets": lambda _c: BudgetCollector(FakeBudgets(), clock=clock),
         "commitment": lambda _c: CommitmentCollector(FakeCommitmentReport(at=clock()), clock=clock),
         "commitment_actions": lambda _c: CommitmentActionsCollector(clock=clock),
+        # FEAT-086. Held in the first collection Region, which a local unit names.
+        "commitment_inventory": lambda context: CommitmentInventoryCollector(
+            FakeCommitmentHoldings(at=clock(), home_region=context.settings.region_list[0]),
+            first_region=context.settings.region_list[0],
+        ),
         "container_usage": lambda _c: ContainerUsageCollector(
             FakeContainerSource(at=clock()), clock=clock
         ),

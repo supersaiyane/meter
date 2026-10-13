@@ -68,6 +68,12 @@ tmp/
 
 # Claude Code local session state
 .claude/state/
+# Local tool state under the web app, and personal documents: never part of the product. Both
+# were committed by mistake once and removed from the history on 2026-10-13, before the first
+# push to a remote.
+finops-web/.claude/
+finops-web/src/.claude/
+*.docx
 
 # The generated API reference. Published as a pipeline artifact rather than
 # stored, because it is 4 MB of derived HTML that changes on every docstring.

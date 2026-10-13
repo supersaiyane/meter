@@ -50,6 +50,7 @@ from finops_providers.aws.reach import (
     GLOBAL_REGION,
     hub_client,
     member_clients,
+    payer_client,
     payer_of,
     relay,
 )
@@ -163,11 +164,20 @@ PROBES: Final[tuple[Probe, ...]] = (
         lambda c, _t: c.get_caller_identity(),
     ),
     Probe(
-        "AWS Organizations",
+        "AWS Organizations, as the payer",
         "org_tree",
-        "hub",
+        "payer",
         "organizations",
         lambda c, _t: c.describe_organization(),
+        region=GLOBAL_REGION,
+    ),
+    Probe(
+        "Cost Explorer's commitment reports, as the payer",
+        "commitment",
+        "payer",
+        "ce",
+        lambda c, t: c.get_savings_plans_utilization(TimePeriod=_yesterday(t)),
+        region=GLOBAL_REGION,
     ),
     Probe(
         "Service Quotas",
@@ -191,6 +201,30 @@ PROBES: Final[tuple[Probe, ...]] = (
         lambda c, t: c.list_metrics(
             Namespace=t.settings.gpu_metrics_namespace, MetricName=GPU_METRIC, RecentlyActive="PT3H"
         ),
+    ),
+    Probe(
+        "EC2 reservations the account holds",
+        "commitment_inventory",
+        "member",
+        "ec2",
+        lambda c, _t: c.describe_reserved_instances(),
+    ),
+    Probe(
+        "Savings Plans the account holds, through the relay",
+        "commitment_inventory",
+        "relay-member",
+        "savingsplans",
+        lambda c, _t: c.describe_savings_plans(maxResults=1),
+        needs=RELAYED,
+        region=GLOBAL_REGION,
+    ),
+    Probe(
+        "RDS reservations the account holds, through the relay",
+        "commitment_inventory",
+        "relay-member",
+        "rds",
+        lambda c, _t: c.describe_reserved_db_instances(MaxRecords=20),
+        needs=RELAYED,
     ),
     Probe(
         "Bedrock's invocation logging configuration",
@@ -350,11 +384,19 @@ def clients(target: Target) -> ClientFor:
             return make(
                 keys.reader(secret, scope_key=f"{probe.service}:{secret}", collector=collector)
             )
+        if probe.reach == "payer":
+            # The organization reader role in the management account, ISS-294 and ISS-296.
+            return payer_client(where.settings, probe.service, region)
         if probe.reach == "member":
             return member(probe.service, where.account, region)
         if probe.reach == "relay":
             account = where.payer if probe.service in {"budgets", "invoicing"} else None
             return relay(where.settings, service=probe.service, region=region, account_id=account)
+        if probe.reach == "relay-member":
+            # Through the relay as the account's own collector role, ADR-0037.
+            return relay(
+                where.settings, service=probe.service, region=region, account_id=where.account
+            )
         return hub_client(where.settings, probe.service, probe.region)
 
     return client_for
@@ -366,7 +408,9 @@ def _missing(probe: Probe, target: Target) -> str | None:
     for name in probe.needs:
         if not getattr(target.settings, name):
             return f"{ENV_PREFIX}{name.upper()} is empty"
-    if probe.service in {"budgets", "invoicing"} and target.payer is None:
+    if (
+        probe.reach == "payer" or probe.service in {"budgets", "invoicing"}
+    ) and target.payer is None:
         return f"{ENV_PREFIX}ORG_READER_ROLE_ARN names no payer"
     return None
 

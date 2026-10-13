@@ -159,6 +159,12 @@ and three different change cadences. `hub` changes on most releases. `member`
 changes only when a collector needs a new permission. `management` changes
 almost never and requires management account access.
 
+The organization reader role is where Meter reads what only the payer answers for the whole
+organization: Organizations, Budgets, Invoicing, and since TASK-P14-001 Cost Explorer's commitment
+reports and purchase recommendations, ISS-294 and ISS-296. Every grant is a read, and
+`tests/contract/test_no_commitment_purchases.py` fails the build if any role is granted an action
+that buys a commitment.
+
 ## Environments
 
 | Environment | Trigger | Approval |

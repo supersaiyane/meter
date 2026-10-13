@@ -384,6 +384,7 @@
     "finops_core/domain/ai.py",
     "finops_core/domain/budget.py",
     "finops_core/domain/catalog.py",
+    "finops_core/domain/commitments.py",
     "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
     "finops_core/domain/explore.py",
@@ -439,6 +440,7 @@
     "finops_fakes/catalog.py",
     "finops_fakes/cloudwatch_estate.py",
     "finops_fakes/commitment.py",
+    "finops_fakes/commitments.py",
     "finops_fakes/composition.py",
     "finops_fakes/containers.py",
     "finops_fakes/cur.py",
@@ -480,6 +482,7 @@
     "finops_ingest/collectors/catalog_reads.py",
     "finops_ingest/collectors/commitment.py",
     "finops_ingest/collectors/commitment_actions.py",
+    "finops_ingest/collectors/commitment_inventory.py",
     "finops_ingest/collectors/container_usage.py",
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
@@ -538,6 +541,7 @@
     "finops_providers/aws/client.py",
     "finops_providers/aws/cloudtrail_creators.py",
     "finops_providers/aws/commitment.py",
+    "finops_providers/aws/commitment_inventory.py",
     "finops_providers/aws/config_inventory.py",
     "finops_providers/aws/container_insights.py",
     "finops_providers/aws/credentials.py",
@@ -687,6 +691,7 @@
     "migrations/versions/0051_anthropic_schedule.py",
     "migrations/versions/0052_gpu_utilization_daily.py",
     "migrations/versions/0053_ai_spend_screen.py",
+    "migrations/versions/0054_commitment_inventory.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -777,6 +782,7 @@
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_llm_provider.py",
     "tests/contract/test_network_paths.py",
+    "tests/contract/test_no_commitment_purchases.py",
     "tests/contract/test_no_llm_writes.py",
     "tests/contract/test_no_quota_writes.py",
     "tests/contract/test_ownership_contract.py",
@@ -787,6 +793,7 @@
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
     "tests/core/test_catalog.py",
+    "tests/core/test_commitments.py",
     "tests/core/test_config.py",
     "tests/core/test_containers_domain.py",
     "tests/core/test_cost_ai_columns.py",
@@ -832,6 +839,7 @@
     "tests/ingest/collectors/test_ai_usage.py",
     "tests/ingest/collectors/test_commitment.py",
     "tests/ingest/collectors/test_commitment_actions.py",
+    "tests/ingest/collectors/test_commitment_inventory.py",
     "tests/ingest/collectors/test_container_usage.py",
     "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
@@ -900,6 +908,7 @@
     "tests/providers/aws/test_burstable.py",
     "tests/providers/aws/test_cloudtrail_creators.py",
     "tests/providers/aws/test_commitment.py",
+    "tests/providers/aws/test_commitment_inventory.py",
     "tests/providers/aws/test_config_inventory.py",
     "tests/providers/aws/test_container_insights.py",
     "tests/providers/aws/test_credentials.py",
@@ -9165,6 +9174,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/commitments.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/containers.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -9431,6 +9445,16 @@
     },
     {
       "s": "finops_core/ports/commitment.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/commitment.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/commitment.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
     },
@@ -9585,6 +9609,21 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/commitments.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/commitments.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/commitments.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/account_health.py",
       "k": "python"
@@ -9612,6 +9651,11 @@
     {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/commitment_inventory.py",
       "k": "python"
     },
     {
@@ -10156,6 +10200,11 @@
     },
     {
       "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -10182,6 +10231,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/commitment_inventory.py",
       "k": "python"
     },
     {
@@ -10292,6 +10346,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/commitment_inventory.py",
       "k": "python"
     },
     {
@@ -10522,6 +10581,26 @@
     {
       "s": "finops_ingest/collectors/commitment_actions.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_inventory.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_inventory.py",
+      "t": "finops_core/ports/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_inventory.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -11595,6 +11674,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/commitment_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_inventory.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment_inventory.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/config_inventory.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -11657,6 +11756,11 @@
     {
       "s": "finops_providers/aws/credentials.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -13865,6 +13969,11 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_no_commitment_purchases.py",
+      "t": "finops_relay/relay.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_no_llm_writes.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -13957,6 +14066,11 @@
     {
       "s": "tests/core/test_catalog.py",
       "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_commitments.py",
+      "t": "finops_core/domain/commitments.py",
       "k": "python"
     },
     {
@@ -14426,6 +14540,36 @@
     },
     {
       "s": "tests/ingest/collectors/test_commitment_actions.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
+      "t": "finops_ingest/collectors/commitment_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_inventory.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -15957,6 +16101,26 @@
     {
       "s": "tests/providers/aws/test_commitment.py",
       "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_inventory.py",
+      "t": "finops_core/domain/commitments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment_inventory.py",
+      "t": "finops_providers/aws/commitment_inventory.py",
       "k": "python"
     },
     {

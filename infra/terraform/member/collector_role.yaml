@@ -156,6 +156,13 @@ Resources:
                   # so neither can be narrowed by one.
                   - bedrock:GetModelInvocationLoggingConfiguration
                   - logs:GetQueryResults
+                  # P14 commitment_inventory, TASK-P14-002. What this account holds, its Savings
+                  # Plans and its reservations, with their terms and ends. Reads only: nothing
+                  # that buys, exchanges or sells a commitment is granted, constraint 6, held by
+                  # tests/contract/test_no_commitment_purchases.py.
+                  - savingsplans:DescribeSavingsPlans
+                  - ec2:DescribeReservedInstances
+                  - rds:DescribeReservedDBInstances
                 Resource: "*"
               # P13 bedrock_invocations. Starting a query is the one action that reads a log
               # group, and the invocation logs hold every prompt and response, so it is granted

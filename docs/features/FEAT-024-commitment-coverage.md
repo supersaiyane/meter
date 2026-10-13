@@ -80,6 +80,12 @@ account.
 
 Nothing in `finops_providers/aws/commitment.py` has ever made a call. ISS-122.
 
+**Read as the payer since TASK-P14-001, 2026-10-13.** Cost Explorer reports the organization's
+commitments only to the management account, and these reads were made with the hub's own
+credentials, which no role granted them, ISS-294. The binding now assumes the organization reader
+role, `FinOpsOrgReaderRole`, with the same ExternalId as every collector role, and that role grants
+exactly the five reports and AWS's two purchase recommendations.
+
 ## Failure behaviour
 
 A payer holding no commitments raises `NoData`, which the collector absorbs and

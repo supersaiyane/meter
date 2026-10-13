@@ -76,6 +76,15 @@ ALLOWED: Final[Mapping[tuple[str, str], Allowed]] = {
     ("savingsplans", "DescribeSavingsPlansOfferingRates"): Allowed(
         "savingsplans:DescribeSavingsPlansOfferingRates", RoleKind.OWN
     ),
+    # TASK-P14-002, ADR-0037. What each member account holds, read once a day as its collector
+    # role: Savings Plans, which have no endpoint, and RDS reservations, whose endpoint a daily
+    # read is not worth. Reads, each narrowed by the session policy to its one action.
+    ("savingsplans", "DescribeSavingsPlans"): Allowed(
+        "savingsplans:DescribeSavingsPlans", RoleKind.MEMBER
+    ),
+    ("rds", "DescribeReservedDBInstances"): Allowed(
+        "rds:DescribeReservedDBInstances", RoleKind.MEMBER
+    ),
 }
 
 

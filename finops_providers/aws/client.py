@@ -117,6 +117,15 @@ def role_arn(account_id: str, role_name: str, region: str) -> str:
     return f"arn:{partition_for(region)}:iam::{account_id}:role/{role_name}"
 
 
+def role_account(arn: str) -> str | None:
+    """The account an IAM role's ARN names, or None when the text is not a role's ARN."""
+    parts = arn.split(":")
+    if len(parts) != 6 or parts[2] != "iam" or not parts[5].startswith("role/"):
+        return None
+    account = parts[4]
+    return account if len(account) == 12 and account.isdigit() else None
+
+
 def error_code(error: ClientError) -> str:
     return str(error.response.get("Error", {}).get("Code", ""))
 

@@ -18,12 +18,14 @@ from collections.abc import Callable
 from typing import Any, Final
 
 from finops_core.domain.account import AccountKey
+from finops_core.domain.commitments import EC2, RDS
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
+from finops_ingest.collectors.commitment_inventory import CommitmentInventoryCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
@@ -45,7 +47,8 @@ from finops_providers.aws.accounts import AwsAccountDiscovery
 from finops_providers.aws.bedrock_invocations import BedrockInvocationLogs
 from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
-from finops_providers.aws.commitment import CostExplorerCommitmentReport
+from finops_providers.aws.commitment import COST_EXPLORER_REGION, CostExplorerCommitmentReport
+from finops_providers.aws.commitment_inventory import AwsCommitmentHoldings
 from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
@@ -62,6 +65,7 @@ from finops_providers.aws.reach import (
     PerAccountCatalogue,
     hub_client,
     member_clients,
+    payer_client,
     payer_of,
     relay,
     session_clients,
@@ -155,9 +159,38 @@ def _budgets(context: CollectorContext) -> CollectorRunner:
 
 
 def _commitment(context: CollectorContext) -> CollectorRunner:
+    # As the payer: Cost Explorer reports the organization's commitments only there, ISS-294.
+    settings = context.settings
     return CommitmentCollector(
-        CostExplorerCommitmentReport(context.settings, context.unit.tenant_id)
+        CostExplorerCommitmentReport(
+            settings,
+            context.unit.tenant_id,
+            client_factory=lambda: payer_client(settings, "ce", COST_EXPLORER_REGION),
+        )
     )
+
+
+def _commitment_inventory(context: CollectorContext) -> CollectorRunner:
+    # Each account's own commitments, as its collector role: Savings Plans and RDS reservations
+    # through the relay, ADR-0037, EC2 reservations through the EC2 endpoint, FEAT-086.
+    settings = context.settings
+    session = _assumed(context, "commitment_inventory")
+    ec2 = session_clients(settings, session)
+
+    def relayed(service: str, region: str, account: str) -> Any:
+        return _relayed(
+            context, "commitment_inventory", service=service, region=region, account=account
+        )
+
+    holdings = AwsCommitmentHoldings(
+        context.unit.tenant_id,
+        savings_plans_for=lambda account: relayed("savingsplans", GLOBAL_REGION, account),
+        reservations_for={
+            EC2: lambda _account, region: ec2("ec2", region),
+            RDS: lambda account, region: relayed("rds", region, account),
+        },
+    )
+    return CommitmentInventoryCollector(holdings, first_region=settings.region_list[0])
 
 
 def _container_usage(context: CollectorContext) -> CollectorRunner:
@@ -216,7 +249,13 @@ def _invoices(context: CollectorContext) -> CollectorRunner:
 
 
 def _org_tree(context: CollectorContext) -> CollectorRunner:
-    return OrgTreeCollector(AwsAccountDiscovery(context.settings))
+    # As the payer: Organizations lists the accounts only to the management account, ISS-296.
+    settings = context.settings
+    return OrgTreeCollector(
+        AwsAccountDiscovery(
+            settings, client_factory=lambda: payer_client(settings, "organizations", GLOBAL_REGION)
+        )
+    )
 
 
 def _ownership(context: CollectorContext) -> CollectorRunner:
@@ -278,6 +317,7 @@ AWS_BUILDERS: Final[dict[str, Build]] = {
     "bedrock_invocations": _bedrock_invocations,
     "budgets": _budgets,
     "commitment": _commitment,
+    "commitment_inventory": _commitment_inventory,
     "container_usage": _container_usage,
     "cost_focus": _cost_focus,
     "gpu_utilization": _gpu_utilization,
