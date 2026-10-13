@@ -1,7 +1,7 @@
 # P14 Commitments: design specification
 
 Date: 2026-10-13
-Status: Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, in build. Chosen the same day as the next priority, proposal 5 of `next-in-scope.txt`
+Status: Delivered on 2026-10-13 against fakes, proven by TASK-P14-010. Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, and OPEN-40 while it was built. Chosen the same day as the next priority, proposal 5 of `next-in-scope.txt`
 Sub project: P14
 Features: FEAT-086, FEAT-087, FEAT-088, FEAT-089, FEAT-090
 Depends on: P1 for commitment use and coverage, P9 for Savings Plans rates, P10 for FOCUS List Cost, P12 for the composition every new collector joins. Proof against a real estate waits on ISS-002, an AWS account

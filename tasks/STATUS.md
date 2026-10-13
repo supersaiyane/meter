@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 90 total, 11 specified, 18 in build, 58 delivered |
+| Features | 90 total, 11 specified, 13 in build, 63 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 193 recorded |
+| Changes | 194 recorded |
 | Issues | 186 fixed, 108 open, 0 parked |
 | Open questions | 40 awaiting a decision |
 
@@ -164,7 +164,11 @@ The seed does not run the P14 collectors yet; TASK-P14-010 does. TASK-P14-008 le
 is the organization approve a plan, record it bought and withdraw it, each step named and audited,
 and the collector verifies a bought plan when the inventory holds its purchase. TASK-P14-009 puts it on
 the commitments screen: the savings rate first, then what is held, when it ends and what to buy,
-with the plan's steps for a payer; the Overview's savings rate tile reads the same route.
+with the plan's steps for a payer; the Overview's savings rate tile reads the same route. TASK-P14-010
+seeds all of it into the demo, proves exit criteria 2 to 6 over the seeded demo through the API, and
+writes the owner's runbook, `docs/runbooks/commitments.md`. P14 is delivered against fakes; no
+account has been read, ISS-002, and four of Cost Explorer's service names wait on first contact,
+ISS-297.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -342,7 +346,7 @@ ISS-003.
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
-| P14 | 9 | 0 | 0 | 0 | 1 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -645,6 +649,7 @@ ISS-003.
 | `TASK-P14-007` | Done 2026-10-13 | Meter's purchase plan |
 | `TASK-P14-008` | Done 2026-10-13 | approval, the purchase recorded, and verification |
 | `TASK-P14-009` | Done 2026-10-13 | the commitments screen |
+| `TASK-P14-010` | Done 2026-10-13 | the local stack, first contact, proof and documents |
 
 <!-- generated:task-status end -->
 

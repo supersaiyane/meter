@@ -1,7 +1,8 @@
 # P14 Commitments: implementation plan
 
 Date: 2026-10-13
-Status: Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, in build
+Status: Delivered on 2026-10-13 against fakes, proven by TASK-P14-010. Approved by the owner on
+2026-10-13 with OPEN-35 to OPEN-39 answered, and OPEN-40 while it was built
 Spec: `docs/specs/2026-10-13-p14-commitments-design.md`
 Depends on: P1, P9, P10 and P12. Proof against a real estate waits on ISS-002
 Tasks: 10
@@ -309,7 +310,7 @@ two cannot disagree. Unit tests in `CommitmentPanels.test.tsx` and a Playwright 
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P14-001 to TASK-P14-009 |
@@ -317,8 +318,27 @@ two cannot disagree. Unit tests in `CommitmentPanels.test.tsx` and a Playwright 
 
 **Acceptance criteria.**
 
-- [ ] The seeded demo and the local stack carry the inventory, the rate, the calendar and a plan
-- [ ] `make first-contact` probes each new read, and a runbook names the owner's steps
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-086 to FEAT-090 say what was built; the register, `project_map.md` and the checkpoint
+- [x] The seeded demo and the local stack carry the inventory, the rate, the calendar and a plan
+- [x] `make first-contact` probes each new read, and a runbook names the owner's steps
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-086 to FEAT-090 say what was built; the register, `project_map.md` and the checkpoint
       updated, and `make check-docs` clean
+
+**Delivered 2026-10-13.** The demo seed runs the inventory in each account, AWS's purchase advice
+and Meter's plan after the bill and P9's rates they read, and the refusing account refuses here too;
+the local stack's composition runs the same three daily against the fakes. `make first-contact`
+probes every read P14 added, as the payer and through the relay, and
+`docs/runbooks/commitments.md` names the owner's steps for the reads, the policy and a plan.
+
+| Exit criterion, spec section 13 | Evidence |
+| --- | --- |
+| 1. The Cost Explorer commitment reads are made as the payer, and the Terraform grants them | `tests/contract/test_no_commitment_purchases.py::test_the_payer_is_granted_exactly_the_commitment_reads`, over the Terraform; `tests/ingest/test_aws_bindings.py` |
+| 2. Every Savings Plan and reservation in the fake estate lands with its real term and end, and an account that refuses reads as its typed cause | `tests/scripts/test_p14_exit_criteria.py::test_2_...`, over the seeded demo through the API |
+| 3. The screen opens on the effective savings rate, measured, and a month with no List Cost says so | `test_3_...` over the demo; `tests/api/test_commitments_routes.py`; `CommitmentPanels.test.tsx`; `finops-web/e2e/commitments.spec.ts` |
+| 4. The calendar flags a month whose expiring share passes the ladder limit | `test_4_...` over the demo; `tests/query/test_commitment_calendar.py` |
+| 5. Meter's plan and AWS's recommendation side by side, every figure labelled, a family with no rate unpriced, never zero | `test_5_...` over the demo, the GPU families named as unpriced; `tests/query/test_purchase_plan.py`; `CommitmentPanels.test.tsx` |
+| 6. A plan approved, recorded as bought and matched to a new commitment becomes verified, each step with its principal; a narrowed principal cannot approve | `test_6_...` over the demo through the API; `tests/api/test_commitments_routes.py` |
+
+Each holds against fakes and stubbed clients. No account has been read: ISS-002 closes with a real
+account, and ISS-297 when first contact has answered for every service name Cost Explorer is asked
+about.
