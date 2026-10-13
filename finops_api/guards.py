@@ -191,6 +191,9 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "commitment_policy": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
+    "purchase_plan": PayerWide(),
+    "purchase_plan_line": PayerWide(),
+    "purchase_plan_event": PayerWide(),
     # FEAT-060. A budget is set at the payer and the API reporting it is a payer API, so it
     # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
     # and is ISS-212: an account scoped budget is invisible to the team that owns the account.

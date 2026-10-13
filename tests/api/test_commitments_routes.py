@@ -291,3 +291,82 @@ def test_a_policy_no_plan_could_follow_is_refused_before_it_is_stored(
         "reason": "Two years is not a term AWS sells",
     }
     assert client.put(POLICY, json=bad, headers=auth(token)).status_code == 422
+
+
+# --- TASK-P14-007: Meter's plan beside the provider's ------------------------------------------
+
+PLANS = "/api/v1/commitments/plans"
+
+
+@pytest.fixture
+def planned(engine: Engine, tenant_id: UUID) -> UUID:
+    """A month of steady m6i usage priced by P9's fake rates, the provider's advice, and a plan."""
+    from finops_fakes.commitments import FakePurchaseRecommendations
+    from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
+    from finops_ingest.collectors.purchase_recommendation import PurchaseRecommendationCollector
+    from tests.ingest.collectors.test_purchase_plan import NOW, billed, priced, run
+
+    priced(engine, tenant_id)
+    billed(engine, tenant_id)
+    advice = PurchaseRecommendationCollector(
+        FakePurchaseRecommendations(tenant_id, at=NOW),
+        services=("Amazon Elastic Compute Cloud - Compute", "Amazon Redshift"),
+        clock=lambda: NOW,
+    )
+    run(engine, tenant_id, advice, "purchase_recommendation")
+    run(engine, tenant_id, PurchasePlanCollector(clock=lambda: NOW))
+    return tenant_id
+
+
+def test_meters_plan_shows_beside_the_providers_with_the_difference_in_words(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    client, token = client_for(engine, everything(planned), settings)
+    found = get(client, token, PLANS)
+    data = found["data"]
+    assert data["plan"]["status"] == "DRAFT"
+    assert data["no_plan_reason"] is None
+    assert {line["program"] for line in data["lines"]} == {"EC2Instance"}
+    assert all(line["basis"] == "modelled" for line in data["lines"])
+    assert {(one["kind"], one["program"]) for one in data["provider"]} == {
+        ("savings_plan", "Compute"),
+        ("savings_plan", "EC2Instance"),
+        ("reservation", "Amazon Elastic Compute Cloud - Compute"),
+        ("reservation", "Amazon Redshift"),
+    }
+    assert any("looked back 30 days" in sentence for sentence in data["difference"])
+    assert any("applies the ladder" in sentence for sentence in data["difference"])
+    assert found["meta"]["scope_coverage"]["unit"] == "payer"
+
+
+def test_before_a_plan_is_drafted_the_route_says_so(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    from finops_api.routes.commitments import NO_PLAN_YET
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    data = get(client, token, PLANS)["data"]
+    assert (data["plan"], data["no_plan_reason"]) == (None, NO_PLAN_YET)
+    assert (data["lines"], data["difference"]) == ([], [])
+
+
+def test_a_narrowed_reader_cannot_read_the_plans(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    from tests.api.test_query_routes import auth
+
+    client, token = client_for(engine, only(planned, ACCOUNT), settings)
+    response = client.get(PLANS, headers=auth(token))
+    assert response.status_code == 404
+    assert "payer" in response.json()["detail"]
+
+
+def test_the_plans_lines_export_as_a_file(
+    engine: Engine, settings: Settings, planned: UUID
+) -> None:
+    from tests.api.test_query_routes import auth
+
+    client, token = client_for(engine, everything(planned), settings)
+    response = client.get(f"{PLANS}?format=csv", headers=auth(token))
+    assert response.status_code == 200
+    assert "EC2Instance" in response.text

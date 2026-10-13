@@ -73,6 +73,7 @@ from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
+from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
 from finops_ingest.collectors.purchase_recommendation import PurchaseRecommendationCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
@@ -216,6 +217,8 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         ),
         "platform_cost": lambda _c: PlatformCostCollector(FakePlatformCost(), clock=clock),
         "price_catalog": lambda _c: PriceCatalogCollector(FakePriceCatalog(), clock=clock),
+        # FEAT-089. Meter's own plan, from the seeded bill, P9's rates and the inventory.
+        "purchase_plan": lambda _c: PurchasePlanCollector(clock=clock),
         # FEAT-089. AWS's advice in the policy's terms, for the services the setting names.
         "purchase_recommendation": lambda context: PurchaseRecommendationCollector(
             FakePurchaseRecommendations(context.unit.tenant_id, at=clock()),

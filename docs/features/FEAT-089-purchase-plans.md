@@ -6,7 +6,7 @@
 | Status | In build |
 | Specification | [P14 spec](../specs/2026-10-13-p14-commitments-design.md), sections 5.1, 5.6 and 6 |
 | Tasks | TASK-P14-006, TASK-P14-007 and TASK-P14-009 |
-| Decisions | OPEN-35, OPEN-38 |
+| Decisions | OPEN-35, OPEN-38, OPEN-40 |
 | Issues addressed | ISS-297, open |
 | Refresh cadence | Daily |
 
@@ -24,7 +24,14 @@ AWS's side is built, TASK-P14-006. The `purchase_recommendation` collector runs 
 
 The service names are Cost Explorer's own, and AWS documents only some of them. They are a setting so a name Cost Explorer refuses can be corrected without a release, and `make first-contact` asks for the first one as the payer, ISS-297.
 
-Meter's own plan is not built yet, TASK-P14-007. `finops_query` will hold the arithmetic, pure: the tenth percentile of daily uncovered eligible on demand spend over 30 days, P9's rate for the families and Regions behind it, the policy's coverage less what is already held, and the ladder limit.
+Meter's own plan is built, TASK-P14-007. The `purchase_plan` collector runs once a day as one organization wide unit and reads only Meter's tables: the last 30 days of the bill's EC2 instance hours on demand, at their on demand equivalent, P9's on demand price and its two Savings Plans rates for each usage type in the policy's term and payment option, and what the inventory holds for EC2. `finops_query/purchase_plan.py` holds the arithmetic, pure, spec section 5.6:
+
+- The steady baseline is the tenth percentile of the daily spend over the days the bill holds, divided by 24; a day the bill does not hold is left out, and fewer than 14 days draft a plan that says so and buys nothing.
+- Split by stability, OPEN-40: each family steady in a Region buys an EC2 Instance Savings Plan, and steady usage that moves between families buys a Compute Savings Plan. A share with no rate is named as unpriced, never priced at zero.
+- The target is the policy's coverage of that baseline less what is held past the month, each held commitment landing on the family it is bound to or, if flexible, anywhere.
+- The ladder: at most the policy's limit of the organization's hourly commitment, held and planned, ends in any month, given what already ends then. This month's tranche is bought and up to eleven later ones are named; what twelve cannot place is reported.
+
+There is one plan per month. It is redrafted daily while it is a draft, a draft nobody approved in its month lapses, and a plan somebody acted on is left as it is. The database refuses a transition out of order. `GET /v1/commitments/plans` returns the newest plan, its lines, the unpriced shares, AWS's recommendations and the difference in words.
 
 ## Data sources and freshness
 
@@ -47,7 +54,7 @@ Visible at global scope only. Each recommendation request costs USD 0.01, modell
 
 ## Interface
 
-`GET /v1/commitments/plans`, and the plans panel.
+`GET /v1/commitments/plans`, built: the newest plan, its lines as the rows of a file export, the unpriced shares, AWS's recommendations, and the difference in words. Global scope only. The plans panel is TASK-P14-009.
 
 ## Not doing
 

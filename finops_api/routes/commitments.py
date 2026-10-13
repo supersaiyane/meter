@@ -19,6 +19,9 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.commitments import (
     CommitmentInventoryRepository,
     CommitmentPolicyRepository,
+    PurchasePlanLineRepository,
+    PurchasePlanRepository,
+    PurchaseRecommendationRepository,
 )
 from finops_api.db.repositories.cost import CostRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
@@ -33,20 +36,29 @@ from finops_api.schemas import (
     Envelope,
     HeldCommitmentOut,
     Meta,
+    PlanLineOut,
+    ProviderRecommendationOut,
+    PurchasePlanOut,
+    PurchasePlansOut,
     SavingsRateMonthOut,
     SavingsRateOut,
+    UnpricedShareOut,
 )
 from finops_core.domain.commitments import (
     DEFAULT_POLICY,
     DEFAULT_POLICY_REASON,
+    SAVINGS_PLAN,
     UNREADABLE,
     CommitmentPolicy,
 )
 from finops_core.domain.tenant import Scope
 from finops_query.commitment_calendar import Held, calendar
+from finops_query.purchase_plan import Advice, Line, difference
 from finops_query.savings_rate import savings_rate
 
 router = APIRouter(prefix=API_PREFIX, tags=["commitments"])
+
+NO_PLAN_YET = "No plan has been drafted yet; the purchase plan collector drafts one a day."
 
 MONTHS = Query(default=12, ge=1, le=36, description="How many billing months, the newest last.")
 
@@ -278,3 +290,92 @@ class _Stamp:
     def __init__(self, at: datetime) -> None:
         self.as_of = at
         self.collected_at = at
+
+
+@router.get("/commitments/plans", response_model=Envelope[PurchasePlansOut])
+@exportable(
+    ExportSpec(
+        title="Purchase plan",
+        row_model=PlanLineOut,
+        rows=rows_in("lines"),
+        metric="Meter's purchase plan, each line modelled from the bill and P9's rates",
+    )
+)
+def commitments_plans(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[PurchasePlansOut]:
+    """Meter's plan for the newest month beside the provider's, and why they differ. FEAT-089."""
+    _payer_only(scope)
+    plan = PurchasePlanRepository(connection, context).current(scope)
+    lines = (
+        PurchasePlanLineRepository(connection, context).of(scope, plan.plan_id)
+        if plan is not None
+        else ()
+    )
+    advice = PurchaseRecommendationRepository(connection, context).all(scope)
+    found = PurchasePlansOut(
+        plan=_plan_out(plan) if plan is not None else None,
+        no_plan_reason=None if plan is not None else NO_PLAN_YET,
+        lines=[_fields(PlanLineOut, row, skip={"basis"}) for row in lines],
+        provider=[_fields(ProviderRecommendationOut, row) for row in advice],
+        difference=list(_difference(plan, lines, advice)) if plan is not None else [],
+    )
+    facts = [*([plan] if plan is not None else []), *advice]
+    return Envelope(data=found, meta=_payer_meta(connection, scope, context, facts))
+
+
+def _fields[Model: PlanLineOut | ProviderRecommendationOut](
+    model: type[Model], row: Any, skip: frozenset[str] | set[str] = frozenset()
+) -> Model:
+    return model(**{name: getattr(row, name) for name in model.model_fields if name not in skip})
+
+
+def _plan_out(plan: Any) -> PurchasePlanOut:
+    unpriced = [
+        UnpricedShareOut(
+            instance_family=one.get("family"),
+            region_id=one.get("region"),
+            steady_hourly=one["steady_hourly"],
+            reason=one["reason"],
+        )
+        for one in plan.unpriced
+    ]
+    named = {name for name in PurchasePlanOut.model_fields if name != "unpriced"}
+    return PurchasePlanOut(**{name: getattr(plan, name) for name in named}, unpriced=unpriced)
+
+
+def _difference(plan: Any, lines: Sequence[Any], advice: Sequence[Any]) -> tuple[str, ...]:
+    return difference(
+        target_coverage=plan.target_coverage,
+        ladder_limit=plan.ladder_limit,
+        days_held=plan.days_held,
+        window_days=(plan.window_end - plan.window_start).days,
+        lines=[
+            Line(
+                program=row.program,
+                family=row.instance_family,
+                region=row.region_id,
+                tranche=row.tranche_month,
+                hourly_commitment=row.hourly_commitment,
+                discount_percent=row.discount_percent,
+                covers_hourly=row.covers_hourly,
+                monthly_saving=row.monthly_saving,
+                usage_floor_percent=row.usage_floor_percent,
+                upfront_cost=row.upfront_cost,
+            )
+            for row in lines
+        ],
+        currency=plan.currency,
+        advice=[
+            Advice(
+                program=row.program,
+                lookback_days=row.lookback_days,
+                hourly_commitment=row.hourly_commitment,
+                failed=row.failure_cause is not None,
+            )
+            for row in advice
+            if row.kind == SAVINGS_PLAN
+        ],
+    )

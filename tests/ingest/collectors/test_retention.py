@@ -558,6 +558,7 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "commitment_inventory",
         # P14, FEAT-089.
         "purchase_recommendation",
+        "purchase_plan",
         "recommendations",
         "waste_compute",
         "waste_cloudwatch",
