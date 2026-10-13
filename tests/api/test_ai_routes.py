@@ -218,6 +218,7 @@ def test_coverage_counts_the_cloud_accounts_and_never_a_providers_project(
 ) -> None:
     """ISS-288: a global reader sees the whole estate, whichever accounts happen to use a model."""
     accounts = len({row.sub_account_id for row in CLOSED})
-    for path in (SPEND, CALLERS, GPU, "/api/v1/cost/summary"):
+    every = (SPEND, CALLERS, GPU, "/api/v1/cost/summary", "/api/v1/cost/explore")
+    for path in (*every, "/api/v1/cost/anomalies"):
         coverage = read(engine, settings, planted, path)["meta"]["scope_coverage"]
         assert coverage["visible"] == accounts, path

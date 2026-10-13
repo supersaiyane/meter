@@ -7536,6 +7536,11 @@
     },
     {
       "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
       "t": "finops_core/domain/explore.py",
       "k": "python"
     },

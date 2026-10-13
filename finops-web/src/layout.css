@@ -2289,6 +2289,10 @@ main > section > [data-testid='state'] > p[role='status'] {
   letter-spacing: -0.02em;
   text-align: left;
   color: var(--text-numeral);
+  /* A forecast is an interval, two amounts and a word, wider than a tile at four to a row. It
+     wraps at its spaces, each amount whole, rather than running out of the tile and losing its
+     last digits: on the local stack it read $23,56 for $23,568. */
+  white-space: normal;
 }
 
 /* A tile names its figure's provenance in words, as drawn, and its formula under the figure,

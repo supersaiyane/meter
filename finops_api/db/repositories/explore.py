@@ -26,6 +26,7 @@ from sqlalchemy.sql.elements import ColumnClause, ColumnElement
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.db.repositories.cost import GROUPABLE
+from finops_core.domain.cost import AWS_EXPORT
 from finops_core.domain.explore import Granularity, Window
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
@@ -110,13 +111,14 @@ class ExploreRepository(ScopedRepository):
         """Accounts spending, the oldest charge and the newest fetch in a window.
 
         Unfiltered, because these describe the estate the view draws on, and a reader's filter
-        narrowing the rows is not the estate shrinking.
+        narrowing the rows is not the estate shrinking. The accounts are the cloud bill's: an AI
+        provider's sub account is a project or a workspace, not an account, ISS-288.
         """
         c = self.table.c
         statement = (
             self.scoped_select(scope)
             .with_only_columns(
-                func.count(func.distinct(c.sub_account_id)),
+                func.count(func.distinct(c.sub_account_id)).filter(c.ingest_source == AWS_EXPORT),
                 func.min(c.as_of),
                 func.max(c.collected_at),
             )
