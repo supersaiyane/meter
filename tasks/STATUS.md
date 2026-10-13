@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 90 total, 11 specified, 13 in build, 63 delivered |
 | Decisions | 37 architecture decision records |
-| Changes | 194 recorded |
-| Issues | 186 fixed, 108 open, 0 parked |
+| Changes | 195 recorded |
+| Issues | 187 fixed, 108 open, 0 parked |
 | Open questions | 40 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -168,7 +168,8 @@ with the plan's steps for a payer; the Overview's savings rate tile reads the sa
 seeds all of it into the demo, proves exit criteria 2 to 6 over the seeded demo through the API, and
 writes the owner's runbook, `docs/runbooks/commitments.md`. P14 is delivered against fakes; no
 account has been read, ISS-002, and four of Cost Explorer's service names wait on first contact,
-ISS-297.
+ISS-297. Proving it on the rebuilt local stack found ISS-298, the screen reading a
+column's places aloud, fixed the same day.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
