@@ -123,6 +123,12 @@ subprojects:
   spec: specs/2026-10-12-p13-finops-for-ai-design.md
   plan: plans/P13-implementation-plan.md
   depends_on: P12
+- id: P14
+  name: Commitments
+  status: 'In build. Approved by the owner on 2026-10-13 with OPEN-35 to OPEN-39 answered, and chosen the same day as the next priority, proposal 5 of next-in-scope.txt. Every commitment with its real term, the effective savings rate as the headline, a renewal calendar against a ladder, and purchase plans from Meter and from AWS side by side for a person to approve, buy and see verified. Meter never buys'
+  spec: specs/2026-10-13-p14-commitments-design.md
+  plan: plans/P14-implementation-plan.md
+  depends_on: P13
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -640,6 +646,36 @@ features:
   status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-085-ai-spend-screen.md
+- id: FEAT-086
+  name: The commitment inventory, every commitment's real term, end and payment
+  subproject: P14
+  status: Specified
+  detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.3, 5.5, 5.8 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
+  doc: docs/features/FEAT-086-commitment-inventory.md
+- id: FEAT-087
+  name: The effective savings rate as the headline, measured from the bill
+  subproject: P14
+  status: Specified
+  detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.7 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
+  doc: docs/features/FEAT-087-effective-savings-rate.md
+- id: FEAT-088
+  name: The renewal calendar and the ladder
+  subproject: P14
+  status: Specified
+  detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.4 and 8, [P14 plan](docs/plans/P14-implementation-plan.md)'
+  doc: docs/features/FEAT-088-renewal-calendar.md
+- id: FEAT-089
+  name: Purchase plans, Meter's and AWS's side by side
+  subproject: P14
+  status: Specified
+  detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) sections 5.1, 5.6 and 6, [P14 plan](docs/plans/P14-implementation-plan.md)'
+  doc: docs/features/FEAT-089-purchase-plans.md
+- id: FEAT-090
+  name: Plan approval, the purchase recorded and verified against the bill
+  subproject: P14
+  status: Specified
+  detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md)'
+  doc: docs/features/FEAT-090-plan-approval.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -789,6 +825,10 @@ adrs:
   decision: The worker reaches the AI providers through a NAT gateway, and nothing else does
   status: Accepted
   doc: docs/adr/ADR-0036-a-nat-gateway-for-the-worker-only.md
+- id: ADR-0037
+  decision: A read made once a day may go through the relay where an endpoint exists
+  status: Accepted
+  doc: docs/adr/ADR-0037-daily-reads-through-the-relay.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2556,6 +2596,12 @@ changes:
   what: Budgets count their coverage in payers, so a whole estate is never called partial
   commit: pending
   detail: 'The front page read 1 of 5 accounts after CHG-0182 for a reader who sees all five, because GET /cost/budgets passed one visible account against every account in the organization. A budget belongs to the payer, so its coverage is now one payer of one, as commitments and reconciliation already said, ISS-293. A lesson recorded for an internal term left unexplained in a question to the owner'
+- id: CHG-0184
+  date: '2026-10-13'
+  type: Docs
+  what: P14 Commitments specified and planned, OPEN-35 to OPEN-39 answered
+  commit: pending
+  detail: 'The owner chose commitments, proposal 5 of next-in-scope.txt, as the next build and answered five questions: purchase plans from Meter and from AWS side by side; approval recorded and a person buys; the inventory covering every reservable service, Savings Plans, EC2 and RDS first; a cautious ladder by default, 80 percent coverage, one year, no upfront and one twelfth; and the relay for reads made once a day, ADR-0037 amending ADR-0035. Specifying it found ISS-294, the Cost Explorer commitment reads made as the hub with no role granting them, and ISS-295, DynamoDB reserved capacity with no read API. Ten tasks, FEAT-086 to FEAT-090'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5101,6 +5147,16 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-295
+  severity: LOW
+  status: OPEN
+  summary: DynamoDB reserved capacity cannot be read, so the inventory cannot list it
+  detail: 'Found 2026-10-13 specifying P14. botocore''s DynamoDB service model has no operation that describes reserved capacity; it is bought and listed in the console only. The inventory lists it as unreadable rather than as none held, and its discount is still seen in the bill''s commitment columns. Closes if AWS publishes a read'
+- id: ISS-294
+  severity: HIGH
+  status: OPEN
+  summary: The Cost Explorer commitment reads are made as the hub, and no role grants them
+  detail: 'Found 2026-10-13 specifying P14. CostExplorerCommitmentReport calls Cost Explorer with the hub task role''s own credentials, and no Terraform grants ce:GetSavingsPlansUtilization, its details, ce:GetSavingsPlansCoverage, ce:GetReservationUtilization or ce:GetReservationCoverage to any role. Cost Explorer answers for the organization only in the management account, so even a granted hub would see its own account alone. Once deployed, the commitments screen would read AccessDenied. TASK-P14-001 makes the reads as the organization reader role, which gains exactly those actions'
 - id: ISS-293
   severity: MEDIUM
   status: FIXED
@@ -5583,3 +5639,28 @@ open_questions:
   status: ANSWERED
   blocks: TASK-P13-002
   detail: 'Raised 2026-10-12 by the P13 spec, section 5.2. FOCUS reserves the x_ prefix for a producer''s own columns. The rename follows constraint 12: add the new columns, backfill, and drop the x_ ones a release later.'
+- id: OPEN-35
+  question: 'Where does a purchase plan come from? ANSWERED 2026-10-13 as recommended: Meter''s own and AWS''s, side by side'
+  status: ANSWERED
+  blocks: TASK-P14-006, TASK-P14-007
+  detail: 'Raised 2026-10-13 by the P14 spec, section 5.1. Meter drafts a plan from the steady baseline and P9''s rates; AWS''s recommendation is read from Cost Explorer as the payer at USD 0.01 a request, modelled. The screen explains the difference rather than choosing.'
+- id: OPEN-36
+  question: 'What does approving a purchase plan mean, when Meter never buys? ANSWERED 2026-10-13 as recommended: it is recorded, and a person buys'
+  status: ANSWERED
+  blocks: TASK-P14-008
+  detail: 'Raised 2026-10-13 by the P14 spec, section 5.2. Draft, approved, bought and verified, each recorded with the principal and the time; a bought plan is verified by finding its commitment in the inventory. Constraint 6 holds.'
+- id: OPEN-37
+  question: 'Which commitments does the inventory read? ANSWERED 2026-10-13: every reservable service, Savings Plans, EC2 and RDS first'
+  status: ANSWERED
+  blocks: TASK-P14-002, TASK-P14-003
+  detail: 'Raised 2026-10-13 by the P14 spec, section 5.3. The owner chose the recommended three and every reservable service: ElastiCache, OpenSearch, Redshift and MemoryDB follow. DynamoDB reserved capacity has no read API, ISS-295.'
+- id: OPEN-38
+  question: 'What does a purchase plan aim for by default? ANSWERED 2026-10-13 as recommended: the cautious ladder'
+  status: ANSWERED
+  blocks: TASK-P14-005, TASK-P14-007
+  detail: 'Raised 2026-10-13 by the P14 spec, section 5.4. 80 percent of the steady baseline, one year, no upfront, and at most one twelfth of hourly commitment expiring in any month, held per tenant in commitment_policy and changeable with a reason.'
+- id: OPEN-39
+  question: 'How does the hub reach five reservation reads that have endpoints? ANSWERED 2026-10-13 as recommended: the relay, amending ADR-0035'
+  status: ANSWERED
+  blocks: TASK-P14-002, TASK-P14-003
+  detail: 'Raised 2026-10-13 by the P14 spec, section 5.5. Ten endpoints would cost about USD 160.60 a month, modelled, for reads made once a day; the relay about a cent. ADR-0037 records the amended rule.'
