@@ -386,3 +386,26 @@ def test_each_commitment_is_matched_once_and_to_the_closest_line() -> None:
     found = match(lines, [seen("sp-far", "0.4801"), seen("sp-near", "0.4800"), seen("sp-b", "0.3")])
     assert found == {("plan-1", 1): "sp-near", ("plan-1", 2): "sp-b"}
     assert match([*lines[:1], bought(3)], [seen("sp-only")]) == {("plan-1", 1): "sp-only"}
+
+
+def test_an_amount_read_back_from_the_database_is_said_to_the_tenth_of_a_cent() -> None:
+    """ISS-298. The column's ten places reached a sentence as `0.8500000000`."""
+    advice = [Advice(FLEXIBLE, 30, Decimal("0.8500000000"), failed=False)]
+    provider = said(plan_of(every_day("1")), advice)[-1]
+    assert (
+        provider
+        == "The provider recommends 0.85 USD an hour of Compute Savings Plans, bought at once."
+    )
+
+
+def test_a_plan_with_one_kind_of_purchase_never_names_an_empty_other() -> None:
+    """ISS-298. A plan bound to families said it bought `0.000` flexible across them."""
+    bound = said(plan_of(every_day("1")), [])[3]
+    assert bound == (
+        "Meter's buys all of it, 0.48 USD an hour, bound to families steady in one Region, "
+        "and nothing flexible."
+    )
+    flexible = said(plan_of(alternating()), [])[3]
+    assert flexible.endswith(
+        "flexible across families and Regions, and nothing bound to one family."
+    )

@@ -2662,6 +2662,12 @@ changes:
   what: TASK-P14-010, the local stack, first contact, proof and documents
   commit: pending
   detail: 'The demo seed runs the commitment inventory in each account, AWS''s purchase advice and Meter''s plan after the bill and P9''s rates they read, the refusing account refusing here too, and its test asserts the demo carries what is held, a rate, the advice and a plan that buys something. tests/scripts/test_p14_exit_criteria.py proves exit criteria 2 to 6 over the seeded demo through the API, criterion 1 being held by the Terraform contract test. docs/runbooks/commitments.md names the owner''s steps for the reads, the policy and a plan. P14 and FEAT-086 to FEAT-090 are delivered against fakes; ISS-002 and ISS-297 remain open'
+- id: CHG-0195
+  date: '2026-10-13'
+  type: Fix
+  what: The commitments screen says its figures as a reader reads them, ISS-298
+  commit: pending
+  detail: 'finops_query.purchase_plan.difference says an hourly amount to the tenth of a cent with trailing noughts dropped and the plan''s split naming only the parts it has. The commitments screen shows unit counts and unpriced shares as plain numbers and an EC2 Instance Savings Plan by that name. Found proving TASK-P14-010 on the local stack'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5207,6 +5213,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-298
+  severity: LOW
+  status: FIXED
+  summary: The commitments screen read a database column's places aloud, 0.8500000000 and 2.0000
+  detail: 'Found 2026-10-13 proving TASK-P14-010 on the rebuilt local stack against the seeded demo. AWS''s hourly amount reached the difference sentences with its column''s ten places, its unit counts and Meter''s unpriced shares with four, the split sentence named a flexible part of 0.000 when the plan had none, and the inventory spoke of an EC2Instance Savings Plan. Every figure was right and read as precision nobody has. Fixed the same day, CHG-0195: hourly amounts said to the tenth of a cent, counts as whole numbers, the split sentence saying only the parts a plan has, and the program by its name. Held by tests/query/test_purchase_plan.py and CommitmentPanels.test.tsx'
 - id: ISS-297
   severity: MEDIUM
   status: OPEN

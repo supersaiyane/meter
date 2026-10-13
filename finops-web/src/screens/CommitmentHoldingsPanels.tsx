@@ -9,7 +9,7 @@ import { PercentCell } from '../components/PercentCell';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
-import { dayName, freshnessOf, monthName } from './commitmentFormat';
+import { dayName, freshnessOf, monthName, programName } from './commitmentFormat';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -22,7 +22,7 @@ import { surfaceStateFor } from './surfaceStateFor';
 
 function kindName(row: ApiHeldCommitment): string {
   return row.kind === 'savings_plan'
-    ? `${row.program} Savings Plan`
+    ? `${programName(row.program)} Savings Plan`
     : `${row.program} reservation`;
 }
 

@@ -81,6 +81,24 @@ const inventory = {
         ends_at: '2026-11-03T00:00:00Z',
         state: 'active',
       },
+      {
+        kind: 'savings_plan' as const,
+        commitment_id: 'sp-fake-ec2-0001',
+        program: 'EC2Instance',
+        account_id: 'fake-platform-a',
+        region_id: 'us-fake-1',
+        applies_to: 'm5',
+        quantity: null,
+        hourly_commitment: '1.1000',
+        term_months: 36,
+        payment_option: 'Partial Upfront',
+        upfront_amount: '14454.00',
+        recurring_hourly: '0.5500',
+        currency: 'USD',
+        starts_at: '2025-09-07T00:00:00Z',
+        ends_at: '2028-09-07T00:00:00Z',
+        state: 'active',
+      },
     ],
     unreadable: ['DynamoDB'],
   },
@@ -186,6 +204,24 @@ function plans(status: ApiPlanStatus = 'DRAFT'): {
         },
         {
           kind: 'reservation',
+          program: 'Amazon Relational Database Service',
+          term_years: 1,
+          payment_option: 'No Upfront',
+          lookback_days: 30,
+          recommended: true,
+          hourly_commitment: null,
+          units: '2.0000',
+          estimated_monthly_savings: '54.20',
+          estimated_savings_percent: '28.5',
+          upfront_cost: '0',
+          currency: 'USD',
+          failure_cause: null,
+          failure_detail: null,
+          as_of: '2026-10-12T00:00:00Z',
+          collected_at: '2026-10-13T06:00:00Z',
+        },
+        {
+          kind: 'reservation',
           program: 'Amazon Redshift',
           term_years: 1,
           payment_option: 'No Upfront',
@@ -268,6 +304,7 @@ describe('CostCommitmentsScreen, P14', () => {
     renderScreen();
     const held = await screen.findByTestId('commitment-inventory');
     expect(await within(held).findByText('sp-fake-compute-0001')).toBeInTheDocument();
+    expect(within(held).getByText('EC2 Instance Savings Plan')).toBeInTheDocument();
     expect(screen.getByTestId('commitment-unreadable')).toHaveTextContent(
       'DynamoDB reserved capacity has no API to read',
     );
@@ -286,6 +323,9 @@ describe('CostCommitmentsScreen, P14', () => {
     const plansPanel = screen.getByTestId('purchase-plans');
     expect(within(plansPanel).getByText('Could not be read: Throttled')).toBeInTheDocument();
     expect(within(plansPanel).getByText('October 2026, to buy now')).toBeInTheDocument();
+    // ISS-298: the API's column places are not the reader's.
+    expect(within(plansPanel).getByText('2 instances or nodes')).toBeInTheDocument();
+    expect(screen.getByTestId('plan-unpriced')).toHaveTextContent('1.006 USD an hour');
   });
 
   it('offers approve to a payer once a note is written, and records it', async () => {
