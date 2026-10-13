@@ -196,6 +196,20 @@ def test_a_narrowed_reader_reads_no_budgets_at_all(
     assert client.get(PATH, headers=auth(token)).status_code == 404
 
 
+def test_coverage_is_the_payer_so_a_whole_estate_is_never_called_partial(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-293. A budget belongs to the payer, so its coverage is one payer of one. Counted in
+    accounts it read 1 of 5 for a reader who sees all five, and the front page said so."""
+    budget(engine, tenant_id)
+    spend(engine, tenant_id, amount="100")
+    client, token = client_for(engine, everything(tenant_id), settings)
+    response = client.get(PATH, headers=auth(token))
+    coverage = response.json()["meta"]["scope_coverage"]
+    assert (coverage["visible"], coverage["total"], coverage["unit"]) == (1, 1, "payer")
+    assert coverage["is_partial"] is False
+
+
 # --- the three it does answer ------------------------------------------------
 
 

@@ -613,12 +613,17 @@ def cost_budgets(
         )
 
     answer = BudgetsOut(period=resolved, budgets=tuple(found), unsupported=unsupported)
+    # A budget belongs to the payer, so coverage is counted in payers, as commitments' is. In
+    # accounts it read 1 of 5 for a reader who sees every one, and the front page called the
+    # whole estate partial, ISS-293. A narrowed reader never reaches here: it reads a 404.
     meta = build_meta(
         connection,
         scope,
         context,
         visible=1,
         rows=rows,
+        coverage=(1, 1),
+        coverage_unit="payer",
     )
     return Envelope(data=answer, meta=meta)
 
