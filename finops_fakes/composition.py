@@ -47,7 +47,7 @@ from finops_fakes.invoices import FakeInvoices
 from finops_fakes.ownership import FakeResourceCreators, FakeServiceCatalogue
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
-from finops_fakes.pull_requests import RecordingPullRequests
+from finops_fakes.pull_requests import LocalCodeHost
 from finops_fakes.quotas import FakeQuotaSource
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface
@@ -169,7 +169,7 @@ def _query_audit(context: CollectorContext) -> CollectorRunner:
 
 #: The local stack's code host, TASK-P15-004: one for the life of the worker, so a pull request it
 #: opened in one run is still there to follow in the next. Nothing leaves the process.
-LOCAL_CODE_HOST = RecordingPullRequests()
+LOCAL_CODE_HOST = LocalCodeHost()
 
 
 def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:

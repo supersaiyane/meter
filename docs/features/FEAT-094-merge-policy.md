@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P15 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P15 spec](../specs/2026-10-15-p15-pull-request-fixes-design.md), section 5.2 |
 | Tasks | TASK-P15-001, TASK-P15-007 and TASK-P15-008 |
 | Decisions | OPEN-41, ADR-0038 |

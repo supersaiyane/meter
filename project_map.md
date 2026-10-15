@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 63 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 281 | test_*.py under tests/ |
-| Test functions | 3374 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 282 | test_*.py under tests/ |
+| Test functions | 3381 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1195,7 +1195,9 @@ meter/
 │   ├── pull_requests.py   RecordingPullRequests, idempotent by reference, so a
 │   │                     recommendation never gets a second pull request; it
 │   │                     reads a folder from files it is given and reports a
-│   │                     state a test sets. RecordingMerger records merges
+│   │                     state a test sets, and merges at the head it reported.
+│   │                     LocalCodeHost, the local stack's, reports a pull
+│   │                     request it was not told of as open. TASK-P15-009
 │   ├── fixtures.py        one root, two units, five accounts, one denied
 │   ├── provider.py        the failure plan. Any of the six, for any scope.
 │   │                     Takes the time it is observed at, because the

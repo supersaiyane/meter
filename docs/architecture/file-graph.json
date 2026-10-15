@@ -1062,6 +1062,7 @@
     "tests/scripts/test_p12_exit_criteria.py",
     "tests/scripts/test_p13_exit_criteria.py",
     "tests/scripts/test_p14_exit_criteria.py",
+    "tests/scripts/test_p15_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -18470,6 +18471,41 @@
     {
       "s": "tests/scripts/test_p14_exit_criteria.py",
       "t": "finops_ingest/collectors/purchase_plan.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

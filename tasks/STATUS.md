@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 94 total, 11 specified, 17 in build, 63 delivered |
+| Features | 94 total, 11 specified, 12 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 204 recorded |
+| Changes | 205 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
 | Open questions | 43 awaiting a decision |
 
@@ -183,7 +183,9 @@ organization. TASK-P15-004 lets a person ask for a fix and opens it as a removal
 opens gp2 to gp3 as an edit to the block that declares the volume. TASK-P15-006 follows each pull
 request until the inventory sees the change, then marks the recommendation done. TASK-P15-007 lets
 Meter merge a ready gp3 fix the tenant's merge policy names, behind the pull_request_merge flag.
-TASK-P15-008 put the fix in a recommendation's detail and the settings at /platform/fixes.
+TASK-P15-008 put the fix in a recommendation's detail and the settings at /platform/fixes. P15 was
+delivered against fakes on 2026-10-15, TASK-P15-009 proving its exit criteria over the seeded demo;
+no GitHub App is installed yet, ISS-300.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -362,7 +364,7 @@ ISS-003.
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
-| P15 | 8 | 0 | 0 | 0 | 1 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
+| P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -679,6 +681,7 @@ ISS-003.
 | `TASK-P15-006` | Done 2026-10-15 | each pull request followed until the inventory sees it |
 | `TASK-P15-007` | Done 2026-10-15 | the merge policy and Meter's merge |
 | `TASK-P15-008` | Done 2026-10-15 | the screens |
+| `TASK-P15-009` | Done 2026-10-15 | the local stack, first contact, proof and documents |
 
 <!-- generated:task-status end -->
 

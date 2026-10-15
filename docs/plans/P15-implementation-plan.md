@@ -304,7 +304,7 @@ and a Playwright journey, `e2e/fixes.spec.ts`; the demo estate stubs the four ro
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P15-001 to TASK-P15-008 |
@@ -312,9 +312,27 @@ and a Playwright journey, `e2e/fixes.spec.ts`; the demo estate stubs the four ro
 
 **Acceptance criteria.**
 
-- [ ] The seeded demo and the local stack carry a connection, a mapping and fixes in every status,
+- [x] The seeded demo and the local stack carry a connection, a mapping and fixes in every status,
       against the fake GitHub
-- [ ] `make first-contact` reads the app's installation, and a runbook names the owner's steps
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-040 and FEAT-091 to FEAT-094 say what was built; the register, `project_map.md` and the
+- [x] `make first-contact` reads the app's installation, and a runbook names the owner's steps
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-040 and FEAT-091 to FEAT-094 say what was built; the register, `project_map.md` and the
       checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-15.** The demo seed connects the app, maps the two fake states that read and
+names gp2 to gp3 in the policy, and lays down a fix in every status; the local stack's worker
+follows them against `LocalCodeHost`. `make first-contact` reads the app's installation,
+TASK-P15-002, and `docs/runbooks/code-host.md` names every step after it. The exit criteria, each
+with its evidence in `tests/scripts/test_p15_exit_criteria.py`:
+
+| # | Criterion | Evidence |
+| --- | --- | --- |
+| 1 | A removal opens one pull request in the mapped repository, and asking again opens none | `test_1_a_removal_opens_one_pull_request_in_the_mapped_repository` |
+| 2 | gp2 to gp3 edits the declaring file, and a type set by a variable is refused with the reason | `test_2_gp2_to_gp3_edits_the_declaring_file_and_a_variable_type_is_refused` |
+| 3 | Meter merges a ready gp3 fix under the policy, and nothing with the policy empty, the flag off, or for a deletion | the two `test_3_` tests |
+| 4 | A merged fix is in progress until the inventory sees it, then done | `test_4_a_merged_fix_is_in_progress_until_the_inventory_sees_it_then_done`; FEAT-029's verification by `tests/ingest/collectors/test_realized_savings.py` |
+| 5 | The key read only by the worker from the code host path, no token stored, only the worker reaching GitHub | `test_5_no_p15_table_could_hold_a_key_or_a_token`, `tests/providers/aws/test_secrets.py`, `tests/providers/github/test_github_app.py`, `tests/contract/test_network_paths.py` |
+| 6 | The screens, and a narrowed person refused | `test_6_the_seeded_fixes_read_in_every_status_and_a_narrowed_person_is_refused`, `RecommendationFix.test.tsx`, `FixSettingsScreen.test.tsx`, `e2e/fixes.spec.ts` |
+
+P15 is delivered against fakes. Nothing has met a real GitHub App installation, ISS-300.
+

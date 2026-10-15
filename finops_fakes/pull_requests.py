@@ -112,6 +112,32 @@ class RecordingPullRequests:
         return MergeAnswer(merged=True, reason="Merged.", sha=f"merge-{number}")
 
 
+class LocalCodeHost(RecordingPullRequests):
+    """The local stack's GitHub, TASK-P15-009: any pull request it was not told of is open.
+
+    The demo seed writes fixes whose pull requests this process never opened, and the worker
+    follows them every ten minutes. A strict fake would call each unknown and fail the fix within
+    a run, so the demo would show only failures. This one reports such a pull request open and
+    waiting on its checks, which is what an untouched pull request on GitHub would report. Tests
+    use `RecordingPullRequests`, which is strict.
+    """
+
+    def pull_request_state(self, repository: str, number: int) -> PullRequestState:
+        if (repository, number) not in self._states:
+            self.set_state(
+                repository,
+                PullRequestState(
+                    number=number,
+                    url=f"https://code.example/{repository}/pull/{number}",
+                    open=True,
+                    merged=False,
+                    readiness=Readiness.WAITING,
+                    head_sha=f"head-{number}",
+                ),
+            )
+        return super().pull_request_state(repository, number)
+
+
 class RecordingMerger:
     """A `PullRequestMerger` recording each merge it was asked for, accepting or refusing all."""
 

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P7 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P7 spec](../specs/2026-09-28-p7-insight-and-llm-layer-design.md), section 3 |
 | Tasks | TASK-P7-009, TASK-P7-014, and in P15 TASK-P15-002 and TASK-P15-004 |
 | Refresh cadence | On demand |
