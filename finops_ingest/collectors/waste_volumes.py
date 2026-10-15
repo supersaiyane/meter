@@ -132,6 +132,8 @@ def judged(
         waste_class=WasteClass.EBS_GP2_TO_GP3,
         monthly_saving=saving,
         reason=reason,
+        gp3_iops=found.iops,
+        gp3_mibps=found.mibps,
     )
 
 

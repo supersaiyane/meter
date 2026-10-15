@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1313 public symbols across 5 packages.
+1314 public symbols across 5 packages.
 
 ## finops_core
 
@@ -319,9 +319,9 @@ a duplicate.
 | `OpenedPullRequest` | class | `finops_core/ports/pull_requests.py:59` | A pull request the host opened: its number in the repository, and its link. | `finops_providers/github/code_host.py` |
 | `RepositoryFile` | class | `finops_core/ports/pull_requests.py:67` | One file read from a folder, at a path relative to the repository root. | `finops_providers/github/code_host.py` |
 | `PullRequestSink` | class | `finops_core/ports/pull_requests.py:75` | A code host where a person reviews a change before anything happens. | nothing in this tree |
-| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:78` | Open one for review in the target's repository, against its base branch. | nothing in this tree |
+| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:78` | Open one for review in the target's repository, against its base branch. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `RepositoryReader` | class | `finops_core/ports/pull_requests.py:96` | The files of a folder, read at its base branch. FEAT-093. | nothing in this tree |
-| `RepositoryReader.read_folder` | method | `finops_core/ports/pull_requests.py:99` | Every file directly in the target's folder whose name ends with `suffix`. | nothing in this tree |
+| `RepositoryReader.read_folder` | method | `finops_core/ports/pull_requests.py:99` | Every file directly in the target's folder whose name ends with `suffix`. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `PullRequestTracker` | class | `finops_core/ports/pull_requests.py:112` | A pull request's state, as its host reports it. FEAT-092. | nothing in this tree |
 | `PullRequestTracker.pull_request_state` | method | `finops_core/ports/pull_requests.py:115` | Whether it is open or merged, by whom, and whether a merge would be accepted now. | nothing in this tree |
 | `QuerySurface` | class | `finops_core/ports/query.py:40` | A tool that holds saved queries which cost money when they run. | nothing in this tree |
@@ -518,8 +518,8 @@ a duplicate.
 | `GitHubApp.session` | method | `finops_providers/github/app.py:232` | A session for one repository, holding a token minted for it that ends with it. | `finops_providers/github/code_host.py` |
 | `trailer` | function | `finops_providers/github/code_host.py:82` | The commit message line that marks a commit as Meter's for one fix. | nothing in this tree |
 | `GitHubCodeHost` | class | `finops_providers/github/code_host.py:87` | PullRequestSink, RepositoryReader, PullRequestTracker and PullRequestMerger over GitHub. | `finops_ingest/codehost_bindings.py` |
-| `GitHubCodeHost.open_pull_request` | method | `finops_providers/github/code_host.py:95` | Open the draft against the target's base branch, or return the one already open. | nothing in this tree |
-| `GitHubCodeHost.read_folder` | method | `finops_providers/github/code_host.py:128` | Every file directly in the folder whose name ends with `suffix`, at the base branch. | nothing in this tree |
+| `GitHubCodeHost.open_pull_request` | method | `finops_providers/github/code_host.py:95` | Open the draft against the target's base branch, or return the one already open. | `finops_ingest/collectors/fix_pull_requests.py` |
+| `GitHubCodeHost.read_folder` | method | `finops_providers/github/code_host.py:128` | Every file directly in the folder whose name ends with `suffix`, at the base branch. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `GitHubCodeHost.pull_request_state` | method | `finops_providers/github/code_host.py:156` | Open or merged, by whom, and whether GitHub would accept a merge now. | nothing in this tree |
 | `GitHubCodeHost.merge_pull_request` | method | `finops_providers/github/code_host.py:177` | GitHub's own merge of the pull request, only if its head is still `head_sha`. | `finops_ingest/fix_merge.py` |
 | `GitHubCodeHost.installation_repositories` | method | `finops_providers/github/code_host.py:200` | The repositories the app is installed on, found through one. Reads metadata only. | nothing in this tree |
@@ -578,8 +578,9 @@ a duplicate.
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/ai_providers.py`, `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | `finops_ingest/composition.py` |
-| `Connected` | class | `finops_ingest/collectors/fix_pull_requests.py:56` | The GitHub App a tenant connected: its id and its key's secret name. | nothing in this tree |
-| `FixPullRequestsCollector` | class | `finops_ingest/collectors/fix_pull_requests.py:129` | Opens each requested fix in the repository its state is mapped to, or says why not. | `finops_ingest/codehost_bindings.py` |
+| `Connected` | class | `finops_ingest/collectors/fix_pull_requests.py:60` | The GitHub App a tenant connected: its id and its key's secret name. | nothing in this tree |
+| `CodeHost` | class | `finops_ingest/collectors/fix_pull_requests.py:67` | What the collector asks of a code host: open a pull request, and read a folder. | nothing in this tree |
+| `FixPullRequestsCollector` | class | `finops_ingest/collectors/fix_pull_requests.py:138` | Opens each requested fix in the repository its state is mapped to, or says why not. | `finops_ingest/codehost_bindings.py` |
 | `GpuUtilizationCollector` | class | `finops_ingest/collectors/gpu_utilization.py:64` | One account and Region's GPU instances, read for the unit's window. | `finops_ingest/aws_bindings.py` |
 | `IacStateCollector` | class | `finops_ingest/collectors/iac_state.py:90` | The addresses that own our resources, from the state an operator configured. | `finops_ingest/aws_bindings.py` |
 | `InstanceCatalogCollector` | class | `finops_ingest/collectors/instance_catalog.py:233` | EC2's types placed in every Region they are sold, and the managed services' classes. | `finops_ingest/aws_bindings.py` |
@@ -640,7 +641,7 @@ a duplicate.
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
 | `Candidate` | class | `finops_ingest/collectors/waste_compute.py:119` | One thing the collector was asked to look at. | nothing in this tree |
 | `Quote` | class | `finops_ingest/collectors/waste_compute.py:138` | The prices a named target is quoted from, and every type judged to fit beside it. | nothing in this tree |
-| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:212` | Our own findings, from metrics the provider publishes. | nothing in this tree |
+| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:215` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `Parkable` | class | `finops_ingest/collectors/waste_parking.py:77` | A resource worth asking the parking question about. | nothing in this tree |
 | `WasteParkingCollector` | class | `finops_ingest/collectors/waste_parking.py:93` | Findings that say keep this and stop paying for the nights. | nothing in this tree |
 | `VolumeCandidate` | class | `finops_ingest/collectors/waste_volumes.py:49` | One attached EBS volume the inventory names. | nothing in this tree |

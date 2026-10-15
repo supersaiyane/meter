@@ -643,6 +643,9 @@ recommendation = Table(
     Column("price_version", Text),
     #: An Upsize's added monthly cost, modelled, and nothing else's. Migration 0039.
     Column("added_monthly_cost", Numeric(20, 10)),
+    #: What the priced gp3 gives a gp2 volume, for FEAT-093's edit, and nothing else's. 0061.
+    Column("target_iops", Integer),
+    Column("target_throughput_mibps", Integer),
 )
 
 

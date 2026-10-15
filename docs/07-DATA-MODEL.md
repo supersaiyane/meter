@@ -1459,6 +1459,11 @@ Asked for through `POST /v1/waste/recommendations/{id}/pull-request` by a person
 includes the account, once the recommendation is accepted. The `fix_pull_requests` collector opens
 it every ten minutes, or records why it cannot. An erasure keeps both and replaces the name.
 
+Migration 0061 adds two columns to `recommendation`, `target_iops` and `target_throughput_mibps`:
+what the gp3 FEAT-074 priced gives a gp2 volume, so FEAT-093's edit sets them rather than reading
+them out of the rationale's sentence. A check holds both to the gp2 to gp3 class and to positive
+figures, and the volume pass fills them on its next run, its write being an upsert.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

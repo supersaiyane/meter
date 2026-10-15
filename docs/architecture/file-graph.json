@@ -606,6 +606,7 @@
     "finops_query/digest.py",
     "finops_query/forecast.py",
     "finops_query/gate.py",
+    "finops_query/gp3_edit.py",
     "finops_query/graph.py",
     "finops_query/insight.py",
     "finops_query/ledger.py",
@@ -724,6 +725,7 @@
     "migrations/versions/0058_purchase_plan_match.py",
     "migrations/versions/0059_code_host.py",
     "migrations/versions/0060_fix_pull_request.py",
+    "migrations/versions/0061_recommendation_gp3_figures.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -1009,6 +1011,7 @@
     "tests/query/test_digest.py",
     "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
+    "tests/query/test_gp3_edit.py",
     "tests/query/test_graph.py",
     "tests/query/test_insight_budget.py",
     "tests/query/test_insight_loop.py",
@@ -11243,6 +11246,11 @@
     },
     {
       "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_query/gp3_edit.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
       "t": "finops_query/remediation.py",
       "k": "python"
     },
@@ -12944,6 +12952,21 @@
     {
       "s": "finops_query/gate.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_query/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_query/volumes.py",
       "k": "python"
     },
     {
@@ -17884,6 +17907,26 @@
     {
       "s": "tests/query/test_gate.py",
       "t": "finops_query/gate.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_query/gp3_edit.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_query/remediation.py",
       "k": "python"
     },
     {

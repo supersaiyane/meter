@@ -182,7 +182,7 @@ code host for the worker's life. It closed ISS-228, `propose` having had no call
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec section 5.4, OPEN-43 |
 | Delivers | FEAT-093 |
 | Depends on | TASK-P15-004 |
@@ -190,12 +190,23 @@ code host for the worker's life. It closed ISS-228, `propose` having had no call
 
 **Acceptance criteria.**
 
-- [ ] `finops_query` edits the one block that declares the volume: the type to gp3, and IOPS and
+- [x] `finops_query` edits the one block that declares the volume: the type to gp3, and IOPS and
       throughput where FEAT-074's rule needs more than gp3 includes, pure and tested on real
       Terraform text
-- [ ] It refuses, with the reason, a type set by a variable or an expression, a module's resource,
+- [x] It refuses, with the reason, a type set by a variable or an expression, a module's resource,
       an instance key, a block in no file or in several, and a volume gp3 cannot match
-- [ ] The collector reads the mapped folder and opens the edit as it opens a removal
+- [x] The collector reads the mapped folder and opens the edit as it opens a removal
+
+**Delivered 2026-10-15.** `finops_query/gp3_edit.py` edits the one `aws_ebs_volume` block that
+declares the volume: `type` to gp3, and `iops` and `throughput` where the priced gp3 gives more
+than gp3 includes, with strings, comments and heredocs skipped when reading and an added line
+aligned as `terraform fmt` aligns its run where the file already was. Every refusal the spec names
+is a `NotAuthored` with its sentence. The figures it needs were only in the rationale, so migration
+0061 keeps them on the recommendation, `target_iops` and `target_throughput_mibps`, held to the gp2
+to gp3 class by a check, and the volume pass writes them. The `fix_pull_requests` collector reads
+the mapped folder through the code host and opens the edit as it opens a removal. Tests in
+`tests/query/test_gp3_edit.py` on Terraform text, 95 percent of the module, measured, and in the
+collector's suite.
 
 ---
 

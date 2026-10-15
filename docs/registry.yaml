@@ -2732,6 +2732,12 @@ changes:
   what: TASK-P15-004, a fix asked for and a removal opened, ISS-228 and ISS-301
   commit: pending
   detail: 'Migration 0060 creates fix_pull_request, one live fix per recommendation by a partial unique index, with checks that an opened fix names its pull request and one not authored or failed says why, and fix_pull_request_event, every step with its principal; it installs the fix_pull_requests cadence, every ten minutes, for every tenant. POST /v1/waste/recommendations/{id}/pull-request records the ask for a person whose scope includes the account, once the recommendation is accepted, audited. The fix_pull_requests collector reads the resource''s address from FEAT-057 and the repository its state is mapped to, authors the removal with FEAT-040 and opens it, moving the recommendation to IN_PROGRESS; a fix with nowhere to go is NOT_AUTHORED with the sentence why, one the host will refuse again FAILED with its cause, and one throttled waits. It is composed for a deployed environment through the GitHub adapter and for the local stack with one fake code host. An erasure keeps every fix and step and replaces the name. The secret scan also reads the files the change would commit, ISS-301'
+- id: CHG-0201
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-005, gp2 to gp3 as an edit
+  commit: pending
+  detail: 'finops_query.gp3_edit edits the one aws_ebs_volume block that declares the volume: type to gp3, and iops and throughput where the priced gp3 gives more than gp3 includes, reading past strings, comments and heredocs and keeping an aligned run aligned as terraform fmt would. It refuses, with the sentence, an instance key, a module''s resource, a block in no file or in several, one written on one line, a value set by anything but a literal, a block already gp3, a figure gp3 would not need, and a recommendation without figures. Migration 0061 keeps the figures on the recommendation, target_iops and target_throughput_mibps, held to the gp2 to gp3 class, and the volume pass writes them. The fix_pull_requests collector reads the mapped folder and opens the edit as it opens a removal'
 issues:
 - id: ISS-301
   severity: MEDIUM

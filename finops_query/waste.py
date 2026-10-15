@@ -82,6 +82,9 @@ class Estimate:
     reason: str
     #: What acting adds to the bill a month, for an Upsize only. TASK-P9-008.
     added_monthly_cost: Decimal | None = None
+    #: What the priced gp3 gives, for a gp2 to gp3 move only, so the edit sets it. TASK-P15-005.
+    gp3_iops: int | None = None
+    gp3_mibps: int | None = None
 
 
 def percentile(values: Sequence[Decimal], p: int) -> Decimal:

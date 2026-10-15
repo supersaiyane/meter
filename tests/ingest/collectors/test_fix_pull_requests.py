@@ -40,6 +40,8 @@ def estate(
     managed: bool = True,
     mapped: bool = True,
     connected: bool = True,
+    iops: int | None = None,
+    mibps: int | None = None,
 ) -> tuple[UUID, UUID]:
     """A recommendation a person asked to be fixed, and what the collector needs to open it."""
     recommendation, fix = uuid4(), uuid4()
@@ -52,9 +54,10 @@ def estate(
                 "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
                 "source_reference, waste_class, resource_id, region_id, "
                 "estimated_monthly_saving, confidence, severity, observation_days, lifecycle, "
-                "owner, rationale, as_of, collected_at) VALUES (:id, :t, :account, 'METER', :ref, "
-                ":class, :resource, 'eu-west-1', :saving, 'HIGH', 'HIGH', 30, :lifecycle, "
-                "'team-storage', 'unattached for 30 days', :at, :at)"
+                "owner, rationale, as_of, collected_at, target_iops, target_throughput_mibps) "
+                "VALUES (:id, :t, :account, 'METER', :ref, :class, :resource, 'eu-west-1', "
+                ":saving, 'HIGH', 'HIGH', 30, :lifecycle, 'team-storage', "
+                "'unattached for 30 days', :at, :at, :iops, :mibps)"
             ),
             {
                 "id": recommendation,
@@ -66,6 +69,8 @@ def estate(
                 "saving": Decimal("41.20"),
                 "lifecycle": lifecycle,
                 "at": NOW,
+                "iops": iops,
+                "mibps": mibps,
             },
         )
         if managed:
@@ -202,7 +207,7 @@ def test_a_removal_opens_in_the_mapped_folder_and_the_recommendation_moves_on(
     [
         ({"mapped": False}, f"No repository is mapped for the state {STATE}"),
         ({"managed": False}, "FEAT-057"),
-        ({"waste_class": "EBS_GP2_TO_GP3"}, "needs a new value"),
+        ({"waste_class": "RIGHTSIZE_INSTANCE"}, "needs a new value"),
         ({"lifecycle": "DISMISSED"}, "DISMISSED now"),
     ],
 )
@@ -253,3 +258,59 @@ def test_a_throttled_host_leaves_the_fix_requested_and_asks_nothing_more(
     assert {fixed(engine, one).status for one in (first, second)} == {"REQUESTED"}
     waited = sorted(steps(engine, one) for one in (first, second))
     assert waited == [[], [("REQUESTED", "REQUESTED", "meter")]]
+
+
+# -- gp2 to gp3, an edit, TASK-P15-005 ---------------------------------------------------------
+
+
+def declared(recommendation: UUID) -> str:
+    """The storage folder's Terraform, declaring the recommendation's volume as gp2."""
+    return (
+        f'resource "aws_ebs_volume" "v{recommendation.hex[:12]}" {{\n'
+        '  availability_zone = "eu-west-1a"\n'
+        "  size              = 500\n"
+        '  type              = "gp2"\n'
+        "}\n"
+    )
+
+
+def test_a_gp2_volume_opens_as_an_edit_to_the_block_that_declares_it(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, fix = estate(
+        engine, tenant_id, waste_class="EBS_GP2_TO_GP3", iops=6000, mibps=250
+    )
+    host = RecordingPullRequests(
+        {"storage/main.tf": declared(recommendation), "network/main.tf": "# another folder\n"}
+    )
+    run(engine, tenant_id, host)
+    row = fixed(engine, fix)
+    assert (row.status, row.number) == ("OPEN", 1)
+    (draft,) = host.drafts
+    assert draft.title.endswith("from gp2 to gp3")
+    ((path, content),) = [(one.path, one.content) for one in draft.changes]
+    assert path == "storage/main.tf"
+    assert '  type              = "gp3"\n  iops              = 6000\n' in content
+    assert "  throughput        = 250\n" in content
+    assert lifecycle(engine, recommendation) == "IN_PROGRESS"
+
+
+@pytest.mark.parametrize(
+    ("iops", "mibps", "files", "says"),
+    [
+        (None, None, True, "does not record the IOPS"),
+        (3000, 125, False, "No .tf file in the mapped folder declares"),
+    ],
+)
+def test_a_gp2_volume_the_edit_cannot_make_is_not_authored_and_says_why(
+    engine: Engine, tenant_id: UUID, iops: int | None, mibps: int | None, files: bool, says: str
+) -> None:
+    recommendation, fix = estate(
+        engine, tenant_id, waste_class="EBS_GP2_TO_GP3", iops=iops, mibps=mibps
+    )
+    host = RecordingPullRequests({"storage/main.tf": declared(recommendation)} if files else {})
+    run(engine, tenant_id, host)
+    row = fixed(engine, fix)
+    assert row.status == "NOT_AUTHORED"
+    assert says in row.reason
+    assert host.drafts == ()

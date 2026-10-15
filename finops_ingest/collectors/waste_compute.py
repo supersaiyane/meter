@@ -150,16 +150,19 @@ WRITE = text(
     "source_reference, waste_class, resource_id, region_id, estimated_monthly_saving, "
     "confidence, severity, observation_days, lifecycle, owner, ticket_reference, "
     "rationale, as_of, collected_at, current_sku_price_id, target_instance_type, "
-    "target_sku_price_id, price_version, added_monthly_cost) "
+    "target_sku_price_id, price_version, added_monthly_cost, target_iops, "
+    "target_throughput_mibps) "
     "VALUES (:id, :tenant, :account, :source, :reference, :waste_class, :resource, :region, "
     ":saving, :confidence, :severity, :days, 'OPEN', NULL, NULL, :rationale, :now, :now, "
-    ":current, :target_type, :target, :version, :added) "
+    ":current, :target_type, :target, :version, :added, :iops, :mibps) "
     "ON CONFLICT (tenant_id, source, source_reference) DO UPDATE SET "
     "estimated_monthly_saving = EXCLUDED.estimated_monthly_saving, "
     "current_sku_price_id = EXCLUDED.current_sku_price_id, "
     "target_instance_type = EXCLUDED.target_instance_type, "
     "target_sku_price_id = EXCLUDED.target_sku_price_id, "
     "price_version = EXCLUDED.price_version, added_monthly_cost = EXCLUDED.added_monthly_cost, "
+    "target_iops = EXCLUDED.target_iops, "
+    "target_throughput_mibps = EXCLUDED.target_throughput_mibps, "
     "waste_class = EXCLUDED.waste_class, confidence = EXCLUDED.confidence, "
     "severity = EXCLUDED.severity, observation_days = EXCLUDED.observation_days, "
     "rationale = EXCLUDED.rationale, as_of = EXCLUDED.as_of, "
@@ -656,6 +659,8 @@ class WasteComputeCollector:
                 "target": quote.target.sku_price_id if quote else None,
                 "version": quote.version if quote else None,
                 "added": estimate.added_monthly_cost,
+                "iops": estimate.gp3_iops,
+                "mibps": estimate.gp3_mibps,
             },
         ).scalar_one()
         self._write_options(context, written, candidate.region_id, quote, now)

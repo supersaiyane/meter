@@ -20,7 +20,7 @@ FEAT-040 writes only deletions, because a change needs the value it sets and the
 
 ## How it works
 
-Not built yet. The worker lists the mapped folder's `.tf` files and reads them. `finops_query` finds the one `resource "aws_ebs_volume" "<name>"` block the address from FEAT-057 names, sets `type = "gp3"`, and sets `iops` and `throughput` from FEAT-074's rule where they exceed gp3's included 3,000 IOPS and 125 MiB/s. It is pure text arithmetic, tested on real Terraform without GitHub.
+Built, TASK-P15-005. The `fix_pull_requests` collector reads the mapped folder's `.tf` files through the code host, and `finops_query/gp3_edit.py` finds the one `resource "aws_ebs_volume" "<name>"` block the address from FEAT-057 names, sets `type = "gp3"`, and sets `iops` and `throughput` where the gp3 FEAT-074 priced gives more than gp3 includes. Those two figures are kept on the recommendation since migration 0061, `target_iops` and `target_throughput_mibps`, written by the volume pass, because they were before only in the rationale's sentence. Strings, comments and heredocs are skipped when reading, a line the edit adds joins its run of attributes aligned as `terraform fmt` aligns it where the file already was, and the edit refuses, with the reason, an instance key, a module's resource, a block in no file or in several, one written on one line, a type, IOPS or throughput set by anything but a literal, a block already gp3, an IOPS or throughput gp3 would not need, and a recommendation that records no figures. The pull request says the change is reversible, and that Meter merges it only under the tenant's merge policy, ADR-0038.
 
 ## Data sources and freshness
 

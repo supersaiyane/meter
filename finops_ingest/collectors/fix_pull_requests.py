@@ -4,7 +4,9 @@ P15 spec sections 5.3, 5.5 and 7. The API records an ask; this collector, in the
 process that reaches the internet, ADR-0036, acts on it every ten minutes. For each fix requested
 it reads the recommendation, what FEAT-057 knows of the Terraform behind its resource, and the
 repository the tenant mapped that state to, and asks `finops_query.remediation.propose` to author
-the change and open it. It is the first caller `propose` has had, ISS-228.
+the change and open it. It is the first caller `propose` has had, ISS-228. A gp2 volume is an
+edit instead, TASK-P15-005: the mapped folder's `.tf` files are read and the block that declares it
+is changed, `finops_query.gp3_edit`.
 
 **Every fix is its own step.** Each is moved inside a savepoint, so one that fails leaves every
 other as it was. A fix that cannot be authored, or whose state has no repository mapped, is
@@ -24,18 +26,20 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Final
+from typing import Any, Final, Protocol
 from uuid import UUID, uuid4
 
 from sqlalchemy import text
 
 from finops_core.domain.waste import Lifecycle, WasteClass
 from finops_core.errors import AccessDenied, Misconfigured, SchemaDrift, Throttled, Unreachable
-from finops_core.ports.pull_requests import PullRequestSink, RepositoryTarget
+from finops_core.ports.pull_requests import PullRequestSink, RepositoryReader, RepositoryTarget
 from finops_ingest.registry import CollectorContext, CollectorOutcome
+from finops_query.gp3_edit import Gp3Figures, author_gp3, edit_volume
 from finops_query.remediation import (
     Management,
     NotAuthored,
+    Proposed,
     RecommendationFacts,
     author,
     propose,
@@ -60,8 +64,12 @@ class Connected:
     key_secret_name: str
 
 
+class CodeHost(PullRequestSink, RepositoryReader, Protocol):
+    """What the collector asks of a code host: open a pull request, and read a folder."""
+
+
 #: The code host for a tenant's connection, built for this run.
-CodeHostFor = Callable[[CollectorContext, Connected], PullRequestSink]
+CodeHostFor = Callable[[CollectorContext, Connected], CodeHost]
 
 CONNECTED = text(
     "SELECT app_id, key_secret_name FROM code_host_connection WHERE tenant_id = :tenant"
@@ -69,7 +77,8 @@ CONNECTED = text(
 
 REQUESTED = text(
     "SELECT f.fix_id, f.recommendation_id, f.sub_account_id, r.lifecycle, r.waste_class, "
-    "r.resource_id, r.region_id, r.estimated_monthly_saving, r.confidence, r.rationale, r.as_of "
+    "r.resource_id, r.region_id, r.estimated_monthly_saving, r.confidence, r.rationale, r.as_of, "
+    "r.target_iops, r.target_throughput_mibps "
     "FROM fix_pull_request f JOIN recommendation r "
     "ON r.recommendation_id = f.recommendation_id AND r.tenant_id = f.tenant_id "
     "WHERE f.tenant_id = :tenant AND f.status = 'REQUESTED' "
@@ -162,7 +171,7 @@ class FixPullRequestsCollector:
                 break
         return CollectorOutcome(items_written=moved)
 
-    def _open(self, connection: Any, tenant: UUID, fix: Any, host: PullRequestSink) -> _Moved:
+    def _open(self, connection: Any, tenant: UUID, fix: Any, host: CodeHost) -> _Moved:
         lifecycle = Lifecycle(fix.lifecycle)
         if lifecycle not in (Lifecycle.ACCEPTED, Lifecycle.IN_PROGRESS):
             return _not_authored(
@@ -193,7 +202,10 @@ class FixPullRequestsCollector:
         if isinstance(target, NotAuthored):
             return _not_authored(target.reason)
         try:
-            proposed = propose(facts, management, None, host, target)
+            if facts.waste_class is WasteClass.EBS_GP2_TO_GP3:
+                proposed = _propose_gp3(facts, management, fix, host, target)
+            else:
+                proposed = propose(facts, management, None, host, target)
         except FOR_GOOD as failure:
             return _Moved("FAILED", failure.detail, reason=failure.detail, cause=failure.cause)
         except FOR_NOW as failure:
@@ -243,6 +255,23 @@ class FixPullRequestsCollector:
         )
         if moved.status == "OPEN" and fix.lifecycle == Lifecycle.ACCEPTED.value:
             _in_progress(connection, tenant, fix, moved, now)
+
+
+def _propose_gp3(
+    facts: RecommendationFacts,
+    management: Management,
+    fix: Any,
+    host: CodeHost,
+    target: RepositoryTarget,
+) -> Proposed | NotAuthored:
+    """FEAT-093: the block that declares the volume, edited in the mapped folder, and opened."""
+    files = host.read_folder(target, ".tf")
+    figures = Gp3Figures(fix.target_iops, fix.target_throughput_mibps)
+    edited = edit_volume(files, management.address, figures)
+    if isinstance(edited, NotAuthored):
+        return edited
+    draft = author_gp3(facts, management.address, edited)
+    return Proposed(draft=draft, pull_request=host.open_pull_request(draft, target))
 
 
 def _target(
