@@ -1,0 +1,23 @@
+[
+ {
+  "RuleID": "private-key",
+  "Description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption.",
+  "StartLine": 114,
+  "EndLine": 118,
+  "StartColumn": 28,
+  "EndColumn": 37,
+  "Match": "REDACTED",
+  "Secret": "REDACTED",
+  "File": "tests/providers/aws/test_secrets.py",
+  "SymlinkFile": "",
+  "Commit": "3aa38cfe1002cfe94b1ee1d94bac8e90e9bd5809",
+  "Link": "https://github.com/supersaiyane/meter/blob/3aa38cfe1002cfe94b1ee1d94bac8e90e9bd5809/tests/providers/aws/test_secrets.py#L114-L118",
+  "Entropy": 5.0277305,
+  "Author": "Supersaiyane",
+  "Email": "senghgurpreett@gmail.com",
+  "Date": "2026-10-15T06:16:13Z",
+  "Message": "feat: P15 the GitHub App adapter\n\nTASK-P15-002, FEAT-091, OPEN-13. Fixes are delivered as pull requests through\na GitHub App, so Meter needs a credential that can open them without holding a\nlong lived token. For each request the worker signs the app's token with its\nprivate key, read from meter/\u003cenv\u003e/codehost/ when needed, asks GitHub which\ninstallation holds the repository, and exchanges it for an installation token\nnarrowed to that repository and to what the request needs. Nothing keeps a\ntoken and no detail carries one.\n\nThe adapter implements the four code host ports. Opening is idempotent and\nnever moves a branch Meter did not write; GitHub's mergeable_state becomes the\nmerge rule's readiness; a merge is GitHub's own at the head Meter read, so\nbranch protection applies and a later push merges nothing. The installation is\nfound rather than stored, which removes a column from TASK-P15-003.\n\npyjwt is admitted through make dep-check. make first-contact lists the\ninstallation's repositories with a metadata only token, and the runbook names\nthe owner's steps. Nothing has met a real installation yet, ISS-300.",
+  "Tags": [],
+  "Fingerprint": "3aa38cfe1002cfe94b1ee1d94bac8e90e9bd5809:tests/providers/aws/test_secrets.py:private-key:114"
+ }
+]
