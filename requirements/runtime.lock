@@ -761,6 +761,7 @@ pyjwt==2.15.1 \
     --hash=sha256:4f259e80cdfb6b3fc18a7de51fd1ef9ec79652f25019bae68975ca2468a34df8
     # via
     #   -c requirements/dev.lock
+    #   meter (pyproject.toml)
     #   mcp
 python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \

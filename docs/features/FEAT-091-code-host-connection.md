@@ -20,7 +20,7 @@ FEAT-040 writes a fix and has nowhere to send it, OPEN-13. A fix for a resource 
 
 ## How it works
 
-Not built yet. `code_host_connection` holds the app's id, the installation's id and the Secrets Manager name of the app's key under `meter/<env>/codehost/`, never the key. `repository_mapping` holds, per state file FEAT-057 reads, the repository, the base branch and the folder. The worker signs a ten minute token with the key for each request and exchanges it for an installation token valid for an hour; no token is stored.
+Built so far, TASK-P15-002: for each request `finops_providers/github/app.py` signs a token naming the app with its private key, valid for ten minutes, asks GitHub which installation holds the repository, and exchanges the token for an installation token narrowed to that repository and to what the request needs; no token is stored or put in a detail. The key is read from `meter/<env>/codehost/` by `CodeHostKeyReader` when a request is about to be made, a path the hub task role may read and no wider. `finops_providers/github/code_host.py` opens, reads, follows and merges through it, and `make first-contact` lists the installation's repositories, reading only. Not built yet, TASK-P15-003: `code_host_connection` holds the app's id and the Secrets Manager name of its key, never the key, and no installation id, since the installation is found from the repository each time. `repository_mapping` holds, per state file FEAT-057 reads, the repository, the base branch and the folder.
 
 ## Data sources and freshness
 

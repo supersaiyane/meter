@@ -15,7 +15,12 @@ import pytest
 from botocore.exceptions import ClientError
 
 from finops_core import errors
-from finops_providers.aws.secrets import AiKeyReader, ai_key_prefix
+from finops_providers.aws.secrets import (
+    AiKeyReader,
+    CodeHostKeyReader,
+    ai_key_prefix,
+    codehost_key_prefix,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 NAME = "meter/dev/ai/openai-platform"
@@ -84,12 +89,41 @@ def test_the_path_is_the_environments() -> None:
     assert ai_key_prefix("prod") == "meter/prod/ai/"
 
 
-def test_the_task_role_may_read_the_ai_path_and_no_wider() -> None:
+@pytest.mark.parametrize(
+    ("sid", "path"),
+    [("ReadTheAiProviderKeys", "ai"), ("ReadTheCodeHostKey", "codehost")],
+)
+def test_the_task_role_may_read_each_key_path_and_no_wider(sid: str, path: str) -> None:
     iam = (ROOT / "infra" / "terraform" / "hub" / "iam.tf").read_text(encoding="utf-8")
-    statement = re.search(r'sid\s+=\s+"ReadTheAiProviderKeys"(.*?)\n  \}', iam, re.DOTALL)
+    statement = re.search(rf'sid\s+=\s+"{sid}"(.*?)\n  \}}', iam, re.DOTALL)
     assert statement is not None
     (resource,) = re.findall(r'resources\s+=\s+\["([^"]+)"\]', statement.group(1))
-    assert resource.endswith(":secret:meter/${var.env}/ai/*")
+    assert resource.endswith(f":secret:meter/${{var.env}}/{path}/*")
     assert re.findall(r'actions\s+=\s+\["([^"]+)"\]', statement.group(1)) == [
         "secretsmanager:GetSecretValue"
     ]
+
+
+# --- the code host app's private key, P15, TASK-P15-002 ------------------------------------------
+
+CODEHOST = "meter/dev/codehost/github-app"
+
+
+def test_the_code_host_key_is_read_from_its_own_path_and_no_other() -> None:
+    client = StubSecrets(
+        {"SecretString": "-----BEGIN PRIVATE KEY-----\nk\n-----END PRIVATE KEY-----\n"}
+    )
+    keys = CodeHostKeyReader("dev", client)
+    assert keys.reader(CODEHOST, scope_key="github:acme/infra", collector="c")().startswith(
+        "-----BEGIN PRIVATE KEY-----"
+    )
+    with pytest.raises(errors.Misconfigured, match="the code host app's private key"):
+        keys.reader(NAME, scope_key="github:acme/infra", collector="c")()
+    assert client.asked == [CODEHOST]
+    assert codehost_key_prefix("prod") == "meter/prod/codehost/"
+
+
+def test_a_missing_code_host_key_says_how_to_make_it() -> None:
+    keys = CodeHostKeyReader("dev", StubSecrets(refused("ResourceNotFoundException")))
+    with pytest.raises(errors.Misconfigured, match="GitHub App's private key"):
+        keys.reader(CODEHOST, scope_key="github:acme/infra", collector="c")()

@@ -33,6 +33,7 @@ same question.
 | Connect the first AWS account, each step with its check, and first contact | `first-account.md` |
 | Give Meter each AI spend source: a provider's key, invocation logging, the GPU agent | `ai-providers.md` |
 | Give Meter the organization's commitments, set the purchase policy, and act on a plan | `commitments.md` |
+| Register and install the GitHub App fixes are delivered through, its key, and first contact | `code-host.md` |
 
 Nothing pages for a restore, because by the time one is needed somebody already
 knows. It is here because a restore that has never been rehearsed is a

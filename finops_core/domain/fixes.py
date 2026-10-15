@@ -29,7 +29,7 @@ class Readiness(StrEnum):
     READY = "READY"
     #: A required check is still running, or a required review is not yet given.
     WAITING = "WAITING"
-    #: A conflict, or a required check that failed.
+    #: A conflict, a failing check, or a branch behind a base it must be up to date with.
     BLOCKED = "BLOCKED"
     #: The host has not yet worked it out.
     UNKNOWN = "UNKNOWN"
@@ -60,7 +60,10 @@ class MergeVerdict:
 
 WAITING_ON: Final[dict[Readiness, str]] = {
     Readiness.WAITING: "The repository's required checks or reviews have not all passed yet.",
-    Readiness.BLOCKED: "The repository refuses the merge: a conflict, or a required check failed.",
+    Readiness.BLOCKED: (
+        "The repository refuses the merge as it stands: a conflict, a failing check, or a branch "
+        "behind its base."
+    ),
     Readiness.UNKNOWN: "The code host has not yet said whether it can be merged.",
 }
 

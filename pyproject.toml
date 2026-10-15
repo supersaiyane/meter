@@ -33,6 +33,10 @@ dependencies = [
     # findings. Chosen over openpyxl for its constant memory mode, and because its
     # string to formula and string to URL conversions can be switched off.
     "xlsxwriter>=3.2",
+    # FEAT-091, TASK-P15-002. Signs the GitHub App's token with its private key, RS256, which
+    # needs the crypto extra. Already in the tree through mcp; named here because Meter's own code
+    # imports it. Admitted through make dep-check on 2026-10-15 with zero findings.
+    "pyjwt[crypto]>=2.10",
 ]
 
 [project.optional-dependencies]

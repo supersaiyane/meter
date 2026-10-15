@@ -81,7 +81,7 @@ are at 100 percent coverage, measured.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec sections 5.1 and 9, OPEN-13 |
 | Delivers | FEAT-040, FEAT-091 |
 | Depends on | TASK-P15-001 |
@@ -89,13 +89,28 @@ are at 100 percent coverage, measured.
 
 **Acceptance criteria.**
 
-- [ ] A token is minted per request from the app's key, read from `meter/<env>/codehost/` only by
+- [x] A token is minted per request from the app's key, read from `meter/<env>/codehost/` only by
       the worker, and never stored
-- [ ] The adapter opens a pull request with its branch and files, reads a folder, reads a pull
+- [x] The adapter opens a pull request with its branch and files, reads a folder, reads a pull
       request's state and merges, tested against recorded shapes for every typed failure
-- [ ] Opening the same fix twice returns the first pull request; `pyjwt` is admitted through
+- [x] Opening the same fix twice returns the first pull request; `pyjwt` is admitted through
       `make dep-check`; `make first-contact` mints a token and lists the installation's
       repositories, reading only
+
+**Delivered 2026-10-15.** `finops_providers/github/app.py` signs a token naming the app with its
+key for each request, asks GitHub which installation holds the repository, and exchanges it for an
+installation token narrowed to that repository and to what the request needs; nothing keeps it,
+and no detail carries it. The installation is found rather than stored, so TASK-P15-003's
+connection needs no installation id; spec section 6 says so now. `finops_providers/github/code_host.py`
+implements the four ports: a fix opens as one commit carrying `Meter-Reference`, an open pull
+request is returned rather than a second opened, and an existing branch is moved only when its last
+commit is Meter's for the same fix. GitHub's `mergeable_state` becomes the rule's readiness, and a
+merge is GitHub's own at the head Meter read. `CodeHostKeyReader` reads the key from
+`meter/<env>/codehost/`, which the hub task role may read and no wider. `pyjwt` was admitted
+through `make dep-check` with zero findings. `make first-contact` lists the installation's
+repositories with a token that may read metadata alone, and `docs/runbooks/code-host.md` has the
+owner's steps. Tests in `tests/providers/github/` against shapes trimmed from GitHub's reference;
+both modules at 100 percent coverage, measured. Unproved against a real installation, ISS-300.
 
 ---
 

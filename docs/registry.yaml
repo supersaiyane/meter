@@ -2714,7 +2714,18 @@ changes:
   what: TASK-P15-001, the reversible set, the merge rule and the ports, ISS-299
   commit: pending
   detail: 'finops_core.domain.fixes holds REVERSIBLE, gp2 to gp3 alone, and may_merge, a pure rule that says yes only when merging is on, the class is reversible and named by the tenant''s policy, Meter opened the pull request, it is still open and the repository reports its required checks and reviews passed, and says why for every no. The code host ports gain the target repository and folder, reading a folder''s files and reading a pull request''s state. Merging is its own port, finops_core.ports.merges, called only by finops_ingest.fix_merge.merge_under_policy after the rule, which the contract test holds by name and by call. A removal file is placed in the folder whose Terraform declares the resource, ISS-299. Against fakes; the GitHub App adapter is TASK-P15-002'
+- id: CHG-0198
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-002, the GitHub App adapter, ISS-300
+  commit: pending
+  detail: 'finops_providers.github.app signs a token naming the GitHub App with its private key for each request, valid for ten minutes, asks GitHub which installation holds the repository, and exchanges it for an installation token narrowed to that repository and to the permissions the request needs; no token is stored and none reaches a detail. finops_providers.github.code_host implements the four code host ports: a fix opens as one commit on the base branch carrying Meter-Reference, an open pull request is returned rather than a second opened, and an existing branch is moved only when its last commit is Meter''s for the same fix; a folder is read at its base branch; mergeable_state becomes the merge rule''s readiness; and a merge is GitHub''s own at the head Meter read. CodeHostKeyReader reads the key from meter/<env>/codehost/, which the hub task role may read and no wider. pyjwt is named and admitted through make dep-check. make first-contact lists the installation''s repositories with a metadata only token, and docs/runbooks/code-host.md has the owner''s steps'
 issues:
+- id: ISS-300
+  severity: MEDIUM
+  status: OPEN
+  summary: The GitHub adapter has met no real GitHub App installation
+  detail: 'Found 2026-10-15 building TASK-P15-002. finops_providers.github is written to GitHub''s published REST reference, API version 2022-11-28, and tested against shapes trimmed from its examples: the installation token, opening through the Git data API, the contents API, a pull request''s mergeable_state and the merge. No app is registered, so no answer has come from GitHub itself, and what each mergeable_state means is GitHub''s documented meaning, not one observed. Closes when make first-contact has listed a real installation''s repositories and a first fix has been opened and followed to merged or closed, docs/runbooks/code-host.md'
 - id: ISS-299
   severity: MEDIUM
   status: FIXED

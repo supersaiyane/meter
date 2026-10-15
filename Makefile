@@ -343,9 +343,9 @@ local-auth.yaml:
 	@echo "Created local-auth.yaml from the example. It is gitignored."
 
 .PHONY: first-contact
-first-contact: ## Make each AWS read once: ENV=dev ACCOUNT=<12 digits> REGION=<region>; name a provider key's secret in OPENAI_SECRET or ANTHROPIC_SECRET to read it too. TASK-P12-008, TASK-P13-009
-	@test -n "$(ACCOUNT)" && test -n "$(REGION)" || { echo "usage: make first-contact ENV=dev ACCOUNT=<12 digits> REGION=<region> [OPENAI_SECRET=meter/dev/ai/...] [ANTHROPIC_SECRET=meter/dev/ai/...]"; exit 2; }
-	PYTHONPATH="$(PWD)" $(BIN)/python scripts/ops/first_contact.py --env $(or $(ENV),dev) --account $(ACCOUNT) --region $(REGION) --openai-secret "$(OPENAI_SECRET)" --anthropic-secret "$(ANTHROPIC_SECRET)"
+first-contact: ## Make each AWS read once: ENV=dev ACCOUNT=<12 digits> REGION=<region>; name a provider key's secret in OPENAI_SECRET or ANTHROPIC_SECRET, or CODEHOST_SECRET, CODEHOST_APP_ID and CODEHOST_REPOSITORY for GitHub, to read it too. TASK-P12-008, TASK-P13-009, TASK-P15-002
+	@test -n "$(ACCOUNT)" && test -n "$(REGION)" || { echo "usage: make first-contact ENV=dev ACCOUNT=<12 digits> REGION=<region> [OPENAI_SECRET=meter/dev/ai/...] [ANTHROPIC_SECRET=meter/dev/ai/...] [CODEHOST_SECRET=meter/dev/codehost/... CODEHOST_APP_ID=... CODEHOST_REPOSITORY=owner/name]"; exit 2; }
+	PYTHONPATH="$(PWD)" $(BIN)/python scripts/ops/first_contact.py --env $(or $(ENV),dev) --account $(ACCOUNT) --region $(REGION) --openai-secret "$(OPENAI_SECRET)" --anthropic-secret "$(ANTHROPIC_SECRET)" --codehost-secret "$(CODEHOST_SECRET)" --codehost-app-id "$(CODEHOST_APP_ID)" --codehost-repository "$(CODEHOST_REPOSITORY)"
 
 .PHONY: dispatch
 dispatch: ## Dispatch every tenant's due collectors once, on the local stack's fakes. TASK-P12-005

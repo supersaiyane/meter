@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 58 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 276 | test_*.py under tests/ |
-| Test functions | 3288 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 278 | test_*.py under tests/ |
+| Test functions | 3328 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -351,6 +351,8 @@ meter/
 │   │                          one account, TASK-P12-008, make first-contact.
 │   │                          It reads the GPU agent and, when a key's secret is
 │   │                          named, an AI provider's day of costs, TASK-P13-009.
+│   │                          With the app named, it lists the GitHub App
+│   │                          installation's repositories, TASK-P15-002.
 │   │                          connect_ai_provider.py records an AI provider
 │   │                          organization for a tenant once its key has read a
 │   │                          day of costs, TASK-P13-004
@@ -620,9 +622,10 @@ meter/
 │   │   │                      count or a sum. No CloudWatch Logs group is NotOptedIn
 │   │   ├── cloudtrail_creators.py  FEAT-077, TASK-P11-004. Who created a resource,
 │   │   │                      from CloudTrail's event history, paced and asked once
-│   │   ├── secrets.py         FEAT-083, TASK-P13-004. An AI provider's admin key,
-│   │   │                      read when needed from meter/<env>/ai/ only, any other
-│   │   │                      name refused before a call
+│   │   ├── secrets.py         FEAT-083 and 091. A key read when needed from one
+│   │   │                      path only: an AI provider's under meter/<env>/ai/,
+│   │   │                      the code host app's under meter/<env>/codehost/;
+│   │   │                      any other name refused before a call
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
 │   │   │                      relay, six calls a Region, versioned by their digest.
 │   │   │                      Unproved, ISS-263
@@ -664,6 +667,16 @@ meter/
 │   │                          organization: costs as FOCUS rows of source openai,
 │   │                          line items read into model and token type, cached
 │   │                          input counted once
+│   ├── github/                P15, OPEN-13. The code host, through a GitHub App
+│   │   ├── app.py             FEAT-091, TASK-P15-002. A token per request: the
+│   │   │                      app's own, signed with its key for ten minutes, then
+│   │   │                      an installation token narrowed to one repository and
+│   │   │                      what the request needs. Never stored, never in a
+│   │   │                      detail. Every answer typed, no retries
+│   │   └── code_host.py       FEAT-040, FEAT-091 to 094. The four code host ports.
+│   │                          A fix opens as one commit carrying Meter-Reference,
+│   │                          and a branch Meter did not write is never moved; a
+│   │                          merge is GitHub's own, at the head it read. ISS-300
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards

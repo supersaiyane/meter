@@ -25,8 +25,7 @@ applies what is merged, and constraint 6 holds, no write into a member account.
 
 ## 2. Definition of done
 
-- A tenant connects a GitHub App installation, naming the app, the installation and the Secrets
-  Manager name of its key, and maps each Terraform state file Meter reads to a repository, a base
+- A tenant connects a GitHub App, naming the app and the Secrets Manager name of its key, and maps each Terraform state file Meter reads to a repository, a base
   branch and a folder. Both are made by a person whose scope is the organization, and audited.
 - A person whose scope includes a recommendation's account asks for a fix, and Meter opens a pull
   request in the mapped repository for any of the eight removals and for gp2 to gp3, or says why it
@@ -129,8 +128,10 @@ request closed without merging returns the recommendation to `ACCEPTED`, with th
 
 New tables, each with `as_of` and `collected_at`, constraint 10:
 
-- `code_host_connection`: one row per tenant, the host, the app's id, the installation's id, the
-  Secrets Manager name of the key, never a value, who connected it and when. A check holds the name
+- `code_host_connection`: one row per tenant, the host, the app's id, the Secrets Manager name of
+  the key, never a value, who connected it and when. The installation is not stored: the worker
+  asks GitHub which installation holds a repository on each request, TASK-P15-002, so a reinstalled
+  app or a second organization needs no change. A check holds the name
   to `meter/<env>/codehost/`. `PayerWide`, ADR-0025.
 - `repository_mapping`: one row per tenant and state file, the repository, the base branch and the
   folder, who set it and when. `PayerWide`.
