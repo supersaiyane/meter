@@ -1852,3 +1852,78 @@ export interface ApiPurchasePlans {
   readonly difference: readonly string[];
   readonly events: readonly ApiPlanEvent[];
 }
+
+// --- P15, fixes through pull requests: FEAT-091 to FEAT-094 -------------------------------------
+
+/** A fix's status: asked for, its pull request open, merged or closed, or none and why. */
+export type ApiFixStatus = 'REQUESTED' | 'OPEN' | 'MERGED' | 'CLOSED' | 'NOT_AUTHORED' | 'FAILED';
+
+/** One step of a fix, by a person, by `meter`, or by the code host's login of whoever merged. */
+export interface ApiFixStep {
+  readonly from_status: ApiFixStatus | null;
+  readonly to_status: ApiFixStatus;
+  readonly principal: string;
+  readonly note: string | null;
+  readonly at: string;
+}
+
+/** A fix asked for, its pull request once opened, and why where there is none. FEAT-092. */
+export interface ApiFix {
+  readonly fix_id: string;
+  readonly recommendation_id: string;
+  readonly sub_account_id: string;
+  readonly status: ApiFixStatus;
+  readonly repository: string | null;
+  readonly branch: string | null;
+  readonly number: number | null;
+  readonly url: string | null;
+  readonly note: string | null;
+  readonly requested_by: string;
+  readonly requested_at: string;
+  readonly merged_by: string | null;
+  readonly merged_at: string | null;
+  readonly closed_at: string | null;
+  readonly reason: string | null;
+  readonly failure_cause: string | null;
+  readonly steps: readonly ApiFixStep[];
+}
+
+export interface ApiFixes {
+  readonly fixes: readonly ApiFix[];
+}
+
+/** The GitHub App fixes go through, or that none is connected. FEAT-091. Never the key. */
+export interface ApiCodeHostConnection {
+  readonly connected: boolean;
+  readonly host: string | null;
+  readonly app_id: string | null;
+  readonly key_secret_name: string | null;
+  readonly connected_by: string | null;
+  readonly connected_at: string | null;
+}
+
+/** Where one Terraform state's fixes go. OPEN-42. */
+export interface ApiRepositoryMapping {
+  readonly state_reference: string;
+  readonly repository: string;
+  readonly base_branch: string;
+  readonly folder: string;
+  readonly set_by: string;
+  readonly set_at: string;
+}
+
+export interface ApiRepositoryMappings {
+  readonly mappings: readonly ApiRepositoryMapping[];
+  /** The states FEAT-057 read resources from that no mapping names. */
+  readonly unmapped: readonly string[];
+}
+
+/** Which reversible fixes Meter may merge, ADR-0038, and whether merging is on. FEAT-094. */
+export interface ApiMergePolicy {
+  readonly classes: readonly string[];
+  readonly reversible: readonly string[];
+  readonly reason: string | null;
+  readonly set_by: string | null;
+  readonly set_at: string | null;
+  readonly merging_on: boolean;
+}

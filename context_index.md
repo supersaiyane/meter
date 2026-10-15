@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1306 public symbols across 5 packages.
+1329 public symbols across 5 packages.
 
 ## finops_core
 
@@ -32,12 +32,12 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `ConfigurationError` | class | `finops_core/config.py:40` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:50` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.iac_locations` | method | `finops_core/config.py:318` | The configured state locations, split. | nothing in this tree |
-| `Settings.owner_tag_key_list` | method | `finops_core/config.py:329` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
-| `Settings.iac_exhaustive` | method | `finops_core/config.py:334` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
-| `Settings.recommendation_services` | method | `finops_core/config.py:391` | `commitment_recommendation_services` as a list, comma separated like `regions`. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:400` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:420` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py`, `finops_ingest/processes.py` |
+| `Settings.iac_locations` | method | `finops_core/config.py:319` | The configured state locations, split. | nothing in this tree |
+| `Settings.owner_tag_key_list` | method | `finops_core/config.py:330` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
+| `Settings.iac_exhaustive` | method | `finops_core/config.py:335` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
+| `Settings.recommendation_services` | method | `finops_core/config.py:392` | `commitment_recommendation_services` as a list, comma separated like `regions`. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:401` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:421` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py`, `finops_ingest/processes.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/deps.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py`, and 1 more |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -202,17 +202,17 @@ a duplicate.
 | `GraphCoverage` | class | `finops_core/domain/topology.py:366` | How much of one account's one region the graph was built from. | `finops_api/db/repositories/topology.py` |
 | `GraphCoverage.is_whole` | method | `finops_core/domain/topology.py:412` | True only for a slice the graph can be trusted to be complete over. | nothing in this tree |
 | `Confidence` | class | `finops_core/domain/waste.py:33` | How much data the estimate rests on. Never derived from the money. | nothing in this tree |
-| `Lifecycle` | class | `finops_core/domain/waste.py:41` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
-| `Source` | class | `finops_core/domain/waste.py:70` | Who found it. One table holds all of them. | nothing in this tree |
-| `WasteClass` | class | `finops_core/domain/waste.py:79` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py` |
-| `confidence_of` | function | `finops_core/domain/waste.py:113` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
-| `RankedOption` | class | `finops_core/domain/waste.py:133` | One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006. | `finops_providers/aws/recommendations.py` |
-| `Recommendation` | class | `finops_core/domain/waste.py:162` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
-| `Recommendation.confidence` | method | `finops_core/domain/waste.py:224` |  | nothing in this tree |
-| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:227` |  | nothing in this tree |
-| `RealizedSaving` | class | `finops_core/domain/waste.py:232` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
-| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:266` |  | nothing in this tree |
-| `ScopedFindings` | class | `finops_core/domain/waste.py:271` | What a source found in the scopes it could read, and why it could not read the rest. | `finops_providers/aws/recommendations.py` |
+| `Lifecycle` | class | `finops_core/domain/waste.py:41` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/fix_pull_requests.py`, `finops_ingest/collectors/score.py` |
+| `Source` | class | `finops_core/domain/waste.py:71` | Who found it. One table holds all of them. | nothing in this tree |
+| `WasteClass` | class | `finops_core/domain/waste.py:80` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py`, `finops_ingest/collectors/fix_pull_requests.py` |
+| `confidence_of` | function | `finops_core/domain/waste.py:114` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
+| `RankedOption` | class | `finops_core/domain/waste.py:134` | One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006. | `finops_providers/aws/recommendations.py` |
+| `Recommendation` | class | `finops_core/domain/waste.py:163` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
+| `Recommendation.confidence` | method | `finops_core/domain/waste.py:225` |  | nothing in this tree |
+| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:228` |  | nothing in this tree |
+| `RealizedSaving` | class | `finops_core/domain/waste.py:233` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
+| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:267` |  | nothing in this tree |
+| `ScopedFindings` | class | `finops_core/domain/waste.py:272` | What a source found in the scopes it could read, and why it could not read the rest. | `finops_providers/aws/recommendations.py` |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/ai_reports.py`, and 4 more |
@@ -220,10 +220,10 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/ai_reports.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/bedrock_invocations.py`, `finops_providers/aws/client.py`, and 3 more |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_api/exports/scheduled.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/org_tree.py`, and 7 more |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_api/exports/scheduled.py`, `finops_providers/ai_reports.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/client.py`, and 4 more |
-| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/composition.py`, `finops_providers/aws/bedrock.py`, and 6 more |
+| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/collectors/fix_pull_requests.py`, `finops_ingest/composition.py`, and 7 more |
 | `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/collectors/account_health.py`, and 30 more |
-| `FlagResolver` | class | `finops_core/flags.py:42` | Reads a flag for a tenant, caching the per tenant override briefly. | `finops_ingest/processes.py` |
-| `FlagResolver.is_enabled` | method | `finops_core/flags.py:58` |  | `finops_ingest/registry.py` |
+| `FlagResolver` | class | `finops_core/flags.py:42` | Reads a flag for a tenant, caching the per tenant override briefly. | `finops_api/routes/remediation.py`, `finops_ingest/collectors/fix_pull_requests.py`, `finops_ingest/processes.py` |
+| `FlagResolver.is_enabled` | method | `finops_core/flags.py:58` |  | `finops_api/routes/remediation.py`, `finops_ingest/collectors/fix_pull_requests.py`, `finops_ingest/registry.py` |
 | `JsonFormatter` | class | `finops_core/logs.py:20` | One record as one JSON object: the caller's fields, then the record's own. | nothing in this tree |
 | `JsonFormatter.format` | method | `finops_core/logs.py:23` |  | `finops_api/exports/writers.py`, `finops_ingest/collectors/cost_rollup.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/cur.py`, and 1 more |
 | `configure` | function | `finops_core/logs.py:38` | Every logger in the process writes JSON lines to standard error, from `level` up. | nothing in this tree |
@@ -315,15 +315,15 @@ a duplicate.
 | `ResourceCreators.creator` | method | `finops_core/ports/ownership.py:43` | The principal that created the resource, or that it predates the record. | `finops_ingest/collectors/ownership.py` |
 | `FileChange` | class | `finops_core/ports/pull_requests.py:24` | One file the pull request adds, at a path relative to the repository root. | nothing in this tree |
 | `PullRequestDraft` | class | `finops_core/ports/pull_requests.py:32` | A pull request, written in full before anything is sent anywhere. | nothing in this tree |
-| `RepositoryTarget` | class | `finops_core/ports/pull_requests.py:45` | Where a fix goes: a repository, the branch it is based on, and the folder it changes. | nothing in this tree |
+| `RepositoryTarget` | class | `finops_core/ports/pull_requests.py:45` | Where a fix goes: a repository, the branch it is based on, and the folder it changes. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `OpenedPullRequest` | class | `finops_core/ports/pull_requests.py:59` | A pull request the host opened: its number in the repository, and its link. | `finops_providers/github/code_host.py` |
 | `RepositoryFile` | class | `finops_core/ports/pull_requests.py:67` | One file read from a folder, at a path relative to the repository root. | `finops_providers/github/code_host.py` |
 | `PullRequestSink` | class | `finops_core/ports/pull_requests.py:75` | A code host where a person reviews a change before anything happens. | nothing in this tree |
-| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:78` | Open one for review in the target's repository, against its base branch. | nothing in this tree |
+| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:78` | Open one for review in the target's repository, against its base branch. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `RepositoryReader` | class | `finops_core/ports/pull_requests.py:96` | The files of a folder, read at its base branch. FEAT-093. | nothing in this tree |
-| `RepositoryReader.read_folder` | method | `finops_core/ports/pull_requests.py:99` | Every file directly in the target's folder whose name ends with `suffix`. | nothing in this tree |
+| `RepositoryReader.read_folder` | method | `finops_core/ports/pull_requests.py:99` | Every file directly in the target's folder whose name ends with `suffix`. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `PullRequestTracker` | class | `finops_core/ports/pull_requests.py:112` | A pull request's state, as its host reports it. FEAT-092. | nothing in this tree |
-| `PullRequestTracker.pull_request_state` | method | `finops_core/ports/pull_requests.py:115` | Whether it is open or merged, by whom, and whether a merge would be accepted now. | nothing in this tree |
+| `PullRequestTracker.pull_request_state` | method | `finops_core/ports/pull_requests.py:115` | Whether it is open or merged, by whom, and whether a merge would be accepted now. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `QuerySurface` | class | `finops_core/ports/query.py:40` | A tool that holds saved queries which cost money when they run. | nothing in this tree |
 | `QuerySurface.discover` | method | `finops_core/ports/query.py:43` | Every instance this surface can see, reachable or not. | `finops_ingest/collectors/query_audit.py` |
 | `QuerySurface.list_queries` | method | `finops_core/ports/query.py:65` | Every saved query in one instance, panels and alert rules alike. | `finops_ingest/collectors/query_audit.py` |
@@ -461,7 +461,7 @@ a duplicate.
 | `AwsQuotas.list_quotas` | method | `finops_providers/aws/quotas.py:216` | Every quota for the account and region, with usage where published. | `finops_ingest/collectors/quotas.py` |
 | `AwsQuotas.requests` | method | `finops_providers/aws/quotas.py:239` | Every increase request AWS has a record of, whatever became of it. | `finops_ingest/collectors/quotas.py`, `finops_ingest/collectors/waste_compute.py` |
 | `LazyClient` | class | `finops_providers/aws/reach.py:39` | A client made the first time anything is asked of it, and once. | nothing in this tree |
-| `hub_client` | function | `finops_providers/aws/reach.py:52` | A client on the hub's own credentials, in `region` or the hub's own when None. | `finops_ingest/ai_bindings.py`, `finops_ingest/aws_bindings.py` |
+| `hub_client` | function | `finops_providers/aws/reach.py:52` | A client on the hub's own credentials, in `region` or the hub's own when None. | `finops_ingest/ai_bindings.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/codehost_bindings.py` |
 | `queue_client` | function | `finops_providers/aws/reach.py:59` | The hub's SQS client, its read timeout outlasting the long poll it is used for. | `finops_ingest/processes.py` |
 | `session_clients` | function | `finops_providers/aws/reach.py:72` | Clients on one assumed session, the one the worker resolved for an account scoped unit. | `finops_ingest/aws_bindings.py` |
 | `member_clients` | function | `finops_providers/aws/reach.py:81` | Clients in any member account, each on the role the broker assumes there. | `finops_ingest/aws_bindings.py` |
@@ -487,9 +487,9 @@ a duplicate.
 | `ai_key_prefix` | function | `finops_providers/aws/secrets.py:24` | The only path an AI provider's key may be read from, in this environment. | nothing in this tree |
 | `codehost_key_prefix` | function | `finops_providers/aws/secrets.py:29` | The only path the code host app's private key may be read from, in this environment. | `finops_api/routes/remediation.py` |
 | `SecretReader` | class | `finops_providers/aws/secrets.py:34` | Reads one secret under one path from Secrets Manager, by name, when it is needed. | nothing in this tree |
-| `SecretReader.reader` | method | `finops_providers/aws/secrets.py:45` | A callable that reads the key when called, every failure typed. | `finops_ingest/ai_bindings.py`, `finops_providers/aws/topology.py` |
+| `SecretReader.reader` | method | `finops_providers/aws/secrets.py:45` | A callable that reads the key when called, every failure typed. | `finops_ingest/ai_bindings.py`, `finops_ingest/codehost_bindings.py`, `finops_providers/aws/topology.py` |
 | `AiKeyReader` | class | `finops_providers/aws/secrets.py:80` | Reads one AI provider organization's admin key from Secrets Manager, by name. | `finops_ingest/ai_bindings.py` |
-| `CodeHostKeyReader` | class | `finops_providers/aws/secrets.py:92` | Reads the code host app's private key from Secrets Manager, by name. FEAT-091. | nothing in this tree |
+| `CodeHostKeyReader` | class | `finops_providers/aws/secrets.py:92` | Reads the code host app's private key from Secrets Manager, by name. FEAT-091. | `finops_ingest/codehost_bindings.py` |
 | `AwsSpotPrices` | class | `finops_providers/aws/spot.py:41` | Every spot pool's readings over a window, one Region at a time. | `finops_ingest/aws_bindings.py` |
 | `AwsSpotPrices.prices` | method | `finops_providers/aws/spot.py:54` |  | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py`, `finops_providers/aws/price_list.py` |
 | `address_of` | function | `finops_providers/aws/terraform_state.py:53` | The Terraform address of one resource instance. | nothing in this tree |
@@ -514,13 +514,13 @@ a duplicate.
 | `Session.misconfigured` | method | `finops_providers/github/app.py:149` |  | `finops_providers/github/code_host.py` |
 | `Session.unreachable` | method | `finops_providers/github/app.py:152` |  | `finops_api/routes/query.py` |
 | `field` | function | `finops_providers/github/app.py:199` | A value inside an answer, or SchemaDrift naming what was missing. | `finops_api/exports/responder.py`, `finops_api/routes/inventory.py`, `finops_core/domain/catalog.py`, `finops_core/domain/query.py`, and 2 more |
-| `GitHubApp` | class | `finops_providers/github/app.py:211` | Meter's GitHub App: a session per request, with a token minted for it alone. | nothing in this tree |
+| `GitHubApp` | class | `finops_providers/github/app.py:211` | Meter's GitHub App: a session per request, with a token minted for it alone. | `finops_ingest/codehost_bindings.py` |
 | `GitHubApp.session` | method | `finops_providers/github/app.py:232` | A session for one repository, holding a token minted for it that ends with it. | `finops_providers/github/code_host.py` |
 | `trailer` | function | `finops_providers/github/code_host.py:82` | The commit message line that marks a commit as Meter's for one fix. | nothing in this tree |
-| `GitHubCodeHost` | class | `finops_providers/github/code_host.py:87` | PullRequestSink, RepositoryReader, PullRequestTracker and PullRequestMerger over GitHub. | nothing in this tree |
-| `GitHubCodeHost.open_pull_request` | method | `finops_providers/github/code_host.py:95` | Open the draft against the target's base branch, or return the one already open. | nothing in this tree |
-| `GitHubCodeHost.read_folder` | method | `finops_providers/github/code_host.py:128` | Every file directly in the folder whose name ends with `suffix`, at the base branch. | nothing in this tree |
-| `GitHubCodeHost.pull_request_state` | method | `finops_providers/github/code_host.py:156` | Open or merged, by whom, and whether GitHub would accept a merge now. | nothing in this tree |
+| `GitHubCodeHost` | class | `finops_providers/github/code_host.py:87` | PullRequestSink, RepositoryReader, PullRequestTracker and PullRequestMerger over GitHub. | `finops_ingest/codehost_bindings.py` |
+| `GitHubCodeHost.open_pull_request` | method | `finops_providers/github/code_host.py:95` | Open the draft against the target's base branch, or return the one already open. | `finops_ingest/collectors/fix_pull_requests.py` |
+| `GitHubCodeHost.read_folder` | method | `finops_providers/github/code_host.py:128` | Every file directly in the folder whose name ends with `suffix`, at the base branch. | `finops_ingest/collectors/fix_pull_requests.py` |
+| `GitHubCodeHost.pull_request_state` | method | `finops_providers/github/code_host.py:156` | Open or merged, by whom, and whether GitHub would accept a merge now. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `GitHubCodeHost.merge_pull_request` | method | `finops_providers/github/code_host.py:177` | GitHub's own merge of the pull request, only if its head is still `head_sha`. | `finops_ingest/fix_merge.py` |
 | `GitHubCodeHost.installation_repositories` | method | `finops_providers/github/code_host.py:200` | The repositories the app is installed on, found through one. Reads metadata only. | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_core/domain/tenant.py` |
@@ -578,6 +578,9 @@ a duplicate.
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/ai_providers.py`, `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | `finops_ingest/composition.py` |
+| `Connected` | class | `finops_ingest/collectors/fix_pull_requests.py:80` | The GitHub App a tenant connected: its id and its key's secret name. | nothing in this tree |
+| `CodeHost` | class | `finops_ingest/collectors/fix_pull_requests.py:87` | What the collector asks of a code host: open, read a folder, follow, and merge. | nothing in this tree |
+| `FixPullRequestsCollector` | class | `finops_ingest/collectors/fix_pull_requests.py:221` | Opens each requested fix in the repository its state is mapped to, or says why not. | `finops_ingest/codehost_bindings.py` |
 | `GpuUtilizationCollector` | class | `finops_ingest/collectors/gpu_utilization.py:64` | One account and Region's GPU instances, read for the unit's window. | `finops_ingest/aws_bindings.py` |
 | `IacStateCollector` | class | `finops_ingest/collectors/iac_state.py:90` | The addresses that own our resources, from the state an operator configured. | `finops_ingest/aws_bindings.py` |
 | `InstanceCatalogCollector` | class | `finops_ingest/collectors/instance_catalog.py:233` | EC2's types placed in every Region they are sold, and the managed services' classes. | `finops_ingest/aws_bindings.py` |
@@ -638,25 +641,26 @@ a duplicate.
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
 | `Candidate` | class | `finops_ingest/collectors/waste_compute.py:119` | One thing the collector was asked to look at. | nothing in this tree |
 | `Quote` | class | `finops_ingest/collectors/waste_compute.py:138` | The prices a named target is quoted from, and every type judged to fit beside it. | nothing in this tree |
-| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:212` | Our own findings, from metrics the provider publishes. | nothing in this tree |
+| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:215` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `Parkable` | class | `finops_ingest/collectors/waste_parking.py:77` | A resource worth asking the parking question about. | nothing in this tree |
 | `WasteParkingCollector` | class | `finops_ingest/collectors/waste_parking.py:93` | Findings that say keep this and stop paying for the nights. | nothing in this tree |
-| `VolumeCandidate` | class | `finops_ingest/collectors/waste_volumes.py:49` | One attached EBS volume the inventory names. | nothing in this tree |
-| `gp2_only` | function | `finops_ingest/collectors/waste_volumes.py:61` | The volumes this pass judges. Every other type has no gp3 move to price. | `finops_ingest/collectors/waste_compute.py` |
-| `requests` | function | `finops_ingest/collectors/waste_volumes.py:66` | Operations and bytes, read and write, for each volume, to join the instances' batch. | `finops_ingest/collectors/quotas.py`, `finops_ingest/collectors/waste_compute.py` |
-| `hourly_p99` | function | `finops_ingest/collectors/waste_volumes.py:84` | The 99th percentile of what the streams moved together in an hour, None if unobserved. | nothing in this tree |
-| `demand` | function | `finops_ingest/collectors/waste_volumes.py:99` | IOPS and MiB/s at p99, each None where the volume published nothing to measure it by. | `finops_ingest/collectors/waste_compute.py` |
-| `judged` | function | `finops_ingest/collectors/waste_volumes.py:111` | A gp2 to gp3 recommendation for one volume, or the refusal saying why there is none. | `finops_ingest/collectors/waste_compute.py` |
+| `VolumeCandidate` | class | `finops_ingest/collectors/waste_volumes.py:51` | One attached EBS volume the inventory names. | nothing in this tree |
+| `observe` | function | `finops_ingest/collectors/waste_volumes.py:73` | Keep what this run read of every volume, of every type. | `finops_ingest/collectors/waste_compute.py` |
+| `gp2_only` | function | `finops_ingest/collectors/waste_volumes.py:92` | The volumes this pass judges. Every other type has no gp3 move to price. | `finops_ingest/collectors/waste_compute.py` |
+| `requests` | function | `finops_ingest/collectors/waste_volumes.py:97` | Operations and bytes, read and write, for each volume, to join the instances' batch. | `finops_ingest/collectors/quotas.py`, `finops_ingest/collectors/waste_compute.py` |
+| `hourly_p99` | function | `finops_ingest/collectors/waste_volumes.py:115` | The 99th percentile of what the streams moved together in an hour, None if unobserved. | nothing in this tree |
+| `demand` | function | `finops_ingest/collectors/waste_volumes.py:130` | IOPS and MiB/s at p99, each None where the volume published nothing to measure it by. | `finops_ingest/collectors/waste_compute.py` |
+| `judged` | function | `finops_ingest/collectors/waste_volumes.py:142` | A gp2 to gp3 recommendation for one volume, or the refusal saying why there is none. | `finops_ingest/collectors/waste_compute.py` |
 | `install_default_policy` | function | `finops_ingest/commitment_policy.py:30` | Give the tenant the cautious default, leaving a policy it already has alone. | nothing in this tree |
 | `policy_for` | function | `finops_ingest/commitment_policy.py:46` | The tenant's policy, or the default where it has none. | `finops_ingest/collectors/purchase_plan.py`, `finops_ingest/collectors/purchase_recommendation.py` |
-| `Binding` | class | `finops_ingest/composition.py:68` | One collector: its name, what one unit of it covers, and how it is built for a unit. | nothing in this tree |
-| `scope_of` | function | `finops_ingest/composition.py:80` |  | `finops_ingest/ai_bindings.py`, `finops_providers/anthropic/reports.py`, `finops_providers/aws/budgets.py`, `finops_providers/openai/reports.py` |
-| `worker_collectors` | function | `finops_ingest/composition.py:84` | The collectors the schedule says run in the worker, retention among them. | nothing in this tree |
-| `per_unit` | function | `finops_ingest/composition.py:89` | A runner that builds its collector for each unit, then runs it on that unit. | nothing in this tree |
-| `compose` | function | `finops_ingest/composition.py:98` | A registry of the bindings and the retention jobs, which need nothing to be built. | nothing in this tree |
-| `unbuilt` | function | `finops_ingest/composition.py:107` | A collector that cannot be built for AWS yet: every run fails typed, naming why. | nothing in this tree |
-| `production_bindings` | function | `finops_ingest/composition.py:137` | Every collector the worker runs, bound for a deployed environment. | nothing in this tree |
-| `production_registry` | function | `finops_ingest/composition.py:150` | The registry a deployed dispatcher and worker run. | nothing in this tree |
+| `Binding` | class | `finops_ingest/composition.py:69` | One collector: its name, what one unit of it covers, and how it is built for a unit. | nothing in this tree |
+| `scope_of` | function | `finops_ingest/composition.py:81` |  | `finops_ingest/ai_bindings.py`, `finops_providers/anthropic/reports.py`, `finops_providers/aws/budgets.py`, `finops_providers/openai/reports.py` |
+| `worker_collectors` | function | `finops_ingest/composition.py:85` | The collectors the schedule says run in the worker, retention among them. | nothing in this tree |
+| `per_unit` | function | `finops_ingest/composition.py:90` | A runner that builds its collector for each unit, then runs it on that unit. | nothing in this tree |
+| `compose` | function | `finops_ingest/composition.py:99` | A registry of the bindings and the retention jobs, which need nothing to be built. | nothing in this tree |
+| `unbuilt` | function | `finops_ingest/composition.py:108` | A collector that cannot be built for AWS yet: every run fails typed, naming why. | nothing in this tree |
+| `production_bindings` | function | `finops_ingest/composition.py:138` | Every collector the worker runs, bound for a deployed environment. | nothing in this tree |
+| `production_registry` | function | `finops_ingest/composition.py:154` | The registry a deployed dispatcher and worker run. | nothing in this tree |
 | `enrol` | function | `finops_ingest/coverage.py:81` | Give every enrolled slice an UNREAD row, and leave existing rows alone. | `finops_ingest/collectors/inventory.py` |
 | `record` | function | `finops_ingest/coverage.py:123` | Write what one read of one slice found, overwriting whatever was there. | `finops_ingest/collectors/inventory.py` |
 | `refused` | function | `finops_ingest/coverage.py:153` | Write a PARTIAL row for a slice no read ever got to. | `finops_ingest/collectors/inventory.py` |
@@ -675,7 +679,7 @@ a duplicate.
 | `Dispatcher.enumerate_units` | method | `finops_ingest/dispatcher.py:117` | One unit per (tenant, account, region, collector), or one per tenant. | `finops_ingest/processes.py` |
 | `Dispatcher.dispatch` | method | `finops_ingest/dispatcher.py:148` |  | `finops_ingest/processes.py` |
 | `MergeOutcome` | class | `finops_ingest/fix_merge.py:20` | Whether Meter merged, and the sentence saying why or why not. | nothing in this tree |
-| `merge_under_policy` | function | `finops_ingest/fix_merge.py:30` | Merge the pull request if the rule allows it now, and say what happened. | nothing in this tree |
+| `merge_under_policy` | function | `finops_ingest/fix_merge.py:30` | Merge the pull request if the rule allows it now, and say what happened. | `finops_ingest/collectors/fix_pull_requests.py` |
 | `idempotency_key` | function | `finops_ingest/ledger.py:53` | A stable identity for one unit of work. | `finops_ingest/dispatcher.py` |
 | `RunClaim` | class | `finops_ingest/ledger.py:67` | A unit of work this worker now owns. | nothing in this tree |
 | `RunLedger` | class | `finops_ingest/ledger.py:78` | Claims, completes and fails runs, and moves watermarks. | `finops_api/exports/scheduled.py`, `finops_ingest/collectors/query_audit.py`, `finops_ingest/worker.py` |
@@ -705,17 +709,17 @@ a duplicate.
 | `dispatcher_main` | function | `finops_ingest/processes.py:228` | Run one dispatch and exit: 0, EXIT_PARTIAL when a tenant failed, or EXIT_CONFIGURATION. | `finops_ingest/dispatcher.py` |
 | `worker_main` | function | `finops_ingest/processes.py:246` | Run the worker until SIGTERM: 0 after a clean stop, or EXIT_CONFIGURATION. | `finops_ingest/worker.py` |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/ai_providers.py`, `finops_ingest/collectors/ai_usage.py`, `finops_ingest/collectors/budgets.py`, and 31 more |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/ai_providers.py`, `finops_ingest/collectors/ai_usage.py`, `finops_ingest/collectors/budgets.py`, and 32 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:48` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
 | `Collector` | class | `finops_ingest/registry.py:82` |  | `finops_ingest/collectors/retention.py`, `finops_ingest/composition.py` |
 | `ScheduleEntry` | class | `finops_ingest/registry.py:89` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `governed_by_retention_flag` | function | `finops_ingest/registry.py:704` |  | nothing in this tree |
-| `due_collectors` | function | `finops_ingest/registry.py:708` | Which of a tenant's collectors are due, honouring the kill switch. | `finops_ingest/processes.py` |
-| `install_default_schedule` | function | `finops_ingest/registry.py:755` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:784` | The collectors this process knows how to run. | `finops_ingest/composition.py` |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:790` |  | `finops_ingest/collectors/retention.py`, `finops_ingest/composition.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:798` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/remediation.py`, and 92 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:807` |  | nothing in this tree |
+| `governed_by_retention_flag` | function | `finops_ingest/registry.py:719` |  | nothing in this tree |
+| `due_collectors` | function | `finops_ingest/registry.py:723` | Which of a tenant's collectors are due, honouring the kill switch. | `finops_ingest/processes.py` |
+| `install_default_schedule` | function | `finops_ingest/registry.py:770` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:799` | The collectors this process knows how to run. | `finops_ingest/composition.py` |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:805` |  | `finops_ingest/collectors/retention.py`, `finops_ingest/composition.py` |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:813` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/remediation.py`, and 92 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:822` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
 | `RewriteOutcome` | class | `finops_ingest/remediation.py:143` | What a panel rewrite did, including the case where it undid itself. | nothing in this tree |
@@ -796,7 +800,7 @@ a duplicate.
 | `TransitionRefusedError` | class | `finops_api/db/repositories/commitments.py:100` | A transition the plan's status does not allow, in words for the person who asked. | `finops_api/lifecycle.py` |
 | `PurchasePlanRepository` | class | `finops_api/db/repositories/commitments.py:104` | Meter's purchase plans, one a month. FEAT-089 and FEAT-090, TASK-P14-007 and 008. | `finops_api/routes/commitments.py` |
 | `PurchasePlanRepository.current` | method | `finops_api/db/repositories/commitments.py:110` | The newest month's plan, whatever its status, or None before one was drafted. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py` |
-| `PurchasePlanRepository.one` | method | `finops_api/db/repositories/commitments.py:116` |  | `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, `finops_api/routes/inventory.py`, and 7 more |
+| `PurchasePlanRepository.one` | method | `finops_api/db/repositories/commitments.py:116` |  | `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, `finops_api/routes/inventory.py`, and 8 more |
 | `PurchasePlanRepository.transition` | method | `finops_api/db/repositories/commitments.py:121` | Move a plan on, as a person, with a note, audited ALLOWED. None for a plan not found. | `finops_api/routes/commitments.py` |
 | `PurchasePlanRepository.refuse` | method | `finops_api/db/repositories/commitments.py:178` | Record a refused transition, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
 | `PurchasePlanLineRepository` | class | `finops_api/db/repositories/commitments.py:192` | The lines of one plan, in the order the plan placed them. FEAT-089. | `finops_api/routes/commitments.py` |
@@ -804,7 +808,7 @@ a duplicate.
 | `PurchasePlanEventRepository` | class | `finops_api/db/repositories/commitments.py:208` | Each step of one plan's lifecycle, the oldest first, with who took it. FEAT-090. | `finops_api/routes/commitments.py` |
 | `PurchasePlanEventRepository.of` | method | `finops_api/db/repositories/commitments.py:214` |  | `finops_api/db/repositories/waste.py`, `finops_api/routes/commitments.py`, `finops_api/routes/waste.py` |
 | `PurchaseRecommendationRepository` | class | `finops_api/db/repositories/commitments.py:224` | The provider's own purchase recommendations, one per program. FEAT-089, TASK-P14-006. | `finops_api/routes/commitments.py` |
-| `PurchaseRecommendationRepository.all` | method | `finops_api/db/repositories/commitments.py:230` |  | `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/remediation.py`, and 15 more |
+| `PurchaseRecommendationRepository.all` | method | `finops_api/db/repositories/commitments.py:230` |  | `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/remediation.py`, and 16 more |
 | `ContainerClusterRepository` | class | `finops_api/db/repositories/containers.py:32` | One row per cluster, measurable or not. | `finops_api/routes/inventory.py`, `finops_api/routes/waste.py` |
 | `ContainerClusterRepository.clusters` | method | `finops_api/db/repositories/containers.py:38` | Every cluster this caller may see, the unmeasurable ones included. | `finops_api/routes/inventory.py`, `finops_api/routes/waste.py` |
 | `ContainerClusterRepository.request_coverage` | method | `finops_api/db/repositories/containers.py:45` | Clusters that publish pod requests, against clusters found. | `finops_api/routes/waste.py` |
@@ -873,7 +877,7 @@ a duplicate.
 | `InvoiceRepository` | class | `finops_api/db/repositories/invoices.py:35` | Invoices and credit memos as read from the payer. | `finops_api/routes/reconciliation.py` |
 | `InvoiceRepository.for_period` | method | `finops_api/db/repositories/invoices.py:41` | Every invoice issued for a period, by issuer then id, so a credit memo sits near | `finops_api/routes/cost.py`, `finops_api/routes/reconciliation.py` |
 | `BillingPeriodRepository` | class | `finops_api/db/repositories/invoices.py:52` | Which months the payer has been invoiced for. | `finops_api/routes/reconciliation.py` |
-| `BillingPeriodRepository.one` | method | `finops_api/db/repositories/invoices.py:58` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 8 more |
+| `BillingPeriodRepository.one` | method | `finops_api/db/repositories/invoices.py:58` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 9 more |
 | `BillingPeriodRepository.latest` | method | `finops_api/db/repositories/invoices.py:63` | The newest closed period, which is the newest with an invoice to compare, or the | `finops_api/routes/reconciliation.py`, `finops_api/routes/waste.py` |
 | `InvoicedCostRepository` | class | `finops_api/db/repositories/invoices.py:82` | Meter's billed cost per invoice id, the figure each invoice is compared with. | `finops_api/routes/reconciliation.py` |
 | `InvoicedCostRepository.sums` | method | `finops_api/db/repositories/invoices.py:88` | Billed cost before tax and tax apart, per invoice id and currency, for one period. | `finops_api/routes/reconciliation.py` |
@@ -889,7 +893,7 @@ a duplicate.
 | `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:180` | Findings summed by cause, worst group first. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
 | `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:213` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
 | `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:235` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py`, `finops_api/routes/waste.py` |
-| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:275` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 8 more |
+| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:275` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 9 more |
 | `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:281` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
 | `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:292` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
 | `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:310` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
@@ -899,23 +903,31 @@ a duplicate.
 | `QuotaRepository` | class | `finops_api/db/repositories/quotas.py:40` | Service quotas, split by whether anything measured them. FEAT-033. | `finops_api/routes/quotas.py` |
 | `QuotaRepository.measurable` | method | `finops_api/db/repositories/quotas.py:66` | Quotas with a usage figure, least headroom first. | `finops_api/routes/quotas.py` |
 | `QuotaRepository.unmeasurable` | method | `finops_api/db/repositories/quotas.py:85` | Quotas nothing measured, by name, each carrying its reason. | `finops_api/routes/quotas.py` |
-| `QuotaRepository.one` | method | `finops_api/db/repositories/quotas.py:100` | One quota, in every region it applies to. | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 8 more |
+| `QuotaRepository.one` | method | `finops_api/db/repositories/quotas.py:100` | One quota, in every region it applies to. | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 9 more |
 | `QuotaRepository.coverage` | method | `finops_api/db/repositories/quotas.py:120` | Quotas measured, against quotas found. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
 | `QuotaRequestRepository` | class | `finops_api/db/repositories/quotas.py:139` | Increase requests, read and never written. FEAT-034, spec section 6. | `finops_api/routes/quotas.py` |
 | `QuotaRequestRepository.all_requests` | method | `finops_api/db/repositories/quotas.py:145` | Every request, the ones still going somewhere first, then oldest first. | `finops_api/routes/quotas.py` |
 | `QuotaRequestRepository.for_quota` | method | `finops_api/db/repositories/quotas.py:162` | Requests against one quota, newest first, for the detail page. | `finops_api/routes/quotas.py` |
 | `QuotaRequestHistoryRepository` | class | `finops_api/db/repositories/quotas.py:177` | Every status a request passed through, and when. | `finops_api/routes/quotas.py` |
 | `QuotaRequestHistoryRepository.for_request` | method | `finops_api/db/repositories/quotas.py:189` |  | `finops_api/routes/quotas.py` |
-| `Mapping` | class | `finops_api/db/repositories/remediation.py:41` | Where one Terraform state's fixes go. | `finops_api/routes/remediation.py` |
-| `CodeHostConnectionRepository` | class | `finops_api/db/repositories/remediation.py:50` | The GitHub App a tenant connected: its id and its key's secret name, never the key. | `finops_api/routes/remediation.py` |
-| `CodeHostConnectionRepository.current` | method | `finops_api/db/repositories/remediation.py:56` | The tenant's connection, or None where none was made. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py` |
-| `CodeHostConnectionRepository.connect` | method | `finops_api/db/repositories/remediation.py:61` | Set the connection, audited ALLOWED. Only a global scope naming a person may. | `finops_api/assistant.py`, `finops_api/exports/scheduled.py`, `finops_api/routes/remediation.py` |
-| `CodeHostConnectionRepository.refuse` | method | `finops_api/db/repositories/remediation.py:83` | Record a refused change, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
-| `RepositoryMappingRepository` | class | `finops_api/db/repositories/remediation.py:88` | Which repository, branch and folder each Terraform state's fixes go to. OPEN-42. | `finops_api/routes/remediation.py` |
-| `RepositoryMappingRepository.all` | method | `finops_api/db/repositories/remediation.py:94` | Every mapping, by state reference. | `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/topology.py`, and 14 more |
-| `RepositoryMappingRepository.unmapped` | method | `finops_api/db/repositories/remediation.py:100` | The states FEAT-057 read resources from that no mapping names. | `finops_api/routes/remediation.py` |
-| `RepositoryMappingRepository.replace` | method | `finops_api/db/repositories/remediation.py:123` | Make the tenant's mapping exactly `mappings`, audited ALLOWED. | `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, and 26 more |
-| `RepositoryMappingRepository.refuse` | method | `finops_api/db/repositories/remediation.py:165` | Record a refused change, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
+| `Mapping` | class | `finops_api/db/repositories/remediation.py:42` | Where one Terraform state's fixes go. | `finops_api/routes/remediation.py` |
+| `CodeHostConnectionRepository` | class | `finops_api/db/repositories/remediation.py:51` | The GitHub App a tenant connected: its id and its key's secret name, never the key. | `finops_api/routes/remediation.py` |
+| `CodeHostConnectionRepository.current` | method | `finops_api/db/repositories/remediation.py:57` | The tenant's connection, or None where none was made. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py` |
+| `CodeHostConnectionRepository.connect` | method | `finops_api/db/repositories/remediation.py:62` | Set the connection, audited ALLOWED. Only a global scope naming a person may. | `finops_api/assistant.py`, `finops_api/exports/scheduled.py`, `finops_api/routes/remediation.py` |
+| `CodeHostConnectionRepository.refuse` | method | `finops_api/db/repositories/remediation.py:84` | Record a refused change, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
+| `RepositoryMappingRepository` | class | `finops_api/db/repositories/remediation.py:89` | Which repository, branch and folder each Terraform state's fixes go to. OPEN-42. | `finops_api/routes/remediation.py` |
+| `RepositoryMappingRepository.all` | method | `finops_api/db/repositories/remediation.py:95` | Every mapping, by state reference. | `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/topology.py`, and 15 more |
+| `RepositoryMappingRepository.unmapped` | method | `finops_api/db/repositories/remediation.py:101` | The states FEAT-057 read resources from that no mapping names. | `finops_api/routes/remediation.py` |
+| `RepositoryMappingRepository.replace` | method | `finops_api/db/repositories/remediation.py:124` | Make the tenant's mapping exactly `mappings`, audited ALLOWED. | `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, and 26 more |
+| `RepositoryMappingRepository.refuse` | method | `finops_api/db/repositories/remediation.py:166` | Record a refused change, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
+| `FixPullRequestRepository` | class | `finops_api/db/repositories/remediation.py:176` | The fixes asked for, scoped as their recommendation's account. FEAT-092, TASK-P15-004. | `finops_api/routes/remediation.py` |
+| `FixPullRequestRepository.request` | method | `finops_api/db/repositories/remediation.py:182` | Record an ask, audited ALLOWED, or None where a fix is already requested or open. | `finops_api/routes/remediation.py`, `finops_providers/github/app.py` |
+| `FixPullRequestRepository.all` | method | `finops_api/db/repositories/remediation.py:233` | Every fix the scope reaches, the newest ask first. | `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/topology.py`, and 15 more |
+| `FixPullRequestRepository.steps` | method | `finops_api/db/repositories/remediation.py:241` | Each fix's steps, oldest first, through the steps table's own scope rule. | `finops_api/routes/remediation.py` |
+| `MergePolicyRepository` | class | `finops_api/db/repositories/remediation.py:260` | Which reversible fixes the tenant lets Meter merge. FEAT-094, ADR-0038, TASK-P15-007. | `finops_api/routes/remediation.py` |
+| `MergePolicyRepository.current` | method | `finops_api/db/repositories/remediation.py:266` | Each class the policy names, with its reason. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py` |
+| `MergePolicyRepository.replace` | method | `finops_api/db/repositories/remediation.py:272` | Make the policy exactly `classes`, each with this reason, audited ALLOWED. | `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, and 26 more |
+| `MergePolicyRepository.refuse` | method | `finops_api/db/repositories/remediation.py:289` | Record a refused change, so a narrowed attempt is in the audit trail. | `finops_api/routes/commitments.py`, `finops_api/routes/remediation.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/price_catalog.py`, and 3 more |
 | `record_run` | function | `finops_api/db/repositories/reports.py:28` | One row for one export file, in the transaction of the read it records. | `finops_api/exports/responder.py` |
 | `mark_kept` | function | `finops_api/db/repositories/reports.py:80` | A rendered file kept in the store for its schedule, SENT when a sender took it. | `finops_api/exports/scheduled.py` |
 | `mark_failed` | function | `finops_api/db/repositories/reports.py:106` | A file that was made and then not kept, or kept and not sent, with the typed cause. | `finops_api/exports/scheduled.py` |
@@ -941,7 +953,7 @@ a duplicate.
 | `TopologyRepository.page` | method | `finops_api/db/repositories/topology.py:348` | One page of resources, and how many match the filter in total. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.vocabularies` | method | `finops_api/db/repositories/topology.py:421` | The filter values that actually occur in this scope. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.counts` | method | `finops_api/db/repositories/topology.py:448` | How many resources each region and each type holds in this scope, largest first. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:473` | One node, or None where the scope cannot see it. | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 8 more |
+| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:473` | One node, or None where the scope cannot see it. | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 9 more |
 | `TopologyRepository.management_of` | method | `finops_api/db/repositories/topology.py:482` | What manages this resource, as the three valued answer plus the address. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.slice_coverage` | method | `finops_api/db/repositories/topology.py:543` | The coverage of the one slice this node came from. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.findings_for` | method | `finops_api/db/repositories/topology.py:554` | Recommendations about this resource, and how many in the account did not match. | `finops_api/routes/inventory.py` |
@@ -957,9 +969,9 @@ a duplicate.
 | `RefusalRepository` | class | `finops_api/db/repositories/waste.py:40` | What a sizing rule examined and declined to recommend. FEAT-062, ADR-0027. | `finops_api/routes/waste.py` |
 | `RefusalRepository.latest` | method | `finops_api/db/repositories/waste.py:46` | Every refusal this reader can see, the least observed first. | `finops_api/routes/reconciliation.py`, `finops_api/routes/waste.py` |
 | `RefusalRepository.counted` | method | `finops_api/db/repositories/waste.py:65` | How many resources were examined and cleared, for the sentence above the list. | `finops_api/routes/waste.py` |
-| `RecommendationRepository` | class | `finops_api/db/repositories/waste.py:74` | What is worth changing, ranked by money. FEAT-028. | `finops_api/routes/waste.py` |
+| `RecommendationRepository` | class | `finops_api/db/repositories/waste.py:74` | What is worth changing, ranked by money. FEAT-028. | `finops_api/routes/remediation.py`, `finops_api/routes/waste.py` |
 | `RecommendationRepository.worst_first` | method | `finops_api/db/repositories/waste.py:178` | Biggest money first, filterable. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
-| `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:208` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 8 more |
+| `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:208` |  | `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/remediation.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/views.py`, and 9 more |
 | `RecommendationRepository.accounts_seen` | method | `finops_api/db/repositories/waste.py:218` | How many accounts this scope has recommendations for. | `finops_api/routes/inventory.py`, `finops_api/routes/waste.py` |
 | `RecommendationRepository.unowned` | method | `finops_api/db/repositories/waste.py:230` | How many open recommendations nobody is responsible for. | `finops_api/routes/waste.py` |
 | `RecommendationOptionRepository` | class | `finops_api/db/repositories/waste.py:246` | What a rightsizing was compared with, by its source's rank. TASK-P9-010. | `finops_api/routes/waste.py` |
@@ -1021,10 +1033,10 @@ a duplicate.
 | `PayerWide` | class | `finops_api/guards.py:66` | The row describes the whole payer and belongs to no account. | nothing in this tree |
 | `ByPrincipal` | class | `finops_api/guards.py:85` | The row belongs to a person, and only that person reads it. ADR-0029. | nothing in this tree |
 | `OwnedOrShared` | class | `finops_api/guards.py:97` | The row belongs to a person until they share it with the tenant. ADR-0032. | nothing in this tree |
-| `require_scope` | function | `finops_api/guards.py:318` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/cost.py`, and 6 more |
-| `scope_predicate` | function | `finops_api/guards.py:334` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/ledger.py`, `finops_api/db/repositories/query.py`, and 5 more |
-| `scoped_select` | function | `finops_api/guards.py:421` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ai.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, and 19 more |
-| `assert_scoped` | function | `finops_api/guards.py:431` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
+| `require_scope` | function | `finops_api/guards.py:325` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/commitments.py`, `finops_api/db/repositories/cost.py`, and 6 more |
+| `scope_predicate` | function | `finops_api/guards.py:341` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/ledger.py`, `finops_api/db/repositories/query.py`, and 5 more |
+| `scoped_select` | function | `finops_api/guards.py:428` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ai.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, and 19 more |
+| `assert_scoped` | function | `finops_api/guards.py:438` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
 | `ScopeCoverage` | class | `finops_api/identity/coverage.py:19` | Visible accounts against every account the organization holds. | nothing in this tree |
 | `ScopeCoverage.is_partial` | method | `finops_api/identity/coverage.py:36` | True when the figures on the page describe part of the organization. | nothing in this tree |
 | `ScopeCoverage.fraction` | method | `finops_api/identity/coverage.py:41` | Visible share, between 0 and 1. An empty organization is fully covered. | nothing in this tree |
@@ -1141,10 +1153,14 @@ a duplicate.
 | `requests` | function | `finops_api/routes/quotas.py:210` | Increase requests and what became of them. FEAT-034. | `finops_ingest/collectors/quotas.py`, `finops_ingest/collectors/waste_compute.py` |
 | `quota_detail` | function | `finops_api/routes/quotas.py:245` | One quota, everywhere it applies, with every request against it. FEAT-033, FEAT-034. | nothing in this tree |
 | `cost_reconciliation` | function | `finops_api/routes/reconciliation.py:80` | Each invoice for a period beside Meter's billed cost under it, and what the gap means. | nothing in this tree |
-| `remediation_connection` | function | `finops_api/routes/remediation.py:116` | The GitHub App fixes go through, or that none is connected. FEAT-091. | nothing in this tree |
-| `change_remediation_connection` | function | `finops_api/routes/remediation.py:129` | Connect the GitHub App, by its id and its key's secret name. The organization's only. | nothing in this tree |
-| `remediation_repositories` | function | `finops_api/routes/remediation.py:178` | Where each Terraform state's fixes go, and the states that have nowhere yet. OPEN-42. | nothing in this tree |
-| `change_remediation_repositories` | function | `finops_api/routes/remediation.py:189` | Set the whole mapping. One left out is removed. The organization's only. | nothing in this tree |
+| `remediation_connection` | function | `finops_api/routes/remediation.py:130` | The GitHub App fixes go through, or that none is connected. FEAT-091. | nothing in this tree |
+| `change_remediation_connection` | function | `finops_api/routes/remediation.py:143` | Connect the GitHub App, by its id and its key's secret name. The organization's only. | nothing in this tree |
+| `remediation_repositories` | function | `finops_api/routes/remediation.py:192` | Where each Terraform state's fixes go, and the states that have nowhere yet. OPEN-42. | nothing in this tree |
+| `change_remediation_repositories` | function | `finops_api/routes/remediation.py:203` | Set the whole mapping. One left out is removed. The organization's only. | nothing in this tree |
+| `ask_for_a_fix` | function | `finops_api/routes/remediation.py:238` | Ask for the fix to be opened as a pull request. FEAT-092, TASK-P15-004. | nothing in this tree |
+| `remediation_pull_requests` | function | `finops_api/routes/remediation.py:286` | Every fix asked for in the reader's scope, its status and its steps. TASK-P15-006. | nothing in this tree |
+| `remediation_merge_policy` | function | `finops_api/routes/remediation.py:339` | Which reversible fixes Meter may merge, empty until a person names one. FEAT-094. | nothing in this tree |
+| `change_remediation_merge_policy` | function | `finops_api/routes/remediation.py:351` | Set the classes Meter may merge, with a reason. The organization's only. ADR-0038. | nothing in this tree |
 | `schedule_out` | function | `finops_api/routes/schedules.py:80` |  | nothing in this tree |
 | `run_out` | function | `finops_api/routes/schedules.py:97` |  | nothing in this tree |
 | `schedules` | function | `finops_api/routes/schedules.py:150` | The reader's schedules, and whether this deployment renders and keeps what they make. | nothing in this tree |
@@ -1329,6 +1345,13 @@ a duplicate.
 | `RepositoryMappingsIn` | class | `finops_api/schemas.py:2943` | The whole mapping. A state left out loses its mapping. | nothing in this tree |
 | `RepositoryMappingOut` | class | `finops_api/schemas.py:2958` | One state's mapping, with who set it and when. | `finops_api/routes/remediation.py` |
 | `RepositoryMappingsOut` | class | `finops_api/schemas.py:2971` | Every mapping, and the states whose fixes would have nowhere to go. OPEN-42. | `finops_api/routes/remediation.py` |
+| `FixRequestIn` | class | `finops_api/schemas.py:2981` | An ask for a recommendation's fix to be opened as a pull request. FEAT-092. | nothing in this tree |
+| `FixPullRequestOut` | class | `finops_api/schemas.py:2990` | A fix asked for: its status, its pull request once opened, and why where there is none. | `finops_api/routes/remediation.py` |
+| `FixStepOut` | class | `finops_api/schemas.py:3014` | One step of a fix: from and to, by whom, and when. FEAT-092. | `finops_api/routes/remediation.py` |
+| `FixPullRequestFollowedOut` | class | `finops_api/schemas.py:3027` | A fix with every step it took. | `finops_api/routes/remediation.py` |
+| `FixPullRequestsOut` | class | `finops_api/schemas.py:3035` | Every fix asked for in the reader's scope, the newest first. FEAT-092. | `finops_api/routes/remediation.py` |
+| `MergePolicyIn` | class | `finops_api/schemas.py:3043` | The classes of fix Meter may merge, the whole set, with the reason. FEAT-094, ADR-0038. | nothing in this tree |
+| `MergePolicyOut` | class | `finops_api/schemas.py:3053` | What Meter may merge, what it could ever merge, and whether merging is on. FEAT-094. | `finops_api/routes/remediation.py` |
 | `Transport` | class | `finops_api/toolbox.py:33` | What the toolbox needs of an HTTP client, and nothing more. | nothing in this tree |
 | `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/db/repositories/remediation.py`, and 91 more |
 | `ApiToolbox` | class | `finops_api/toolbox.py:39` | The asker's tools, each one a route called with the asker's token. | `finops_api/main.py` |
@@ -1363,11 +1386,11 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 
 - `ConfigurationError` in `finops_core/config.py:40`
 - `Settings` in `finops_core/config.py:50`
-- `Settings.iac_locations` in `finops_core/config.py:318`
-- `Settings.owner_tag_key_list` in `finops_core/config.py:329`
-- `Settings.iac_exhaustive` in `finops_core/config.py:334`
-- `Settings.recommendation_services` in `finops_core/config.py:391`
-- `Settings.region_list` in `finops_core/config.py:400`
+- `Settings.iac_locations` in `finops_core/config.py:319`
+- `Settings.owner_tag_key_list` in `finops_core/config.py:330`
+- `Settings.iac_exhaustive` in `finops_core/config.py:335`
+- `Settings.recommendation_services` in `finops_core/config.py:392`
+- `Settings.region_list` in `finops_core/config.py:401`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`

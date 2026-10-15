@@ -77,6 +77,38 @@ gitleaks detect --source "${ROOT}" --config "${ROOT}/.gitleaks.toml" \
   --report-format json \
   --report-path "${OUT}/gitleaks.json" --redact --no-banner \
   || echo "gitleaks reported findings"
+# The change being verified too, ISS-301. `detect` reads committed history, so a secret written
+# in work not yet committed passed this gate and failed the next one, as a test fixture did on
+# 2026-10-15. The files a commit would carry, changed since HEAD or new and not ignored, are
+# copied out and scanned without git; the report reads every gitleaks*.json it finds.
+PENDING="$(mktemp -d)"
+python3 - "${ROOT}" "${PENDING}" <<'PY'
+import os
+import shutil
+import subprocess
+import sys
+
+root, out = sys.argv[1], sys.argv[2]
+
+
+def listed(*command: str) -> list[str]:
+    found = subprocess.run(["git", "-C", root, *command], capture_output=True, check=True).stdout
+    return [name.decode() for name in found.split(b"\0") if name]
+
+
+changed = listed("diff", "-z", "--name-only", "HEAD")
+for name in {*changed, *listed("ls-files", "-z", "--others", "--exclude-standard")}:
+    source = os.path.join(root, name)
+    if os.path.isfile(source) and not os.path.islink(source):
+        target = os.path.join(out, name)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(source, target)
+PY
+gitleaks detect --no-git --source "${PENDING}" --config "${ROOT}/.gitleaks.toml" \
+  --report-format json \
+  --report-path "${OUT}/gitleaks-pending.json" --redact --no-banner \
+  || echo "gitleaks reported findings in uncommitted files"
+rm -rf "${PENDING}"
 
 # ---------------------------------------------------------------- python deps
 if [[ -f "${ROOT}/pyproject.toml" ]]; then

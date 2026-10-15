@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P15 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P15 spec](../specs/2026-10-15-p15-pull-request-fixes-design.md), section 5.2 |
 | Tasks | TASK-P15-001, TASK-P15-007 and TASK-P15-008 |
 | Decisions | OPEN-41, ADR-0038 |
@@ -20,7 +20,7 @@ Proposal 4 asks for graded autonomy: the low risk fixes merged without waiting f
 
 ## How it works
 
-Built so far, TASK-P15-001: the reversible set, `EBS_GP2_TO_GP3` alone, is in the domain, and a pure rule, `may_merge`, decides from the policy, the class, who opened the pull request and GitHub's report whether Meter may merge, and says why for every no. The one function that merges, `merge_under_policy` in `finops_ingest/fix_merge.py`, asks it first and merges at the head GitHub reported; a contract test refuses a merge called from anywhere else. Not built yet, TASK-P15-007: `merge_policy` lists the classes a tenant allows, starts empty, and a database check refuses any class outside the reversible set. The `fix_pull_requests` collector merges through GitHub's own merge, so branch protection applies, and records the merge as a step with the policy that allowed it. The `pull_request_merge` flag turns every merge off.
+Built so far, TASK-P15-001: the reversible set, `EBS_GP2_TO_GP3` alone, is in the domain, and a pure rule, `may_merge`, decides from the policy, the class, who opened the pull request and GitHub's report whether Meter may merge, and says why for every no. The one function that merges, `merge_under_policy` in `finops_ingest/fix_merge.py`, asks it first and merges at the head GitHub reported; a contract test refuses a merge called from anywhere else. TASK-P15-007: `merge_policy` lists the classes a tenant allows, starts empty, and a database check refuses any class outside the reversible set, a test holding the check's list equal to the domain's. `GET` and `PUT /v1/remediation/merge-policy` show and set it, the whole set with a reason, by a person whose scope is the organization, audited; a class outside the reversible set is refused naming the set. The `fix_pull_requests` collector merges each open pull request of a class the policy names through the one merge function, once GitHub reports every required check passed and review given, through GitHub's own merge, so branch protection applies, and records the merge as a step with the policy that allowed it. A merge GitHub refuses is a step recorded once while it keeps refusing, and a person can still merge it. The `pull_request_merge` flag turns every merge off, and a run with no settings to read it from merges nothing. The settings screen, `/platform/fixes`, TASK-P15-008, shows what the policy names and says when the flag has turned merging off, and changes it with a reason.
 
 ## Data sources and freshness
 

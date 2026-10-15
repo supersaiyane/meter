@@ -643,6 +643,9 @@ recommendation = Table(
     Column("price_version", Text),
     #: An Upsize's added monthly cost, modelled, and nothing else's. Migration 0039.
     Column("added_monthly_cost", Numeric(20, 10)),
+    #: What the priced gp3 gives a gp2 volume, for FEAT-093's edit, and nothing else's. 0061.
+    Column("target_iops", Integer),
+    Column("target_throughput_mibps", Integer),
 )
 
 
@@ -2382,4 +2385,123 @@ repository_mapping = Table(
         r"folder = '' OR (folder !~ '^/' AND folder !~ '/$' AND folder !~ '(^|/)\.\.?(/|$)')",
         name="ck_repository_mapping__folder",
     ),
+)
+
+
+#: P15, 0060. A fix a person asked for and its pull request, FEAT-092: one live per recommendation,
+#: scoped as the recommendation's account.
+fix_pull_request = Table(
+    "fix_pull_request",
+    metadata,
+    Column("fix_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("sub_account_id", Text, nullable=False),
+    Column("status", Text, nullable=False),
+    Column("repository", Text),
+    Column("branch", Text),
+    Column("number", Integer),
+    Column("url", Text),
+    Column("note", Text),
+    Column("requested_by", Text, nullable=False),
+    Column("requested_at", DateTime(timezone=True), nullable=False),
+    Column("merged_by", Text),
+    #: When it merged or closed without merging, TASK-P15-006: a reading older proves nothing.
+    Column("merged_at", DateTime(timezone=True)),
+    Column("closed_at", DateTime(timezone=True)),
+    Column("reason", Text),
+    Column("failure_cause", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "status IN ('REQUESTED', 'OPEN', 'MERGED', 'CLOSED', 'NOT_AUTHORED', 'FAILED')",
+        name="ck_fix_pull_request__status",
+    ),
+    CheckConstraint(
+        "status NOT IN ('OPEN', 'MERGED', 'CLOSED') OR (repository IS NOT NULL AND branch IS NOT "
+        "NULL AND number IS NOT NULL AND url IS NOT NULL)",
+        name="ck_fix_pull_request__opened_names_it",
+    ),
+    CheckConstraint(
+        "status NOT IN ('NOT_AUTHORED', 'FAILED') OR length(trim(coalesce(reason, ''))) > 0",
+        name="ck_fix_pull_request__none_says_why",
+    ),
+    CheckConstraint(
+        "(status = 'FAILED') = (failure_cause IS NOT NULL)",
+        name="ck_fix_pull_request__failure_typed",
+    ),
+    CheckConstraint(
+        "failure_cause IS NULL OR failure_cause IN ('AccessDenied', 'Throttled', 'NotOptedIn', "
+        "'NoData', 'Unreachable', 'Misconfigured', 'SchemaDrift')",
+        name="ck_fix_pull_request__cause",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_fix_pull_request__collected_after_true"),
+    CheckConstraint(
+        "(status = 'MERGED') = (merged_at IS NOT NULL)", name="ck_fix_pull_request__merged_when"
+    ),
+    Index(
+        "ux_fix_pull_request__live",
+        "tenant_id",
+        "recommendation_id",
+        unique=True,
+        postgresql_where=text("status IN ('REQUESTED', 'OPEN')"),
+    ),
+    Index("ix_fix_pull_request__status", "tenant_id", "status"),
+)
+
+#: P15, 0060. Each step of a fix, append only, with its principal: a person, Meter, or the code
+#: host's login of whoever merged or closed it.
+fix_pull_request_event = Table(
+    "fix_pull_request_event",
+    metadata,
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column("fix_id", UUID(as_uuid=True), ForeignKey("fix_pull_request.fix_id"), nullable=False),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("from_status", Text),
+    Column("to_status", Text, nullable=False),
+    Column("principal", Text, nullable=False),
+    Column("note", Text),
+    Column("at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("length(trim(principal)) > 0", name="ck_fix_pull_request_event__principal"),
+    Index("ix_fix_pull_request_event__fix", "fix_id", "at"),
+)
+
+
+#: P15, 0062. What the volume pass read of each volume, restated every run, so a gp2 volume moved
+#: to gp3 can be seen to have moved. TASK-P15-006.
+volume_observation = Table(
+    "volume_observation",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("sub_account_id", Text, primary_key=True),
+    Column("resource_id", Text, primary_key=True),
+    Column("region_id", Text, nullable=False),
+    Column("volume_type", Text, nullable=False),
+    Column("size_gib", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("length(trim(volume_type)) > 0", name="ck_volume_observation__type"),
+    CheckConstraint("size_gib > 0", name="ck_volume_observation__size"),
+    CheckConstraint("collected_at >= as_of", name="ck_volume_observation__collected_after_true"),
+)
+
+
+#: P15, 0063. Which reversible fixes a tenant lets Meter merge, FEAT-094: empty to start, and a
+#: check holding each class to the reversible set, ADR-0038.
+merge_policy = Table(
+    "merge_policy",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("waste_class", Text, primary_key=True),
+    Column("reason", Text, nullable=False),
+    Column("set_by", Text, nullable=False),
+    Column("set_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    CheckConstraint("waste_class IN ('EBS_GP2_TO_GP3')", name="ck_merge_policy__reversible"),
+    CheckConstraint("length(trim(reason)) > 0", name="ck_merge_policy__reason"),
 )

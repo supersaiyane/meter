@@ -1410,6 +1410,81 @@ each request, TASK-P15-002. Both are changed through `PUT /v1/remediation/connec
 is set whole, a state left out losing its mapping and an unchanged one keeping who set it. An
 erasure keeps both and replaces `connected_by` and `set_by`.
 
+### Fixes asked for, P15
+
+```sql
+-- P15, FEAT-092, migration 0060. A fix a person asked for and its pull request. Scoped as its
+-- recommendation's account.
+CREATE TABLE fix_pull_request (
+    fix_id             UUID        NOT NULL,
+    tenant_id          UUID        NOT NULL REFERENCES tenant(tenant_id),
+    recommendation_id  UUID        NOT NULL REFERENCES recommendation(recommendation_id),
+    sub_account_id     TEXT        NOT NULL,
+    status             TEXT        NOT NULL,   -- REQUESTED, OPEN, MERGED, CLOSED, NOT_AUTHORED, FAILED
+    repository         TEXT,                   -- these four once a pull request is opened
+    branch             TEXT,
+    number             INTEGER,
+    url                TEXT,
+    note               TEXT,                   -- what the person asked the reviewers to read
+    requested_by       TEXT        NOT NULL,
+    requested_at       TIMESTAMPTZ NOT NULL,
+    merged_by          TEXT,                   -- the code host's login, TASK-P15-006
+    reason             TEXT,                   -- why there is none, where there is none
+    failure_cause      TEXT,                   -- a typed cause, on a FAILED fix only
+    as_of              TIMESTAMPTZ NOT NULL,
+    collected_at       TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_fix_pull_request PRIMARY KEY (fix_id)
+    -- and checks: an opened fix names its pull request, one not authored or failed says why
+);
+-- One live fix per recommendation, so asking twice is refused by the database too.
+CREATE UNIQUE INDEX ux_fix_pull_request__live ON fix_pull_request (tenant_id, recommendation_id)
+    WHERE status IN ('REQUESTED', 'OPEN');
+
+-- Every step, append only, with its principal: a person, meter, or the host's login.
+CREATE TABLE fix_pull_request_event (
+    event_id        UUID        NOT NULL,
+    fix_id          UUID        NOT NULL REFERENCES fix_pull_request(fix_id),
+    tenant_id       UUID        NOT NULL REFERENCES tenant(tenant_id),
+    sub_account_id  TEXT        NOT NULL,
+    from_status     TEXT,
+    to_status       TEXT        NOT NULL,
+    principal       TEXT        NOT NULL,
+    note            TEXT,
+    at              TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_fix_pull_request_event PRIMARY KEY (event_id)
+);
+```
+
+Asked for through `POST /v1/waste/recommendations/{id}/pull-request` by a person whose scope
+includes the account, once the recommendation is accepted. The `fix_pull_requests` collector opens
+it every ten minutes, or records why it cannot. An erasure keeps both and replaces the name.
+
+Migration 0061 adds two columns to `recommendation`, `target_iops` and `target_throughput_mibps`:
+what the gp3 FEAT-074 priced gives a gp2 volume, so FEAT-093's edit sets them rather than reading
+them out of the rationale's sentence. A check holds both to the gp2 to gp3 class and to positive
+figures, and the volume pass fills them on its next run, its write being an upsert.
+
+Migration 0062 adds `merged_at` and `closed_at` to `fix_pull_request`, a check holding `merged_at`
+to a merged fix, and `volume_observation`: what the volume pass read of each volume, its type and
+size, one row each per account and restated every run, so a gp2 volume moved to gp3 can be seen to
+have moved. A merged fix's recommendation is DONE only on a reading taken after `merged_at`.
+
+```sql
+-- P15, FEAT-094, migration 0063. Which reversible fixes a tenant lets Meter merge, ADR-0038. Empty
+-- to start. Payer wide, ADR-0025.
+CREATE TABLE merge_policy (
+    tenant_id    UUID        NOT NULL REFERENCES tenant(tenant_id),
+    waste_class  TEXT        NOT NULL,   -- held to the reversible set, gp2 to gp3 alone
+    reason       TEXT        NOT NULL,
+    set_by       TEXT        NOT NULL,
+    set_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT pk_merge_policy PRIMARY KEY (tenant_id, waste_class)
+);
+```
+
+Set whole through `PUT /v1/remediation/merge-policy` by a person whose scope is the organization,
+with a reason, audited. An erasure keeps it and replaces `set_by`.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

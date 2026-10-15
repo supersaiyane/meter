@@ -35,6 +35,10 @@ that before there is data in it, which is the only cheap moment to do it.
 | `commitment_policy` | O | Coverage, term, payment, ladder limit, reason, `updated_by` | Life of the tenant | `updated_by` on request |
 | `code_host_connection` | O | The GitHub App's id and its key's secret name, never the key, `connected_by` | Life of the tenant | `connected_by` on request |
 | `repository_mapping` | O | Each Terraform state's repository, base branch and folder, `set_by` | Life of the tenant | `set_by` on request |
+| `fix_pull_request` | O and **P** | A fix asked for, its pull request, its status and why where there is none, `requested_by`, and `merged_by`, the code host's login of whoever merged, which names no principal | Life of the tenant | `requested_by` on request |
+| `fix_pull_request_event` | O and **P** | Each step with its `principal`, a person, Meter or the code host's login, and the note | Life of the tenant | `principal` on request |
+| `volume_observation` | O | Each volume's type and size as the volume pass last read it | Restated every run | Not applicable |
+| `merge_policy` | O | Each reversible class Meter may merge, the reason, `set_by` | Life of the tenant | `set_by` on request |
 | `commitment_inventory` | O | Each commitment's term, end, payment and owning account | Life of the tenant | No |
 | `purchase_recommendation` | O | AWS's purchase advice per program, its own estimate, and any typed failure | Restated daily | Not applicable |
 | `purchase_plan`, `purchase_plan_line` | O | Meter's plan per month, the policy it was drafted under, and its modelled lines | Life of the tenant | Not applicable |
@@ -145,9 +149,11 @@ A request to erase a person:
    subject.
 2. Delete their `principal_scope` rows.
 3. Anonymise `collector_schedule.updated_by`, `commitment_policy.updated_by`,
-   `purchase_plan_event.principal`, `code_host_connection.connected_by` and
-   `repository_mapping.set_by` where they name them; the cadence, the policy, each step of a
-   purchase plan, the code host and where fixes go stay, as the tenant's decisions.
+   `purchase_plan_event.principal`, `code_host_connection.connected_by`,
+   `repository_mapping.set_by`, `fix_pull_request.requested_by`,
+   `fix_pull_request_event.principal` and `merge_policy.set_by` where they name them; the cadence, the policy, each step of
+   a purchase plan, the code host, where fixes go and each fix's history stay, as the tenant's
+   decisions and records.
 4. Tombstone their questions to the assistant and their redaction records: the
    question, answer and reason replaced, the identifier hashed, the row kept so
    the month's token spend stays true.

@@ -98,7 +98,7 @@ describe('navigation groups', () => {
       Inventory: ['Accounts', 'Resources', 'Topology'],
       Report: ['Report Library', 'Scheduled', 'Exports', 'Invoice reconciliation'],
       Assist: ['Ask Meter', 'Digests'],
-      Platform: ['Data Freshness', 'Ingestion', 'Meter Cost', 'Flags'],
+      Platform: ['Data Freshness', 'Ingestion', 'Meter Cost', 'Fixes', 'Flags'],
     });
   });
 

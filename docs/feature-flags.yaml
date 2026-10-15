@@ -104,3 +104,15 @@ flags:
     expires: 2026-11-21
     removal: Delete the flag, the local provider and this entry when the SAML
       adapter ships. OPEN-01.
+
+  - key: pull_request_merge
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Meter merges a pull request it opened for a reversible fix, where the tenant's merge policy
+      names its class and the repository's checks and reviews have passed, ADR-0038. A merge is
+      Meter's one write into a repository, so it can be stopped at once, for every tenant,
+      without a deploy and without editing every policy. Pull requests are still opened and
+      followed while it is off.
+    expires: 2027-10-15
+    removal: Permanent operational control, reviewed annually.

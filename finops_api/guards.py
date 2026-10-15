@@ -192,6 +192,13 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # P15, TASK-P15-003. Where the organization's fixes go, ADR-0025.
     "code_host_connection": PayerWide(),
     "repository_mapping": PayerWide(),
+    # P15, TASK-P15-004. A fix is scoped as its recommendation is, by the account.
+    "fix_pull_request": ByAccount("sub_account_id"),
+    "fix_pull_request_event": ByAccount("sub_account_id"),
+    # TASK-P15-006. What each volume is, read by the volume pass, by its account.
+    "volume_observation": ByAccount("sub_account_id"),
+    # TASK-P15-007. Which reversible fixes Meter may merge, the organization's, ADR-0025.
+    "merge_policy": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
     "purchase_plan": PayerWide(),

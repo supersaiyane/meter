@@ -107,6 +107,8 @@ class ScheduleEntry:
 
 #: P8, FEAT-069. How often the API looks for scheduled reports that are due.
 FIFTEEN_MINUTES = 900
+#: P15, FEAT-092. How often the code host collector opens, follows and merges fixes.
+TEN_MINUTES = 600
 HOURLY = 3600
 #: Six hours. The interval the P2 specification asks for, named rather than
 #: written as a multiplication at the call site.
@@ -685,6 +687,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "most a day after it verifies. ADR-0012, constraint 9 and FEAT-078."
         ),
         est_cost_per_run="0",
+    ),
+    # FEAT-092, TASK-P15-004. Migration 0060 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="fix_pull_requests",
+        cadence_seconds=TEN_MINUTES,
+        reason=(
+            "Opens each fix a person asked for, follows each open pull request and, under the "
+            "tenant's merge policy, merges, P15 spec section 7. Every ten minutes, so a person who "
+            "asks sees the pull request within ten minutes and each later step within the next "
+            "run. GitHub's API is free within its rate limit and the worker's NAT carries "
+            "kilobytes: modelled at 0.00 USD a run. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.00",
     ),
 )
 

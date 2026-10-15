@@ -11,7 +11,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Final
+from uuid import uuid4
 
 from sqlalchemy import Row, Table, select
 from sqlalchemy.dialects.postgresql import insert
@@ -158,6 +159,129 @@ class RepositoryMappingRepository(ScopedRepository):
                 )
                 .on_conflict_do_update(
                     index_elements=[table.c.tenant_id, table.c.state_reference], set_=values
+                )
+            )
+        self._audit(confirmed, action="change", outcome="ALLOWED")
+
+    def refuse(self, scope: Scope) -> None:
+        """Record a refused change, so a narrowed attempt is in the audit trail."""
+        self._audit(require_scope(scope), action="change", outcome="DENIED")
+
+
+#: The statuses in which a fix is live: asked for and not yet opened, or open. One per
+#: recommendation, held by a partial unique index too.
+LIVE: Final = ("REQUESTED", "OPEN")
+
+
+class FixPullRequestRepository(ScopedRepository):
+    """The fixes asked for, scoped as their recommendation's account. FEAT-092, TASK-P15-004."""
+
+    table: ClassVar[Table] = models.fix_pull_request
+    resource: ClassVar[str] = "fix_pull_request"
+
+    def request(
+        self, scope: Scope, recommendation: Any, *, note: str | None, at: datetime
+    ) -> RemediationRow | None:
+        """Record an ask, audited ALLOWED, or None where a fix is already requested or open.
+
+        The caller has read `recommendation` through its own scoped repository, so the scope
+        covers its account. Only a person asks.
+        """
+        confirmed = require_scope(scope)
+        if confirmed.principal_id is None:
+            raise ScopeViolationError("A fix is asked for by a person, so a scope names one.")
+        table = self.table
+        statement = (
+            insert(table)
+            .values(
+                fix_id=uuid4(),
+                tenant_id=confirmed.tenant_id,
+                recommendation_id=recommendation.recommendation_id,
+                sub_account_id=recommendation.sub_account_id,
+                status="REQUESTED",
+                note=note,
+                requested_by=confirmed.principal_id,
+                requested_at=at,
+                as_of=at,
+                collected_at=at,
+            )
+            .on_conflict_do_nothing(
+                index_elements=[table.c.tenant_id, table.c.recommendation_id],
+                index_where=table.c.status.in_(LIVE),
+            )
+            .returning(*table.c)
+        )
+        row: RemediationRow | None = self._connection.execute(statement).first()
+        if row is None:
+            return None
+        self._connection.execute(
+            models.fix_pull_request_event.insert().values(
+                event_id=uuid4(),
+                fix_id=row.fix_id,
+                tenant_id=confirmed.tenant_id,
+                sub_account_id=row.sub_account_id,
+                from_status=None,
+                to_status="REQUESTED",
+                principal=confirmed.principal_id,
+                note=note,
+                at=at,
+            )
+        )
+        self._audit(confirmed, action="request", outcome="ALLOWED")
+        return row
+
+    def all(self, scope: Scope) -> Sequence[RemediationRow]:
+        """Every fix the scope reaches, the newest ask first."""
+        statement = self.scoped_select(scope).order_by(
+            self.table.c.requested_at.desc(), self.table.c.fix_id
+        )
+        rows: Sequence[RemediationRow] = self.fetch(scope, statement)
+        return rows
+
+    def steps(self, scope: Scope, fixes: Sequence[Any]) -> dict[Any, list[RemediationRow]]:
+        """Each fix's steps, oldest first, through the steps table's own scope rule."""
+        confirmed = require_scope(scope)
+        events = models.fix_pull_request_event
+        found: dict[Any, list[RemediationRow]] = {fix: [] for fix in fixes}
+        if not fixes:
+            return found
+        statement = (
+            select(events)
+            .where(events.c.tenant_id == confirmed.tenant_id)
+            .where(scope_predicate(events, confirmed))
+            .where(events.c.fix_id.in_(list(fixes)))
+            .order_by(events.c.at, events.c.event_id)
+        )
+        for row in self._connection.execute(statement):
+            found[row.fix_id].append(row)
+        return found
+
+
+class MergePolicyRepository(ScopedRepository):
+    """Which reversible fixes the tenant lets Meter merge. FEAT-094, ADR-0038, TASK-P15-007."""
+
+    table: ClassVar[Table] = models.merge_policy
+    resource: ClassVar[str] = "merge_policy"
+
+    def current(self, scope: Scope) -> Sequence[RemediationRow]:
+        """Each class the policy names, with its reason."""
+        statement = self.scoped_select(scope).order_by(self.table.c.waste_class)
+        rows: Sequence[RemediationRow] = self.fetch(scope, statement)
+        return rows
+
+    def replace(self, scope: Scope, classes: Sequence[str], *, reason: str, at: datetime) -> None:
+        """Make the policy exactly `classes`, each with this reason, audited ALLOWED."""
+        confirmed = _person(scope)
+        table = self.table
+        self._connection.execute(table.delete().where(table.c.tenant_id == confirmed.tenant_id))
+        for waste_class in classes:
+            self._connection.execute(
+                table.insert().values(
+                    tenant_id=confirmed.tenant_id,
+                    waste_class=waste_class,
+                    reason=reason,
+                    set_by=confirmed.principal_id,
+                    set_at=at,
                 )
             )
         self._audit(confirmed, action="change", outcome="ALLOWED")

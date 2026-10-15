@@ -39,6 +39,8 @@ EXEMPT: Mapping[str, str] = {
     "/api/v1/commitments/policy": "The tenant's purchase policy, one setting and not a table",
     "/api/v1/remediation/connection": "The code host connection, one setting and not a table",
     "/api/v1/remediation/repositories": "Where fixes go, configuration a settings screen edits",
+    "/api/v1/remediation/pull-requests": "Each fix with its steps nested, a history not a table",
+    "/api/v1/remediation/merge-policy": "Which fixes Meter may merge, one setting and not a table",
 }
 
 

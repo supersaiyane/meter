@@ -302,6 +302,7 @@ class Settings(BaseSettings):
     feature_retention_jobs: bool = True
     feature_scope_audit: bool = True
     feature_local_auth: bool = True
+    feature_pull_request_merge: bool = True
 
     @field_validator("query_write_level")
     @classmethod

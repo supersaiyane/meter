@@ -26,6 +26,7 @@ from typing import Final
 from finops_core.errors import Misconfigured
 from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT
+from finops_ingest.codehost_bindings import CODEHOST_BUILDERS
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.digests import DigestCollector
@@ -140,6 +141,9 @@ def production_bindings() -> tuple[Binding, ...]:
     bindings.extend(Binding(name, scope_of(name), build) for name, build in AWS_BUILDERS.items())
     bindings.extend(
         Binding(name, scope_of(name), build) for name, build in AI_PROVIDER_BUILDERS.items()
+    )
+    bindings.extend(
+        Binding(name, scope_of(name), build) for name, build in CODEHOST_BUILDERS.items()
     )
     bindings.extend(
         Binding(name, scope_of(name), unbuilt(name, why)) for name, why in UNBUILT.items()

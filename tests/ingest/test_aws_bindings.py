@@ -26,6 +26,8 @@ from finops_fakes.composition import builders as fake_builders
 from finops_ingest import accounts, aws_bindings
 from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT, enrolled
+from finops_ingest.codehost_bindings import CODEHOST_BUILDERS
+from finops_ingest.collectors.fix_pull_requests import Connected, FixPullRequestsCollector
 from finops_ingest.composition import (
     _FROM_METER,
     PER_ACCOUNT,
@@ -137,8 +139,30 @@ def test_every_collector_the_worker_runs_is_built_from_aws_meter_or_said_why_not
     aws, unbuilt, meter = set(AWS_BUILDERS), set(UNBUILT), set(_FROM_METER)
     # P13, TASK-P13-004. The AI providers' collectors, built from their own adapters.
     providers = set(AI_PROVIDER_BUILDERS)
+    # P15, TASK-P15-004. The code host's collector, built from the GitHub adapter.
+    codehost = set(CODEHOST_BUILDERS)
     assert not (aws & unbuilt or aws & meter or unbuilt & meter or providers & (aws | meter))
-    assert aws | unbuilt | meter | providers == worker_collectors() - RETENTION
+    assert not codehost & (aws | unbuilt | meter | providers)
+    assert aws | unbuilt | meter | providers | codehost == worker_collectors() - RETENTION
+
+
+def test_the_code_host_collector_is_built_on_the_github_adapter_with_no_call_made(
+    deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """TASK-P15-004. Nothing reaches AWS or GitHub until a fix is opened."""
+    from finops_providers.github.code_host import GitHubCodeHost
+
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("a client was made before it was used")
+
+    monkeypatch.setattr(boto3, "client", refuse)
+    work = context("fix_pull_requests", deployed)
+    built = CODEHOST_BUILDERS["fix_pull_requests"](work)
+    assert isinstance(built, FixPullRequestsCollector)
+    assert fakes_in(built) == []
+    # The code host is made for a run's connection; the key is read only when a request is made.
+    connected = Connected("1001", f"meter/{deployed.env}/codehost/github-app")
+    assert isinstance(built._code_host_for(work, connected), GitHubCodeHost)
 
 
 @pytest.mark.parametrize("name", sorted(AWS_BUILDERS))

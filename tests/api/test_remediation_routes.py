@@ -230,3 +230,213 @@ def test_the_database_refuses_a_folder_that_climbs_out_of_the_repository(
             ),
             {"t": tenant_id},
         )
+
+
+# -- asking for a fix, TASK-P15-004 ----------------------------------------------------------
+
+FIX = "/api/v1/waste/recommendations/{}/pull-request"
+
+
+def recommendation(engine: Engine, tenant: UUID, lifecycle: str = "ACCEPTED") -> UUID:
+    identifier = uuid4()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
+                "source_reference, waste_class, resource_id, region_id, "
+                "estimated_monthly_saving, confidence, severity, observation_days, lifecycle, "
+                "owner, rationale, as_of, collected_at) VALUES (:id, :t, :account, 'METER', :ref, "
+                "'EBS_UNATTACHED', 'vol-0abc', 'eu-west-1', 41.20, 'HIGH', 'HIGH', 30, "
+                ":lifecycle, 'team-storage', 'unattached for 30 days', :at, :at)"
+            ),
+            {
+                "id": identifier,
+                "t": tenant,
+                "account": ACCOUNT,
+                "ref": f"ref:{identifier}",
+                "lifecycle": lifecycle,
+                "at": datetime.now(UTC),
+            },
+        )
+    return identifier
+
+
+def test_a_person_asks_for_a_fix_once_and_the_ask_is_recorded(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    client, token = client_for(engine, person(tenant_id), settings)
+    response = client.post(
+        FIX.format(asked_about), json={"note": "  storage team agrees  "}, headers=auth(token)
+    )
+    assert response.status_code == 200, response.text
+    found = response.json()["data"]
+    assert (found["status"], found["note"], found["requested_by"]) == (
+        "REQUESTED",
+        "storage team agrees",
+        SIGNED_IN,
+    )
+    assert found["number"] is None and found["url"] is None
+    again = client.post(FIX.format(asked_about), json={}, headers=auth(token))
+    assert again.status_code == 409
+    assert "already asked" in again.text
+    with engine.connect() as connection:
+        steps = connection.execute(
+            text("SELECT to_status, principal FROM fix_pull_request_event WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).all()
+        audited_asks = connection.execute(
+            text(
+                "SELECT outcome FROM audit_event WHERE tenant_id = :t "
+                "AND resource = 'fix_pull_request' AND action = 'request'"
+            ),
+            {"t": tenant_id},
+        ).scalars()
+        assert [tuple(one) for one in steps] == [("REQUESTED", SIGNED_IN)]
+        assert list(audited_asks) == ["ALLOWED"]
+
+
+@pytest.mark.parametrize("lifecycle", ["OPEN", "DISMISSED", "IN_PROGRESS"])
+def test_a_fix_is_asked_for_only_once_the_recommendation_is_accepted(
+    engine: Engine, settings: Settings, tenant_id: UUID, lifecycle: str
+) -> None:
+    asked_about = recommendation(engine, tenant_id, lifecycle)
+    client, token = client_for(engine, person(tenant_id), settings)
+    refused = client.post(FIX.format(asked_about), json={}, headers=auth(token))
+    assert refused.status_code == 409
+    assert "accepted with an owner" in refused.text and lifecycle in refused.text
+
+
+def test_a_person_who_cannot_see_the_account_cannot_ask(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    elsewhere = only(tenant_id, "fake-product-a")
+    scope = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=elsewhere.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, scope, settings)
+    assert client.post(FIX.format(asked_about), json={}, headers=auth(token)).status_code == 404
+    with engine.connect() as connection:
+        asked = connection.execute(
+            text("SELECT count(*) FROM fix_pull_request WHERE tenant_id = :t"), {"t": tenant_id}
+        ).scalar_one()
+    assert asked == 0
+
+
+def test_the_database_allows_one_live_fix_per_recommendation(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    insert = text(
+        "INSERT INTO fix_pull_request (fix_id, tenant_id, recommendation_id, sub_account_id, "
+        "status, reason, failure_cause, requested_by, requested_at, as_of, collected_at) VALUES "
+        "(:fix, :t, :id, :account, :status, :reason, :cause, 'x', now(), now(), now())"
+    )
+    values = {"t": tenant_id, "id": asked_about, "account": ACCOUNT}
+    with engine.begin() as connection:
+        # A failed fix is history, so it does not stop the next ask.
+        failed = {"status": "FAILED", "reason": "refused", "cause": "AccessDenied"}
+        connection.execute(insert, {**values, "fix": uuid4(), **failed})
+        live = {"status": "REQUESTED", "reason": None, "cause": None}
+        connection.execute(insert, {**values, "fix": uuid4(), **live})
+    with pytest.raises(IntegrityError, match="ux_fix_pull_request__live"), engine.begin() as db:
+        db.execute(insert, {**values, "fix": uuid4(), **live})
+
+
+def test_every_fix_in_the_readers_scope_is_listed_with_its_steps(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    client, token = client_for(engine, person(tenant_id), settings)
+    assert client.post(FIX.format(asked_about), json={}, headers=auth(token)).status_code == 200
+    (fix,) = get(client, token, "/api/v1/remediation/pull-requests")["data"]["fixes"]
+    assert (fix["recommendation_id"], fix["status"]) == (str(asked_about), "REQUESTED")
+    assert [(one["to_status"], one["principal"]) for one in fix["steps"]] == [
+        ("REQUESTED", SIGNED_IN)
+    ]
+    elsewhere = only(tenant_id, "fake-product-a")
+    narrowed = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=elsewhere.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, narrowed, settings)
+    assert get(client, token, "/api/v1/remediation/pull-requests")["data"]["fixes"] == []
+
+
+# -- the merge policy, TASK-P15-007, ADR-0038 ----------------------------------------------------
+
+POLICY = "/api/v1/remediation/merge-policy"
+
+
+def test_the_merge_policy_starts_empty_and_a_person_names_gp3_with_a_reason(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    client, token = client_for(engine, person(tenant_id), settings)
+    empty = get(client, token, POLICY)["data"]
+    assert (empty["classes"], empty["reversible"], empty["merging_on"]) == (
+        [],
+        ["EBS_GP2_TO_GP3"],
+        True,
+    )
+    body = {"classes": ["EBS_GP2_TO_GP3"], "reason": "  gp3 is reversible and checked  "}
+    named = put(client, token, POLICY, body)["data"]
+    assert (named["classes"], named["reason"], named["set_by"]) == (
+        ["EBS_GP2_TO_GP3"],
+        "gp3 is reversible and checked",
+        SIGNED_IN,
+    )
+    assert audited(engine, tenant_id, "merge_policy") == ["ALLOWED"]
+    off = settings.model_copy(update={"feature_pull_request_merge": False})
+    client, token = client_for(engine, person(tenant_id), off)
+    assert get(client, token, POLICY)["data"]["merging_on"] is False
+
+
+def test_a_class_that_is_not_reversible_is_refused_before_it_is_stored(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    client, token = client_for(engine, person(tenant_id), settings)
+    body = {"classes": ["EBS_UNATTACHED"], "reason": "deletions too"}
+    refused = client.put(POLICY, json=body, headers=auth(token))
+    assert refused.status_code == 422
+    assert "cannot be merged by Meter" in refused.text
+    assert get(client, token, POLICY)["data"]["classes"] == []
+
+
+def test_a_narrowed_person_may_neither_read_nor_change_the_merge_policy(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    narrowed = only(tenant_id, ACCOUNT)
+    scope = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=narrowed.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, scope, settings)
+    assert client.get(POLICY, headers=auth(token)).status_code == 404
+    body = {"classes": ["EBS_GP2_TO_GP3"], "reason": "from a narrowed scope"}
+    assert client.put(POLICY, json=body, headers=auth(token)).status_code == 403
+    assert audited(engine, tenant_id, "merge_policy") == ["DENIED"]
+
+
+def test_the_database_holds_the_policy_to_the_reversible_set(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """The check and the domain's set are one list written twice; this holds them equal."""
+    import re
+
+    from finops_core.domain.fixes import REVERSIBLE
+
+    with engine.connect() as connection:
+        defined = connection.execute(
+            text(
+                "SELECT pg_get_constraintdef(oid) FROM pg_constraint "
+                "WHERE conname = 'ck_merge_policy__reversible'"
+            )
+        ).scalar_one()
+    assert set(re.findall(r"'([A-Z0-9_]+)'", defined)) == {one.value for one in REVERSIBLE}
+    with pytest.raises(IntegrityError, match="ck_merge_policy__reversible"), engine.begin() as db:
+        db.execute(
+            text(
+                "INSERT INTO merge_policy (tenant_id, waste_class, reason, set_by) "
+                "VALUES (:t, 'EBS_UNATTACHED', 'a deletion', 'x')"
+            ),
+            {"t": tenant_id},
+        )

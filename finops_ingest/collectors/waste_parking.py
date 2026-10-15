@@ -257,6 +257,8 @@ class WasteParkingCollector:
                 "target": None,
                 "version": None,
                 "added": None,
+                "iops": None,
+                "mibps": None,
             },
         )
         context.connection.execute(

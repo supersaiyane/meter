@@ -2976,3 +2976,90 @@ class RepositoryMappingsOut(BaseModel):
     mappings: list[RepositoryMappingOut]
     #: The states FEAT-057 read resources from that no mapping names.
     unmapped: list[str]
+
+
+class FixRequestIn(BaseModel):
+    """An ask for a recommendation's fix to be opened as a pull request. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    #: Anything the person wants the reviewers to read; optional.
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class FixPullRequestOut(BaseModel):
+    """A fix asked for: its status, its pull request once opened, and why where there is none."""
+
+    model_config = ConfigDict(frozen=True)
+
+    fix_id: UUID
+    recommendation_id: UUID
+    sub_account_id: str
+    #: REQUESTED, OPEN, MERGED, CLOSED, NOT_AUTHORED or FAILED.
+    status: str
+    repository: str | None
+    branch: str | None
+    number: int | None
+    url: str | None
+    note: str | None
+    requested_by: str
+    requested_at: datetime
+    merged_by: str | None
+    #: Why there is no pull request, where there is none.
+    reason: str | None
+    #: The typed cause of a failure: AccessDenied, Misconfigured, SchemaDrift and the rest.
+    failure_cause: str | None
+
+
+class FixStepOut(BaseModel):
+    """One step of a fix: from and to, by whom, and when. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True)
+
+    from_status: str | None
+    to_status: str
+    #: A person, `meter`, or the code host's login of whoever merged; `github` where it names none.
+    principal: str
+    note: str | None
+    at: datetime
+
+
+class FixPullRequestFollowedOut(FixPullRequestOut):
+    """A fix with every step it took."""
+
+    merged_at: datetime | None
+    closed_at: datetime | None
+    steps: list[FixStepOut]
+
+
+class FixPullRequestsOut(BaseModel):
+    """Every fix asked for in the reader's scope, the newest first. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True)
+
+    fixes: list[FixPullRequestFollowedOut]
+
+
+class MergePolicyIn(BaseModel):
+    """The classes of fix Meter may merge, the whole set, with the reason. FEAT-094, ADR-0038."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    classes: list[str] = Field(max_length=20)
+    #: A policy is a decision, so it says why; required even to empty it.
+    reason: str = Field(min_length=3, max_length=500)
+
+
+class MergePolicyOut(BaseModel):
+    """What Meter may merge, what it could ever merge, and whether merging is on. FEAT-094."""
+
+    model_config = ConfigDict(frozen=True)
+
+    classes: list[str]
+    #: The reversible set from the domain, the only classes a policy may name, ADR-0038.
+    reversible: list[str]
+    reason: str | None
+    set_by: str | None
+    set_at: datetime | None
+    #: The `pull_request_merge` flag: off stops every merge whatever the policy names.
+    merging_on: bool

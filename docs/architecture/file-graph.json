@@ -31,6 +31,7 @@
     "finops-web/e2e/estate.ts",
     "finops-web/e2e/export.spec.ts",
     "finops-web/e2e/filters.spec.ts",
+    "finops-web/e2e/fixes.spec.ts",
     "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/e2e/ledger.spec.ts",
@@ -69,6 +70,7 @@
     "finops-web/src/api/fixtures/topology.ts",
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
+    "finops-web/src/api/remediation.ts",
     "finops-web/src/api/savedViews.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components",
@@ -171,6 +173,7 @@
     "finops-web/src/screens/EntityScreen.tsx",
     "finops-web/src/screens/ExploreControls.tsx",
     "finops-web/src/screens/ExploreResult.tsx",
+    "finops-web/src/screens/FixSettingsScreen.tsx",
     "finops-web/src/screens/ForecastScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
@@ -194,6 +197,7 @@
     "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
     "finops-web/src/screens/RecommendationAlternatives.tsx",
+    "finops-web/src/screens/RecommendationFix.tsx",
     "finops-web/src/screens/ReconciliationScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ReportLibraryScreen.tsx",
@@ -220,6 +224,7 @@
     "finops-web/src/screens/__tests__/DigestsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+    "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
@@ -237,6 +242,7 @@
     "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
     "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+    "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
     "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
@@ -486,6 +492,7 @@
     "finops_ingest/ai_accounts.py",
     "finops_ingest/ai_bindings.py",
     "finops_ingest/aws_bindings.py",
+    "finops_ingest/codehost_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/ai_providers.py",
@@ -501,6 +508,7 @@
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/digests.py",
+    "finops_ingest/collectors/fix_pull_requests.py",
     "finops_ingest/collectors/gpu_utilization.py",
     "finops_ingest/collectors/iac_state.py",
     "finops_ingest/collectors/instance_catalog.py",
@@ -604,6 +612,7 @@
     "finops_query/digest.py",
     "finops_query/forecast.py",
     "finops_query/gate.py",
+    "finops_query/gp3_edit.py",
     "finops_query/graph.py",
     "finops_query/insight.py",
     "finops_query/ledger.py",
@@ -721,6 +730,11 @@
     "migrations/versions/0057_purchase_plan.py",
     "migrations/versions/0058_purchase_plan_match.py",
     "migrations/versions/0059_code_host.py",
+    "migrations/versions/0060_fix_pull_request.py",
+    "migrations/versions/0061_recommendation_gp3_figures.py",
+    "migrations/versions/0062_fix_followed.py",
+    "migrations/versions/0063_merge_policy.py",
+    "migrations/versions/0064_fixes_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -879,6 +893,7 @@
     "tests/ingest/collectors/test_cost_focus_sources.py",
     "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_digests.py",
+    "tests/ingest/collectors/test_fix_pull_requests.py",
     "tests/ingest/collectors/test_gpu_utilization.py",
     "tests/ingest/collectors/test_iac_state.py",
     "tests/ingest/collectors/test_instance_catalog.py",
@@ -1005,6 +1020,7 @@
     "tests/query/test_digest.py",
     "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
+    "tests/query/test_gp3_edit.py",
     "tests/query/test_graph.py",
     "tests/query/test_insight_budget.py",
     "tests/query/test_insight_loop.py",
@@ -1047,6 +1063,7 @@
     "tests/scripts/test_p12_exit_criteria.py",
     "tests/scripts/test_p13_exit_criteria.py",
     "tests/scripts/test_p14_exit_criteria.py",
+    "tests/scripts/test_p15_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -1223,6 +1240,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/fixes.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/ledger.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1355,6 +1377,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/EntityScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/FixSettingsScreen.tsx",
       "k": "typescript"
     },
     {
@@ -1690,6 +1717,16 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/remediation.ts",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/remediation.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3613,6 +3650,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ForecastScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -4863,6 +4935,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ReconciliationScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -5380,6 +5467,11 @@
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/RecommendationFix.tsx",
       "k": "typescript"
     },
     {
@@ -5923,6 +6015,31 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -6404,6 +6521,36 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/screens/WasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
@@ -9299,6 +9446,11 @@
     },
     {
       "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/db/repositories/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
       "t": "finops_api/deps.py",
       "k": "python"
     },
@@ -9319,7 +9471,17 @@
     },
     {
       "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/flags.py",
       "k": "python"
     },
     {
@@ -10120,6 +10282,11 @@
     {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
       "k": "python"
     },
     {
@@ -10933,6 +11100,36 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/github/code_host.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -11175,6 +11372,56 @@
     {
       "s": "finops_ingest/collectors/digests.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/flags.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/ports/merges.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_ingest/fix_merge.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_query/gp3_edit.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_query/remediation.py",
       "k": "python"
     },
     {
@@ -11805,6 +12052,11 @@
     {
       "s": "finops_ingest/composition.py",
       "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/codehost_bindings.py",
       "k": "python"
     },
     {
@@ -12870,6 +13122,21 @@
     {
       "s": "finops_query/gate.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_query/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gp3_edit.py",
+      "t": "finops_query/volumes.py",
       "k": "python"
     },
     {
@@ -14219,6 +14486,11 @@
     },
     {
       "s": "tests/api/test_remediation_routes.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_remediation_routes.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -15513,6 +15785,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_gpu_utilization.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -16299,6 +16601,16 @@
     },
     {
       "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/codehost_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/composition.py",
       "k": "python"
     },
@@ -16310,6 +16622,11 @@
     {
       "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_providers/github/code_host.py",
       "k": "python"
     },
     {
@@ -17773,6 +18090,26 @@
       "k": "python"
     },
     {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_query/gp3_edit.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gp3_edit.py",
+      "t": "finops_query/remediation.py",
+      "k": "python"
+    },
+    {
       "s": "tests/query/test_graph.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -18135,6 +18472,41 @@
     {
       "s": "tests/scripts/test_p14_exit_criteria.py",
       "t": "finops_ingest/collectors/purchase_plan.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p15_exit_criteria.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

@@ -31,6 +31,7 @@ which tables were touched.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -77,7 +78,7 @@ from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface, queries_as_of
 from finops_fakes.terraform_state import LOCATIONS as FAKE_STATE_LOCATIONS
-from finops_fakes.terraform_state import FakeTerraformState
+from finops_fakes.terraform_state import NETWORK, PLATFORM, PRODUCT, FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
@@ -178,6 +179,10 @@ DEMO_TABLES = (
     # tenant only.
     "code_host_connection",
     "repository_mapping",
+    # P15, TASK-P15-006. What the volume pass read of each volume; the tenant only.
+    "volume_observation",
+    # P15, TASK-P15-007. Which reversible fixes Meter may merge; the tenant only.
+    "merge_policy",
     # P14, FEAT-089. AWS's purchase advice; the tenant only.
     "purchase_recommendation",
     # P14, FEAT-089. Meter's plans; an event and a line reference their plan, so both go first.
@@ -239,6 +244,9 @@ DEMO_TABLES = (
     "savings_credit",
     "realized_saving",
     "recommendation_event",
+    # P15, FEAT-092. A step references its fix and a fix its recommendation, so both go first.
+    "fix_pull_request_event",
+    "fix_pull_request",
     # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
     "recommendation_option",
     "recommendation",
@@ -417,6 +425,188 @@ def _seed_commitments(
         "purchase_plan",
     )
     return written
+
+
+#: P15, TASK-P15-009. The repository the demo's fixes go to, on the local stack's fake GitHub.
+DEMO_REPOSITORY = "acme/infra"
+#: Each status a fix can be in, one fix each, on the demo's largest open recommendations.
+DEMO_FIX_STATUSES = ("REQUESTED", "OPEN", "MERGED", "CLOSED", "NOT_AUTHORED", "FAILED")
+#: Where each status leaves its recommendation, spec section 5.6.
+_FIX_LIFECYCLE = {
+    "REQUESTED": "ACCEPTED",
+    "OPEN": "IN_PROGRESS",
+    "MERGED": "IN_PROGRESS",
+    "CLOSED": "ACCEPTED",
+    "NOT_AUTHORED": "ACCEPTED",
+    "FAILED": "ACCEPTED",
+}
+
+
+def _seed_fixes(connection: Any, now: datetime, settings: Any) -> int:
+    """P15, TASK-P15-009. The code host, where fixes go, the merge policy, a fix in each status.
+
+    The connection names the key's secret, never a key, under this environment's code host path.
+    The two fake Terraform states that read are mapped; the third, whose backend refuses, is not,
+    and the fix that is not authored says so. The policy lets Meter merge gp2 to gp3. One fix in
+    each status sits on the demo's largest open recommendations, each moved where its status
+    leaves it, with the steps a run would have recorded; the local stack's worker then follows
+    them against its fake GitHub. Laid down once: a seed run for another day adds none.
+    """
+    env = settings.env if re.fullmatch(r"[a-z]+", str(settings.env)) else "local"
+    connection.execute(
+        text(
+            "INSERT INTO code_host_connection (tenant_id, host, app_id, key_secret_name, "
+            "connected_by, connected_at) VALUES (:t, 'github', '1001', :key, 'seed_demo', :now) "
+            "ON CONFLICT (tenant_id) DO NOTHING"
+        ),
+        {"t": DEMO_TENANT, "key": f"meter/{env}/codehost/github-app", "now": now},
+    )
+    for state, folder in ((NETWORK, "network"), (PLATFORM, "platform")):
+        connection.execute(
+            text(
+                "INSERT INTO repository_mapping (tenant_id, state_reference, repository, "
+                "base_branch, folder, set_by, set_at) VALUES (:t, :state, :repo, 'main', :folder, "
+                "'seed_demo', :now) ON CONFLICT (tenant_id, state_reference) DO NOTHING"
+            ),
+            {
+                "t": DEMO_TENANT,
+                "state": state,
+                "repo": DEMO_REPOSITORY,
+                "folder": folder,
+                "now": now,
+            },
+        )
+    connection.execute(
+        text(
+            "INSERT INTO merge_policy (tenant_id, waste_class, reason, set_by, set_at) VALUES "
+            "(:t, 'EBS_GP2_TO_GP3', 'Reversible, and the repository checks and reviews guard it', "
+            "'seed_demo', :now) ON CONFLICT (tenant_id, waste_class) DO NOTHING"
+        ),
+        {"t": DEMO_TENANT, "now": now},
+    )
+    asked = connection.execute(
+        text("SELECT count(*) FROM fix_pull_request WHERE tenant_id = :t"), {"t": DEMO_TENANT}
+    ).scalar_one()
+    if asked:
+        return 0
+    chosen = connection.execute(
+        text(
+            "SELECT recommendation_id, sub_account_id FROM recommendation WHERE tenant_id = :t "
+            "AND lifecycle = 'OPEN' ORDER BY estimated_monthly_saving DESC, recommendation_id "
+            "LIMIT :n"
+        ),
+        {"t": DEMO_TENANT, "n": len(DEMO_FIX_STATUSES)},
+    ).all()
+    for number, (status, row) in enumerate(zip(DEMO_FIX_STATUSES, chosen, strict=False), start=11):
+        _seed_one_fix(connection, row, status, number, now)
+    return len(chosen)
+
+
+def _seed_one_fix(connection: Any, row: Any, status: str, number: int, now: datetime) -> None:
+    recommendation, account = row.recommendation_id, row.sub_account_id
+    opened = status in ("OPEN", "MERGED", "CLOSED")
+    reasons = {
+        "NOT_AUTHORED": (
+            f"No repository is mapped for the state {PRODUCT}, so the fix has "
+            "nowhere to go. Map it in the remediation settings, PUT /v1/remediation/repositories."
+        ),
+        "FAILED": (
+            f"HTTP 403 from POST /repos/{DEMO_REPOSITORY}/pulls: the app may not do this here. It "
+            "needs Contents and Pull requests, read and write, docs/runbooks/code-host.md."
+        ),
+    }
+    fix = uuid4()
+    connection.execute(
+        text(
+            "INSERT INTO fix_pull_request (fix_id, tenant_id, recommendation_id, sub_account_id, "
+            "status, repository, branch, number, url, note, requested_by, requested_at, merged_by, "
+            "merged_at, closed_at, reason, failure_cause, as_of, collected_at) VALUES (:fix, :t, "
+            ":id, :account, :status, :repo, :branch, :number, :url, :note, 'seed_demo', :now, "
+            ":merged_by, :merged_at, :closed_at, :reason, :cause, :now, :now)"
+        ),
+        {
+            "fix": fix,
+            "t": DEMO_TENANT,
+            "id": recommendation,
+            "account": account,
+            "status": status,
+            "repo": DEMO_REPOSITORY if opened else None,
+            "branch": f"meter/remediation/{recommendation}" if opened else None,
+            "number": number if opened else None,
+            "url": f"https://code.example/{DEMO_REPOSITORY}/pull/{number}" if opened else None,
+            "note": "The owner agreed in the weekly review",
+            "merged_by": "platform-lead" if status == "MERGED" else None,
+            "merged_at": now if status == "MERGED" else None,
+            "closed_at": now if status == "CLOSED" else None,
+            "reason": reasons.get(status),
+            "cause": "AccessDenied" if status == "FAILED" else None,
+            "now": now,
+        },
+    )
+    steps: list[tuple[str | None, str, str, str]] = [
+        (None, "REQUESTED", "seed_demo", "The owner agreed in the weekly review")
+    ]
+    if opened:
+        steps.append(("REQUESTED", "OPEN", "meter", f"Opened #{number}"))
+    if status == "MERGED":
+        steps.append(("OPEN", "MERGED", "platform-lead", f"Merged #{number}"))
+    if status == "CLOSED":
+        steps.append(("OPEN", "CLOSED", "github", f"#{number} closed without merging"))
+    if status in reasons:
+        steps.append(("REQUESTED", status, "meter", reasons[status]))
+    for was, now_is, principal, note in steps:
+        connection.execute(
+            text(
+                "INSERT INTO fix_pull_request_event (event_id, fix_id, tenant_id, sub_account_id, "
+                "from_status, to_status, principal, note, at) VALUES (:event, :fix, :t, :account, "
+                ":from, :to, :principal, :note, :now)"
+            ),
+            {
+                "event": uuid4(),
+                "fix": fix,
+                "t": DEMO_TENANT,
+                "account": account,
+                "from": was,
+                "to": now_is,
+                "principal": principal,
+                "note": note,
+                "now": now,
+            },
+        )
+    _seed_lifecycle(connection, recommendation, _FIX_LIFECYCLE[status], now)
+
+
+def _seed_lifecycle(connection: Any, recommendation: Any, to: str, now: datetime) -> None:
+    """Accept the recommendation and move it on where its fix has opened. It names no owner:
+    only `finops_api/lifecycle.py` writes one, a person's choice, ISS-021."""
+    moves = [("OPEN", "ACCEPTED", "seed_demo")]
+    if to == "IN_PROGRESS":
+        moves.append(("ACCEPTED", "IN_PROGRESS", "fix_pull_requests"))
+    for was, now_is, actor in moves:
+        connection.execute(
+            text(
+                "UPDATE recommendation SET lifecycle = :to "
+                "WHERE tenant_id = :t AND recommendation_id = :id"
+            ),
+            {"to": now_is, "t": DEMO_TENANT, "id": recommendation},
+        )
+        connection.execute(
+            text(
+                "INSERT INTO recommendation_event (event_id, recommendation_id, tenant_id, "
+                "from_lifecycle, to_lifecycle, actor, reason, occurred_at, as_of, collected_at) "
+                "VALUES (:event, :id, :t, :from, :to, :actor, 'A fix was asked for', :now, :now, "
+                ":now)"
+            ),
+            {
+                "event": uuid4(),
+                "id": recommendation,
+                "t": DEMO_TENANT,
+                "from": was,
+                "to": now_is,
+                "actor": actor,
+                "now": now,
+            },
+        )
 
 
 DEMO_AI_PROVIDERS = (FAKE_OPENAI, FAKE_ANTHROPIC)
@@ -1090,6 +1280,8 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
 
         written += _seed_ai(ledger, connection, unit, now)
         written += _seed_commitments(ledger, connection, unit, now, settings)
+        # P15, after the recommendations it asks fixes for.
+        written += _seed_fixes(connection, now, settings)
 
         counts = {
             name: connection.execute(

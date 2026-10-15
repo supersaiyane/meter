@@ -55,7 +55,8 @@ class Lifecycle(StrEnum):
 ALLOWED: dict[Lifecycle, frozenset[Lifecycle]] = {
     Lifecycle.OPEN: frozenset({Lifecycle.ACCEPTED, Lifecycle.DISMISSED}),
     Lifecycle.ACCEPTED: frozenset({Lifecycle.IN_PROGRESS, Lifecycle.DISMISSED, Lifecycle.OPEN}),
-    Lifecycle.IN_PROGRESS: frozenset({Lifecycle.DONE, Lifecycle.DISMISSED}),
+    # ACCEPTED again where the fix's pull request was closed without merging, P15 spec 5.6.
+    Lifecycle.IN_PROGRESS: frozenset({Lifecycle.DONE, Lifecycle.DISMISSED, Lifecycle.ACCEPTED}),
     # DONE is where the verification collector takes over, and only it may move a
     # recommendation on from here.
     Lifecycle.DONE: frozenset({Lifecycle.VERIFIED, Lifecycle.REGRESSED}),

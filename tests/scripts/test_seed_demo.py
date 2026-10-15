@@ -128,6 +128,9 @@ class Settings:
     def owner_tag_key_list(self) -> tuple[str, ...]:
         return tuple(p.strip() for p in self.owner_tag_keys.split(",") if p.strip())
 
+    # P15, TASK-P15-009. The environment the code host key's secret is named under.
+    env = "local"
+
     # FEAT-089, TASK-P14-010. The services AWS's purchase advice is asked for, the real setting's
     # own default, so the stub cannot drift from it.
     commitment_recommendation_services: str = RealSettings.model_fields[

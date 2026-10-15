@@ -31,6 +31,7 @@ vi.mock('../../api/fixtureSeam', async (importOriginal) => {
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
+  put: () => Promise.reject(new Error('no put stub')),
   patch: () => Promise.reject(new Error('no patch stub')),
   delete: () => Promise.reject(new Error('no delete stub')),
   getFile: () => new Promise<never>(() => undefined),

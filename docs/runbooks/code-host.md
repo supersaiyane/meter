@@ -52,3 +52,35 @@ nothing. GitHub is not read unless all three are named, and the report says so.
 | `Throttled` | GitHub's rate limit is spent | Nothing; the next run asks again |
 | `Unreachable` | GitHub did not answer | Check the worker's route to the internet, ADR-0036 |
 | `SchemaDrift` | GitHub answered in a shape the adapter does not know | Record it with the field it names |
+
+## Connecting the app and mapping the repositories
+
+Once first contact answers, the app is connected to the tenant and each Terraform state Meter
+reads is mapped to the repository, base branch and folder whose Terraform wrote it. Both are made
+by a person whose scope is the whole organization, on the Fixes screen under Platform,
+`/platform/fixes`, or through the API, and each change is audited.
+
+| # | Step | Check |
+| --- | --- | --- |
+| 1 | Connect the app: its App ID and the secret's name, `meter/<env>/codehost/github-app` | The screen says the app is connected; a name outside this environment's code host path is refused with the reason |
+| 2 | Map each state the screen names as having nowhere to go: the repository as owner/name, the base branch, and the folder that holds its `.tf` files, empty for the root | The state leaves the list; a folder with a leading or trailing slash, an empty part or `..` is refused |
+| 3 | Decide what Meter may merge. The policy starts empty, and only gp2 to gp3 may ever be named, ADR-0038 | The screen says what Meter merges, with the reason |
+
+## Asking for a fix, and what follows
+
+A person whose scope includes the recommendation's account accepts it with an owner, then asks for
+the fix from the recommendation's detail on the recommendations screen. The `fix_pull_requests`
+collector runs every ten minutes in the worker:
+
+| What the fix says | What it means |
+| --- | --- |
+| Asked for | Waiting for the next run, at most ten minutes |
+| Pull request open | A removal as a new file, or gp2 to gp3 as an edit to the block that declares the volume, in the mapped folder; linked from the fix |
+| Merged | By a person, or by Meter where the policy names gp2 to gp3 and the repository's required checks and reviews passed. The recommendation stays in progress until the inventory sees the change, then it is done and FEAT-029 measures the saving |
+| Closed without merging | The recommendation is accepted again, and the fix may be asked for again |
+| No pull request | Not authored, with the sentence why: no Terraform address manages the resource, the state is not mapped, or the edit cannot read the block for certain |
+| Failed | GitHub refused for a reason it will repeat, with the typed cause; asking again resumes the same branch |
+
+The `pull_request_merge` flag stops every merge at once, for every tenant, whatever the policy says:
+set `METER_FEATURE_PULL_REQUEST_MERGE=false` and redeploy the worker. Pull requests are still opened
+and followed.
