@@ -1,0 +1,28 @@
+{
+  "generated": "2026-10-15 07:34:46Z",
+  "label": "working tree",
+  "unresolved_total": 1,
+  "allowlisted_total": 0,
+  "unfixable_accepted_total": 6,
+  "by_severity": {
+    "Critical": 1
+  },
+  "findings": [
+    {
+      "id": "SECRET",
+      "severity": "Critical",
+      "package": "tests/providers/aws/test_secrets.py",
+      "installed": "line 114",
+      "fixed_in": "",
+      "ecosystem": "repository",
+      "target": "secrets",
+      "description": "Identified a Private Key, which may compromise cryptographic security and sensitive data encryption. (rule private-key)",
+      "url": "",
+      "scanner_family": "secrets",
+      "scanners": [
+        "gitleaks"
+      ],
+      "fix_html": "No published fix and no acceptance record. Add one to security/policy/accepted.yaml with a reachability argument, or change the version. See ADR-0018."
+    }
+  ]
+}
