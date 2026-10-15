@@ -27,7 +27,7 @@ authors a removal for the eight waste classes whose fix is deleting the resource
 instance, an unattached volume, an aged snapshot, an idle NAT gateway, an idle load
 balancer, an unassociated Elastic IP, an alarm stuck in insufficient data, and a log group
 nobody queries. The resource's Terraform address comes from FEAT-057's
-`resource_management`. The change is one new file under `meter/remediation/`, named for the
+`resource_management`. The change is one new file, `meter_remediation_<id>.tf`, in the folder whose Terraform declares the resource, named for the
 recommendation, holding a `removed` block with `destroy = true`, on a branch named the same
 way. The file and the body both tell the reviewer to delete the resource's own block in the
 same change, because Meter does not know which file holds it.

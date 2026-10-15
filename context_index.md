@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1244 public symbols across 5 packages.
+1260 public symbols across 5 packages.
 
 ## finops_core
 
@@ -105,6 +105,10 @@ a duplicate.
 | `window_for` | function | `finops_core/domain/explore.py:55` | The window a preset names on `today`, or the custom one given. | `finops_api/routes/explore.py` |
 | `previous` | function | `finops_core/domain/explore.py:74` | The window `window` is compared with: like for like, immediately before it. | `finops_api/routes/explore.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
+| `Readiness` | class | `finops_core/domain/fixes.py:25` | Whether the repository would accept a merge now, as its code host reports it. | nothing in this tree |
+| `PullRequestState` | class | `finops_core/domain/fixes.py:39` | One pull request as its code host reports it. | nothing in this tree |
+| `MergeVerdict` | class | `finops_core/domain/fixes.py:54` | Whether Meter may merge, and the sentence saying why or why not. | nothing in this tree |
+| `may_merge` | function | `finops_core/domain/fixes.py:68` | Whether Meter may merge this pull request now. Every no says why. ADR-0038. | `finops_ingest/fix_merge.py` |
 | `Geography` | class | `finops_core/domain/geography.py:30` | A continental grouping of regions, named by the prefix its regions share. | nothing in this tree |
 | `direction_of` | function | `finops_core/domain/geography.py:115` | Where in its geography a region is, from its own name, or None where the name does not say. | `finops_api/routes/inventory.py` |
 | `geography_of` | function | `finops_core/domain/geography.py:135` | The geography a region is in, or None where its name does not say. | `finops_api/routes/explore.py`, `finops_api/routes/inventory.py` |
@@ -298,6 +302,9 @@ a duplicate.
 | `Completion` | class | `finops_core/ports/llm.py:188` | The model's turn, why it stopped, and what it spent. | `finops_providers/aws/bedrock.py` |
 | `LlmProvider` | class | `finops_core/ports/llm.py:203` | A model that completes a conversation, and may ask for tools along the way. | nothing in this tree |
 | `LlmProvider.complete` | method | `finops_core/ports/llm.py:206` | The model's next turn: prose, tool requests or both, and what it spent. | `finops_api/exports/scheduled.py`, `finops_ingest/worker.py` |
+| `MergeAnswer` | class | `finops_core/ports/merges.py:16` | What the host did with a merge: merged, with the commit, or refused, with why. | nothing in this tree |
+| `PullRequestMerger` | class | `finops_core/ports/merges.py:25` | A code host's own merge, through the repository's protections. | nothing in this tree |
+| `PullRequestMerger.merge_pull_request` | method | `finops_core/ports/merges.py:28` | Merge the pull request if its head is still `head_sha` and the host accepts it. | `finops_ingest/fix_merge.py` |
 | `MetricRequest` | class | `finops_core/ports/metrics.py:26` | One series a caller wants, named so a batch can be correlated back. | `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_parking.py`, `finops_ingest/collectors/waste_volumes.py` |
 | `MetricSource` | class | `finops_core/ports/metrics.py:45` | Reads observed values for a resource over a window. | nothing in this tree |
 | `MetricSource.read_series` | method | `finops_core/ports/metrics.py:48` | Every point for the metric over the window. | nothing in this tree |
@@ -306,10 +313,17 @@ a duplicate.
 | `ServiceCatalogue.applications` | method | `finops_core/ports/ownership.py:23` | Every application in this account and Region. | `finops_ingest/collectors/ownership.py`, `finops_providers/aws/reach.py` |
 | `ResourceCreators` | class | `finops_core/ports/ownership.py:40` | Who created a resource, from the provider's record of the event that did. | nothing in this tree |
 | `ResourceCreators.creator` | method | `finops_core/ports/ownership.py:43` | The principal that created the resource, or that it predates the record. | `finops_ingest/collectors/ownership.py` |
-| `FileChange` | class | `finops_core/ports/pull_requests.py:21` | One file the pull request adds, at a path relative to the repository root. | nothing in this tree |
-| `PullRequestDraft` | class | `finops_core/ports/pull_requests.py:29` | A pull request, written in full before anything is sent anywhere. | nothing in this tree |
-| `PullRequestSink` | class | `finops_core/ports/pull_requests.py:42` | A code host where a person reviews a change before anything happens. | nothing in this tree |
-| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:45` | Open one for review and return the host's reference for it. | nothing in this tree |
+| `FileChange` | class | `finops_core/ports/pull_requests.py:24` | One file the pull request adds, at a path relative to the repository root. | nothing in this tree |
+| `PullRequestDraft` | class | `finops_core/ports/pull_requests.py:32` | A pull request, written in full before anything is sent anywhere. | nothing in this tree |
+| `RepositoryTarget` | class | `finops_core/ports/pull_requests.py:45` | Where a fix goes: a repository, the branch it is based on, and the folder it changes. | nothing in this tree |
+| `OpenedPullRequest` | class | `finops_core/ports/pull_requests.py:59` | A pull request the host opened: its number in the repository, and its link. | nothing in this tree |
+| `RepositoryFile` | class | `finops_core/ports/pull_requests.py:67` | One file read from a folder, at a path relative to the repository root. | nothing in this tree |
+| `PullRequestSink` | class | `finops_core/ports/pull_requests.py:75` | A code host where a person reviews a change before anything happens. | nothing in this tree |
+| `PullRequestSink.open_pull_request` | method | `finops_core/ports/pull_requests.py:78` | Open one for review in the target's repository, against its base branch. | nothing in this tree |
+| `RepositoryReader` | class | `finops_core/ports/pull_requests.py:96` | The files of a folder, read at its base branch. FEAT-093. | nothing in this tree |
+| `RepositoryReader.read_folder` | method | `finops_core/ports/pull_requests.py:99` | Every file directly in the target's folder whose name ends with `suffix`. | nothing in this tree |
+| `PullRequestTracker` | class | `finops_core/ports/pull_requests.py:112` | A pull request's state, as its host reports it. FEAT-092. | nothing in this tree |
+| `PullRequestTracker.pull_request_state` | method | `finops_core/ports/pull_requests.py:115` | Whether it is open or merged, by whom, and whether a merge would be accepted now. | nothing in this tree |
 | `QuerySurface` | class | `finops_core/ports/query.py:40` | A tool that holds saved queries which cost money when they run. | nothing in this tree |
 | `QuerySurface.discover` | method | `finops_core/ports/query.py:43` | Every instance this surface can see, reachable or not. | `finops_ingest/collectors/query_audit.py` |
 | `QuerySurface.list_queries` | method | `finops_core/ports/query.py:65` | Every saved query in one instance, panels and alert rules alike. | `finops_ingest/collectors/query_audit.py` |
@@ -635,6 +649,8 @@ a duplicate.
 | `Dispatcher` | class | `finops_ingest/dispatcher.py:110` | Turns a tenant, its accounts and its collectors into units of work. | `finops_ingest/processes.py` |
 | `Dispatcher.enumerate_units` | method | `finops_ingest/dispatcher.py:117` | One unit per (tenant, account, region, collector), or one per tenant. | `finops_ingest/processes.py` |
 | `Dispatcher.dispatch` | method | `finops_ingest/dispatcher.py:148` |  | `finops_ingest/processes.py` |
+| `MergeOutcome` | class | `finops_ingest/fix_merge.py:20` | Whether Meter merged, and the sentence saying why or why not. | nothing in this tree |
+| `merge_under_policy` | function | `finops_ingest/fix_merge.py:30` | Merge the pull request if the rule allows it now, and say what happened. | nothing in this tree |
 | `idempotency_key` | function | `finops_ingest/ledger.py:53` | A stable identity for one unit of work. | `finops_ingest/dispatcher.py` |
 | `RunClaim` | class | `finops_ingest/ledger.py:67` | A unit of work this worker now owns. | nothing in this tree |
 | `RunLedger` | class | `finops_ingest/ledger.py:78` | Claims, completes and fails runs, and moves watermarks. | `finops_api/exports/scheduled.py`, `finops_ingest/collectors/query_audit.py`, `finops_ingest/worker.py` |
@@ -1332,6 +1348,9 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `PeriodError` in `finops_core/domain/explore.py:38`
 - `Window.days` in `finops_core/domain/explore.py:50`
 - `Fact` in `finops_core/domain/fact.py:27`
+- `Readiness` in `finops_core/domain/fixes.py:25`
+- `PullRequestState` in `finops_core/domain/fixes.py:39`
+- `MergeVerdict` in `finops_core/domain/fixes.py:54`
 - `Geography` in `finops_core/domain/geography.py:30`
 - `ManagementState` in `finops_core/domain/iac.py:42`
 - `StateRead.is_whole` in `finops_core/domain/iac.py:87`
@@ -1356,6 +1375,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `OwnerKind` in `finops_core/domain/ownership.py:43`
 - `strongest_first` in `finops_core/domain/ownership.py:88`
 - `PlatformCost` in `finops_core/domain/platform.py:26`
-- `SurfaceKind` in `finops_core/domain/query.py:28`
-- `QueryOrigin` in `finops_core/domain/query.py:45`
-- `ControlAction` in `finops_core/domain/query.py:62`

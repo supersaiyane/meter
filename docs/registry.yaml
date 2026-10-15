@@ -2708,7 +2708,18 @@ changes:
   what: P15 Fixes through pull requests specified and planned, OPEN-13 and OPEN-41 to OPEN-43 answered
   commit: pending
   detail: 'The owner chose proposal 4 of next-in-scope.txt as the next build and answered four questions: a GitHub App receives the fix, OPEN-13; Meter merges a fix that loses nothing if wrong under the tenant''s policy and nothing else, OPEN-41, which ADR-0038 records as the change to FEAT-040''s rule that a fix is never merged; the repository comes from a mapping the owner sets, OPEN-42; and the first cut writes the eight removals and gp2 to gp3, OPEN-43. The spec, the plan of nine tasks, ADR-0038 and FEAT-091 to FEAT-094'
+- id: CHG-0197
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-001, the reversible set, the merge rule and the ports, ISS-299
+  commit: pending
+  detail: 'finops_core.domain.fixes holds REVERSIBLE, gp2 to gp3 alone, and may_merge, a pure rule that says yes only when merging is on, the class is reversible and named by the tenant''s policy, Meter opened the pull request, it is still open and the repository reports its required checks and reviews passed, and says why for every no. The code host ports gain the target repository and folder, reading a folder''s files and reading a pull request''s state. Merging is its own port, finops_core.ports.merges, called only by finops_ingest.fix_merge.merge_under_policy after the rule, which the contract test holds by name and by call. A removal file is placed in the folder whose Terraform declares the resource, ISS-299. Against fakes; the GitHub App adapter is TASK-P15-002'
 issues:
+- id: ISS-299
+  severity: MEDIUM
+  status: FIXED
+  summary: A removal pull request put its file in a folder Terraform never reads
+  detail: 'Found 2026-10-15 building TASK-P15-001. FEAT-040 wrote each removal as meter_remediation/<id>.tf, a folder of its own at the top of the repository. Terraform reads the .tf files of the one folder it is run in, and a nested folder only when a module block names it, so the removed block would have been merged and never planned, and the recommendation would have read as acted on while nothing changed. It stood because the code host was a fake and no repository was ever read. Fixed the same day, CHG-0197: the file is meter_remediation_<id>.tf in the folder whose Terraform declares the resource, the folder the repository mapping names, OPEN-42. Held by tests/query/test_remediation.py'
 - id: ISS-189
   severity: LOW
   summary: FEAT-027 asks for high ingest log groups with no queries in 90 days, and the signal

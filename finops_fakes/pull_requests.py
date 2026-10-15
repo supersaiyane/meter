@@ -1,29 +1,104 @@
 """A code host that records what it was asked to open, and opens each thing once.
 
-TASK-P7-009. Stands in for the adapter OPEN-13 has not chosen. Idempotent by reference, as
-the port asks, because a second pull request for the same recommendation is how a team
-learns to close them unread.
+TASK-P7-009, and P15, TASK-P15-001. Stands in for GitHub on the local stack and in tests.
+Idempotent by reference, as the port asks, because a second pull request for the same
+recommendation is how a team learns to close them unread. It reads a folder from the files it
+was given, reports the states it was given, and its merger records each merge it was asked for.
 """
 
 from __future__ import annotations
 
-from finops_core.ports.pull_requests import PullRequestDraft
+from collections.abc import Mapping
+
+from finops_core.domain.fixes import PullRequestState, Readiness
+from finops_core.errors import Misconfigured
+from finops_core.ports.merges import MergeAnswer
+from finops_core.ports.pull_requests import (
+    OpenedPullRequest,
+    PullRequestDraft,
+    RepositoryFile,
+    RepositoryTarget,
+)
+
+COLLECTOR = "fix_pull_requests"
 
 
 class RecordingPullRequests:
-    """A `PullRequestSink` holding what it opened, in order."""
+    """A `PullRequestSink`, `RepositoryReader` and `PullRequestTracker` holding what it opened."""
 
-    def __init__(self) -> None:
-        self._opened: dict[str, str] = {}
+    def __init__(self, files: Mapping[str, str] | None = None) -> None:
+        self._opened: dict[str, OpenedPullRequest] = {}
         self._drafts: list[PullRequestDraft] = []
+        self._targets: list[RepositoryTarget] = []
+        self._files = dict(files or {})
+        self._states: dict[tuple[str, int], PullRequestState] = {}
 
     @property
     def drafts(self) -> tuple[PullRequestDraft, ...]:
         """Every pull request opened, once each, in the order they were opened."""
         return tuple(self._drafts)
 
-    def open_pull_request(self, draft: PullRequestDraft) -> str:
+    @property
+    def targets(self) -> tuple[RepositoryTarget, ...]:
+        """Where each was opened, in the same order."""
+        return tuple(self._targets)
+
+    def open_pull_request(
+        self, draft: PullRequestDraft, target: RepositoryTarget
+    ) -> OpenedPullRequest:
         if draft.reference not in self._opened:
-            self._opened[draft.reference] = f"pull-request-{len(self._opened) + 1}"
+            number = len(self._opened) + 1
+            opened = OpenedPullRequest(
+                number=number, url=f"https://code.example/{target.repository}/pull/{number}"
+            )
+            self._opened[draft.reference] = opened
             self._drafts.append(draft)
+            self._targets.append(target)
+            self.set_state(
+                target.repository,
+                PullRequestState(
+                    number=number,
+                    url=opened.url,
+                    open=True,
+                    merged=False,
+                    readiness=Readiness.WAITING,
+                    head_sha=f"head-{number}",
+                ),
+            )
         return self._opened[draft.reference]
+
+    def read_folder(self, target: RepositoryTarget, suffix: str) -> tuple[RepositoryFile, ...]:
+        prefix = f"{target.folder}/" if target.folder else ""
+        return tuple(
+            RepositoryFile(path=path, content=content)
+            for path, content in sorted(self._files.items())
+            if path.startswith(prefix) and "/" not in path[len(prefix) :] and path.endswith(suffix)
+        )
+
+    def set_state(self, repository: str, state: PullRequestState) -> None:
+        """What the host reports for one pull request from now on."""
+        self._states[(repository, state.number)] = state
+
+    def pull_request_state(self, repository: str, number: int) -> PullRequestState:
+        found = self._states.get((repository, number))
+        if found is None:
+            raise Misconfigured(
+                scope_key=f"{repository}#{number}",
+                collector=COLLECTOR,
+                detail="the fake host holds no such pull request",
+            )
+        return found
+
+
+class RecordingMerger:
+    """A `PullRequestMerger` recording each merge it was asked for, accepting or refusing all."""
+
+    def __init__(self, *, accept: bool = True) -> None:
+        self._accept = accept
+        self.merges: list[tuple[str, int, str]] = []
+
+    def merge_pull_request(self, repository: str, number: int, head_sha: str) -> MergeAnswer:
+        self.merges.append((repository, number, head_sha))
+        if not self._accept:
+            return MergeAnswer(merged=False, reason="The fake host refused the merge.")
+        return MergeAnswer(merged=True, reason="Merged.", sha=f"merge-{number}")

@@ -47,7 +47,7 @@ Modelled at the pace of P14: eight tasks of size M and one of size S, about nine
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec sections 5.2 and 9, ADR-0038 |
 | Delivers | FEAT-094 |
 | Depends on | Nothing |
@@ -55,12 +55,25 @@ Modelled at the pace of P14: eight tasks of size M and one of size S, about nine
 
 **Acceptance criteria.**
 
-- [ ] The domain holds the reversible set, `EBS_GP2_TO_GP3` alone, and a pure merge rule deciding
+- [x] The domain holds the reversible set, `EBS_GP2_TO_GP3` alone, and a pure merge rule deciding
       from the policy, the class, who opened it and GitHub's report whether Meter may merge
-- [ ] The code host port gains reading a folder's files, reading a pull request's state and
+- [x] The code host port gains reading a folder's files, reading a pull request's state and
       merging, each with its typed failures
-- [ ] The contract test allows the merge call in the one merge function only, and still refuses
+- [x] The contract test allows the merge call in the one merge function only, and still refuses
       approval, applying and every tool that changes a cloud
+
+**Delivered 2026-10-15.** `finops_core/domain/fixes.py` holds `REVERSIBLE`, `EBS_GP2_TO_GP3`
+alone, and `may_merge`, which says yes only when merging is on, the class is reversible and named by
+the policy, Meter opened the pull request, it is still open and the repository reports it ready;
+every no says why. `finops_core/ports/pull_requests.py` gains `RepositoryTarget`,
+`RepositoryReader.read_folder` and `PullRequestTracker.pull_request_state`, each naming its typed
+failures. Merging is its own port, `finops_core/ports/merges.py`, and its one caller is
+`finops_ingest/fix_merge.py`, which asks the rule first and merges at the head the host reported.
+`tests/contract/test_no_llm_writes.py` allows the merge's name in those modules and the adapter only,
+and checks by the syntax tree that nothing else calls it. Building it found ISS-299: a removal file
+sat in a folder Terraform never reads, and now goes in the folder whose Terraform declares the
+resource. Tests in `tests/core/test_fixes.py` and `tests/ingest/test_fix_merge.py`; both new modules
+are at 100 percent coverage, measured.
 
 ---
 
