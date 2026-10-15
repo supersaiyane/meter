@@ -245,7 +245,11 @@ class WasteComputeCollector:
         now = self._clock()
         thresholds = thresholds_from(context.settings)
         candidates = self._candidates(context)
-        volumes = waste_volumes.gp2_only(self._volumes(context)) if self._volumes else []
+        seen = self._volumes(context) if self._volumes else []
+        # Every volume read, before only gp2 is kept, so one moved to gp3 is seen to have
+        # moved. TASK-P15-006.
+        waste_volumes.observe(context.connection, context.unit.tenant_id, seen, now)
+        volumes = waste_volumes.gp2_only(seen)
         window_end = now
         window_start = now - timedelta(
             days=max(

@@ -137,6 +137,11 @@ class TestTheLifecycle:
         assert done.may_move_to(Lifecycle.REGRESSED)
         assert not done.may_move_to(Lifecycle.IN_PROGRESS)
 
+    def test_a_fix_closed_without_merging_returns_the_recommendation_to_accepted(self) -> None:
+        """P15 spec section 5.6, TASK-P15-006."""
+        working = a_recommendation(lifecycle=Lifecycle.IN_PROGRESS)
+        assert working.may_move_to(Lifecycle.ACCEPTED)
+
     def test_every_state_is_reachable_from_open(self) -> None:
         # A state nothing can reach is a state the schema allows and the product
         # can never produce, which is worse than not having it.

@@ -35,8 +35,9 @@ that before there is data in it, which is the only cheap moment to do it.
 | `commitment_policy` | O | Coverage, term, payment, ladder limit, reason, `updated_by` | Life of the tenant | `updated_by` on request |
 | `code_host_connection` | O | The GitHub App's id and its key's secret name, never the key, `connected_by` | Life of the tenant | `connected_by` on request |
 | `repository_mapping` | O | Each Terraform state's repository, base branch and folder, `set_by` | Life of the tenant | `set_by` on request |
-| `fix_pull_request` | O and **P** | A fix asked for, its pull request, its status and why where there is none, `requested_by` | Life of the tenant | `requested_by` on request |
+| `fix_pull_request` | O and **P** | A fix asked for, its pull request, its status and why where there is none, `requested_by`, and `merged_by`, the code host's login of whoever merged, which names no principal | Life of the tenant | `requested_by` on request |
 | `fix_pull_request_event` | O and **P** | Each step with its `principal`, a person, Meter or the code host's login, and the note | Life of the tenant | `principal` on request |
+| `volume_observation` | O | Each volume's type and size as the volume pass last read it | Restated every run | Not applicable |
 | `commitment_inventory` | O | Each commitment's term, end, payment and owning account | Life of the tenant | No |
 | `purchase_recommendation` | O | AWS's purchase advice per program, its own estimate, and any typed failure | Restated daily | Not applicable |
 | `purchase_plan`, `purchase_plan_line` | O | Meter's plan per month, the policy it was drafted under, and its modelled lines | Life of the tenant | Not applicable |

@@ -33,8 +33,11 @@ from finops_api.schemas import (
     CodeHostConnectionIn,
     CodeHostConnectionOut,
     Envelope,
+    FixPullRequestFollowedOut,
     FixPullRequestOut,
+    FixPullRequestsOut,
     FixRequestIn,
+    FixStepOut,
     Meta,
     RepositoryMappingOut,
     RepositoryMappingsIn,
@@ -269,5 +272,37 @@ def ask_for_a_fix(
         rows=[row],
         coverage=(1, 1),
         coverage_unit="recommendations",
+    )
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/remediation/pull-requests", response_model=Envelope[FixPullRequestsOut])
+def remediation_pull_requests(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[FixPullRequestsOut]:
+    """Every fix asked for in the reader's scope, its status and its steps. TASK-P15-006."""
+    repository = FixPullRequestRepository(connection, context)
+    rows = repository.all(scope)
+    steps = repository.steps(scope, [row.fix_id for row in rows])
+    found = FixPullRequestsOut(
+        fixes=[
+            FixPullRequestFollowedOut(
+                **{
+                    name: getattr(row, name)
+                    for name in FixPullRequestFollowedOut.model_fields
+                    if name != "steps"
+                },
+                steps=[
+                    FixStepOut(**{name: getattr(step, name) for name in FixStepOut.model_fields})
+                    for step in steps[row.fix_id]
+                ],
+            )
+            for row in rows
+        ]
+    )
+    meta = build_meta(
+        connection, scope, context, visible=len(rows), rows=rows, coverage_unit="recommendations"
     )
     return Envelope(data=found, meta=meta)

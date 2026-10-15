@@ -3009,3 +3009,32 @@ class FixPullRequestOut(BaseModel):
     reason: str | None
     #: The typed cause of a failure: AccessDenied, Misconfigured, SchemaDrift and the rest.
     failure_cause: str | None
+
+
+class FixStepOut(BaseModel):
+    """One step of a fix: from and to, by whom, and when. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True)
+
+    from_status: str | None
+    to_status: str
+    #: A person, `meter`, or the code host's login of whoever merged; `github` where it names none.
+    principal: str
+    note: str | None
+    at: datetime
+
+
+class FixPullRequestFollowedOut(FixPullRequestOut):
+    """A fix with every step it took."""
+
+    merged_at: datetime | None
+    closed_at: datetime | None
+    steps: list[FixStepOut]
+
+
+class FixPullRequestsOut(BaseModel):
+    """Every fix asked for in the reader's scope, the newest first. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True)
+
+    fixes: list[FixPullRequestFollowedOut]

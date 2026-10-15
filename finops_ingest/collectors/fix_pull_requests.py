@@ -16,9 +16,13 @@ does not answer, stays `REQUESTED` with the wait recorded as a step, and the run
 ends with what it did: raising would roll back every fix it had already moved, and the next run
 asks again.
 
-**Opened is not done.** A recommendation whose pull request opens moves from ACCEPTED to
-IN_PROGRESS, logged as this collector's move, spec section 5.6; following it to merged and to DONE
-is TASK-P15-006.
+**Opened is not done, and merged is not done either.** A recommendation whose pull request opens
+moves from ACCEPTED to IN_PROGRESS, logged as this collector's move, spec section 5.6. Each run then
+reads every open pull request's state, TASK-P15-006: merged is recorded with whom and when, and
+closed without merging returns the recommendation to ACCEPTED. A merged fix's recommendation stays
+IN_PROGRESS until the inventory sees the change, read after the merge: the resource no longer
+listed for a removal, the volume reading gp3 for an edit. Then it is DONE, and FEAT-029 measures
+the saving from the bill sixty days on.
 """
 
 from __future__ import annotations
@@ -31,9 +35,15 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import text
 
+from finops_core.domain.fixes import PullRequestState
 from finops_core.domain.waste import Lifecycle, WasteClass
 from finops_core.errors import AccessDenied, Misconfigured, SchemaDrift, Throttled, Unreachable
-from finops_core.ports.pull_requests import PullRequestSink, RepositoryReader, RepositoryTarget
+from finops_core.ports.pull_requests import (
+    PullRequestSink,
+    PullRequestTracker,
+    RepositoryReader,
+    RepositoryTarget,
+)
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.gp3_edit import Gp3Figures, author_gp3, edit_volume
 from finops_query.remediation import (
@@ -64,8 +74,8 @@ class Connected:
     key_secret_name: str
 
 
-class CodeHost(PullRequestSink, RepositoryReader, Protocol):
-    """What the collector asks of a code host: open a pull request, and read a folder."""
+class CodeHost(PullRequestSink, RepositoryReader, PullRequestTracker, Protocol):
+    """What the collector asks of a code host: open, read a folder, and follow."""
 
 
 #: The code host for a tenant's connection, built for this run.
@@ -108,6 +118,54 @@ STEP = text(
     "VALUES (:event, :fix, :tenant, :account, :from, :to, :principal, :note, :now)"
 )
 
+OPENED = text(
+    "SELECT f.fix_id, f.recommendation_id, f.sub_account_id, f.repository, f.number "
+    "FROM fix_pull_request f WHERE f.tenant_id = :tenant AND f.status = 'OPEN' "
+    "ORDER BY f.requested_at, f.fix_id FOR UPDATE OF f SKIP LOCKED"
+)
+
+#: Merged fixes whose recommendation the inventory has not yet been seen to change.
+AWAITING = text(
+    "SELECT f.fix_id, f.recommendation_id, f.sub_account_id, f.number, f.merged_at, "
+    "r.waste_class, r.resource_id FROM fix_pull_request f JOIN recommendation r "
+    "ON r.recommendation_id = f.recommendation_id AND r.tenant_id = f.tenant_id "
+    "WHERE f.tenant_id = :tenant AND f.status = 'MERGED' AND r.lifecycle = 'IN_PROGRESS' "
+    "ORDER BY f.merged_at, f.fix_id"
+)
+
+#: A removal seen: the inventory read the account after the merge and lists the resource no more.
+REMOVED = text(
+    "SELECT NOT EXISTS (SELECT 1 FROM topology_node WHERE tenant_id = :tenant "
+    "AND sub_account_id = :account AND provider_id = :resource) AND EXISTS (SELECT 1 FROM "
+    "topology_node WHERE tenant_id = :tenant AND sub_account_id = :account "
+    "AND collected_at > :merged)"
+)
+
+#: An edit seen: the volume pass read the volume as gp3 after the merge.
+MOVED_TO_GP3 = text(
+    "SELECT EXISTS (SELECT 1 FROM volume_observation WHERE tenant_id = :tenant "
+    "AND sub_account_id = :account AND resource_id = :resource AND volume_type = 'gp3' "
+    "AND collected_at > :merged)"
+)
+
+SET_MERGED = text(
+    "UPDATE fix_pull_request SET status = 'MERGED', merged_by = :by, merged_at = :now, "
+    "as_of = :now, collected_at = :now WHERE fix_id = :fix"
+)
+
+SET_CLOSED = text(
+    "UPDATE fix_pull_request SET status = 'CLOSED', closed_at = :now, as_of = :now, "
+    "collected_at = :now WHERE fix_id = :fix"
+)
+
+SET_FAILED = text(
+    "UPDATE fix_pull_request SET status = 'FAILED', reason = :reason, failure_cause = :cause, "
+    "as_of = :now, collected_at = :now WHERE fix_id = :fix"
+)
+
+#: Whom a step names where the host does not: GitHub's pull request says who merged, not who closed.
+HOST: Final = "github"
+
 MOVE = text(
     "UPDATE recommendation SET lifecycle = :to, collected_at = :now "
     "WHERE tenant_id = :tenant AND recommendation_id = :id AND lifecycle = :from"
@@ -145,22 +203,23 @@ class FixPullRequestsCollector:
     def __call__(self, context: CollectorContext) -> CollectorOutcome:
         connection, tenant = context.connection, context.unit.tenant_id
         requested = connection.execute(REQUESTED, {"tenant": tenant}).all()
-        if not requested:
-            return CollectorOutcome()
+        opened = connection.execute(OPENED, {"tenant": tenant}).all()
+        moved = self._seen(connection, tenant)
+        if not requested and not opened:
+            return CollectorOutcome(items_written=moved)
         connected = connection.execute(CONNECTED, {"tenant": tenant}).first()
         if connected is None:
             # Nothing is written, so every ask waits for a connection, and connecting opens them.
             raise Misconfigured(
                 scope_key=context.unit.scope_key,
                 collector=COLLECTOR,
-                detail=f"{len(requested)} fix(es) asked for and no code host is connected; "
-                "connect the GitHub App, PUT /v1/remediation/connection, "
+                detail=f"{len(requested) + len(opened)} fix(es) asked for or open and no code "
+                "host is connected; connect the GitHub App, PUT /v1/remediation/connection, "
                 "docs/runbooks/code-host.md",
             )
         host = self._code_host_for(
             context, Connected(str(connected.app_id), str(connected.key_secret_name))
         )
-        moved = 0
         for fix in requested:
             with connection.begin_nested():
                 outcome = self._open(connection, tenant, fix, host)
@@ -168,8 +227,100 @@ class FixPullRequestsCollector:
             moved += 1
             if outcome.status == "REQUESTED":
                 # Throttled or not answering: asking again this run only spends the limit.
+                return CollectorOutcome(items_written=moved)
+        for fix in opened:
+            with connection.begin_nested():
+                followed = self._follow(connection, tenant, fix, host)
+            if followed is None:
                 break
+            moved += followed
         return CollectorOutcome(items_written=moved)
+
+    def _follow(self, connection: Any, tenant: UUID, fix: Any, host: CodeHost) -> int | None:
+        """Record what the host says of one open pull request. None stops following this run."""
+        try:
+            state = host.pull_request_state(str(fix.repository), int(fix.number))
+        except FOR_NOW:
+            return None
+        except FOR_GOOD as failure:
+            now = self._clock()
+            connection.execute(
+                SET_FAILED,
+                {"reason": failure.detail, "cause": failure.cause, "now": now, "fix": fix.fix_id},
+            )
+            self._step(connection, tenant, fix, "OPEN", "FAILED", METER, failure.detail, now)
+            return 1
+        if state.merged:
+            return self._merged(connection, tenant, fix, state)
+        if not state.open:
+            return self._closed(connection, tenant, fix)
+        return 0
+
+    def _merged(self, connection: Any, tenant: UUID, fix: Any, state: PullRequestState) -> int:
+        now = self._clock()
+        by = state.merged_by or HOST
+        connection.execute(SET_MERGED, {"by": state.merged_by, "now": now, "fix": fix.fix_id})
+        note = f"Merged #{fix.number}; the recommendation is DONE when the inventory sees it"
+        self._step(connection, tenant, fix, "OPEN", "MERGED", by, note, now)
+        return 1
+
+    def _closed(self, connection: Any, tenant: UUID, fix: Any) -> int:
+        now = self._clock()
+        connection.execute(SET_CLOSED, {"now": now, "fix": fix.fix_id})
+        note = f"#{fix.number} closed without merging"
+        self._step(connection, tenant, fix, "OPEN", "CLOSED", HOST, note, now)
+        _moved(connection, tenant, fix.recommendation_id, Lifecycle.ACCEPTED, note, now)
+        return 1
+
+    def _seen(self, connection: Any, tenant: UUID) -> int:
+        """Each merged fix whose change the inventory has read since: its recommendation DONE."""
+        seen = 0
+        for fix in connection.execute(AWAITING, {"tenant": tenant}).all():
+            removal = fix.waste_class != WasteClass.EBS_GP2_TO_GP3.value
+            values = {
+                "tenant": tenant,
+                "account": fix.sub_account_id,
+                "resource": fix.resource_id,
+                "merged": fix.merged_at,
+            }
+            if not connection.execute(REMOVED if removal else MOVED_TO_GP3, values).scalar_one():
+                continue
+            now = self._clock()
+            note = (
+                f"The inventory no longer lists {fix.resource_id} after #{fix.number} merged"
+                if removal
+                else f"{fix.resource_id} reads gp3 after #{fix.number} merged"
+            )
+            self._step(connection, tenant, fix, "MERGED", "MERGED", METER, note, now)
+            _moved(connection, tenant, fix.recommendation_id, Lifecycle.DONE, note, now)
+            seen += 1
+        return seen
+
+    @staticmethod
+    def _step(
+        connection: Any,
+        tenant: UUID,
+        fix: Any,
+        was: str,
+        now_is: str,
+        principal: str,
+        note: str,
+        now: datetime,
+    ) -> None:
+        connection.execute(
+            STEP,
+            {
+                "event": uuid4(),
+                "fix": fix.fix_id,
+                "tenant": tenant,
+                "account": fix.sub_account_id,
+                "from": was,
+                "to": now_is,
+                "principal": principal,
+                "note": note,
+                "now": now,
+            },
+        )
 
     def _open(self, connection: Any, tenant: UUID, fix: Any, host: CodeHost) -> _Moved:
         lifecycle = Lifecycle(fix.lifecycle)
@@ -298,27 +449,43 @@ def _refusal(facts: RecommendationFacts) -> str:
 
 
 def _in_progress(connection: Any, tenant: UUID, fix: Any, moved: _Moved, now: datetime) -> None:
+    reason = f"Pull request #{moved.number} opened, {moved.url}"
+    _moved(connection, tenant, fix.recommendation_id, Lifecycle.IN_PROGRESS, reason, now)
+
+
+#: Where each move this collector makes leaves from.
+_FROM: Final = {
+    Lifecycle.IN_PROGRESS: Lifecycle.ACCEPTED,
+    Lifecycle.ACCEPTED: Lifecycle.IN_PROGRESS,
+    Lifecycle.DONE: Lifecycle.IN_PROGRESS,
+}
+
+
+def _moved(
+    connection: Any,
+    tenant: UUID,
+    recommendation: UUID,
+    to: Lifecycle,
+    reason: str,
+    now: datetime,
+) -> None:
+    """Move the recommendation, if it is where the move leaves from, and log it as this one's."""
+    was = _FROM[to]
     changed = connection.execute(
         MOVE,
-        {
-            "to": Lifecycle.IN_PROGRESS.value,
-            "now": now,
-            "tenant": tenant,
-            "id": fix.recommendation_id,
-            "from": Lifecycle.ACCEPTED.value,
-        },
+        {"to": to.value, "now": now, "tenant": tenant, "id": recommendation, "from": was.value},
     ).rowcount
     if changed:
         connection.execute(
             RECOMMENDATION_EVENT,
             {
                 "event": uuid4(),
-                "id": fix.recommendation_id,
+                "id": recommendation,
                 "tenant": tenant,
-                "from": Lifecycle.ACCEPTED.value,
-                "to": Lifecycle.IN_PROGRESS.value,
+                "from": was.value,
+                "to": to.value,
                 "actor": COLLECTOR,
-                "reason": f"Pull request #{moved.number} opened, {moved.url}",
+                "reason": reason,
                 "now": now,
             },
         )

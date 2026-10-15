@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 61 in 22 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 61 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 62 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 281 | test_*.py under tests/ |
-| Test functions | 3359 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3367 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1317,7 +1317,9 @@ meter/
 │       │                      each fix asked for through propose in the mapped
 │       │                      repository, each in a savepoint; nowhere to go is
 │       │                      NOT_AUTHORED with why, a repeatable refusal FAILED.
-│       │                      A gp2 volume is an edit, gp3_edit, TASK-P15-005
+│       │                      A gp2 volume is an edit, gp3_edit, TASK-P15-005.
+│       │                      Follows each open pull request, and marks the
+│       │                      recommendation DONE once the inventory sees it
 │       ├── purchase_plan.py   FEAT-089 and 090, TASK-P14-007 and 008. Daily, from
 │       │                      Meter's own tables; lapses a stale draft, verifies a
 │       │                      bought plan, drafts or redrafts this month's
@@ -1511,7 +1513,8 @@ meter/
 │   │   │                      organization's only, each change audited; the GET
 │   │   │                      names the states read with no mapping. POST
 │   │   │                      /waste/recommendations/{id}/pull-request asks for a
-│   │   │                      fix, TASK-P15-004
+│   │   │                      fix, TASK-P15-004; GET /remediation/pull-requests
+│   │   │                      lists each with its steps, TASK-P15-006
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1695,6 +1698,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0062_fix_followed.py  TASK-P15-006. When a fix merged or closed, and
+│       │                      volume_observation, what each volume is
 │       ├── 0061_recommendation_gp3_figures.py  TASK-P15-005. What the priced gp3
 │       │                      gives a gp2 volume, kept on its recommendation
 │       ├── 0060_fix_pull_request.py  TASK-P15-004. A fix asked for and its steps,

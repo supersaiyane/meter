@@ -17,6 +17,7 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core import errors
+from finops_core.domain.fixes import PullRequestState, Readiness
 from finops_core.ports.pull_requests import RepositoryTarget
 from finops_fakes.pull_requests import RecordingPullRequests
 from finops_ingest.collectors.fix_pull_requests import COLLECTOR, FixPullRequestsCollector
@@ -314,3 +315,168 @@ def test_a_gp2_volume_the_edit_cannot_make_is_not_authored_and_says_why(
     assert row.status == "NOT_AUTHORED"
     assert says in row.reason
     assert host.drafts == ()
+
+
+# -- each pull request followed until the inventory sees it, TASK-P15-006 ---------------------
+
+LATER = NOW + timedelta(hours=1)
+INVENTORY_RUN = text(
+    "INSERT INTO ingest_run (run_id, tenant_id, collector, scope_key, idempotency_key, "
+    "status, as_of_window_start, as_of_window_end) "
+    "VALUES (:run, :t, 'inventory', 'scope', :key, 'SUCCEEDED', :at, :at)"
+)
+NODE = text(
+    "INSERT INTO topology_node (node_id, tenant_id, ingest_run_id, sub_account_id, provider_id, "
+    "node_kind, resource_type, region_id, availability_zone, name, tags, as_of, collected_at) "
+    "VALUES (:node, :t, :run, :account, :resource, 'VOLUME', 'AWS::EC2::Volume', "
+    "'eu-west-1', NULL, :resource, CAST('{}' AS jsonb), :at, :at)"
+)
+UNLISTED = text("DELETE FROM topology_node WHERE provider_id = :resource")
+OBSERVED = text(
+    "INSERT INTO volume_observation (tenant_id, sub_account_id, resource_id, region_id, "
+    "volume_type, size_gib, as_of, collected_at) VALUES (:t, :account, :resource, 'eu-west-1', "
+    ":type, 500, :at, :at)"
+)
+
+
+def volume_of(recommendation: UUID) -> str:
+    return f"arn:aws:ec2:eu-west-1:{ACCOUNT}:volume/vol-{recommendation.hex[:12]}"
+
+
+def opened(
+    engine: Engine, tenant: UUID, **setting: Any
+) -> tuple[UUID, UUID, RecordingPullRequests]:
+    """A fix asked for and opened, as the first run leaves it."""
+    recommendation, fix = estate(engine, tenant, **setting)
+    host = RecordingPullRequests({"storage/main.tf": declared(recommendation)})
+    run(engine, tenant, host)
+    assert fixed(engine, fix).status == "OPEN"
+    return recommendation, fix, host
+
+
+def reported(
+    host: RecordingPullRequests, *, still_open: bool, merged: bool, by: str | None = None
+) -> None:
+    host.set_state(
+        "acme/infra",
+        PullRequestState(
+            number=1,
+            url="https://code.example/acme/infra/pull/1",
+            open=still_open,
+            merged=merged,
+            readiness=Readiness.READY if still_open else Readiness.UNKNOWN,
+            head_sha="head-1",
+            merged_by=by,
+        ),
+    )
+
+
+def inventoried(engine: Engine, tenant: UUID, *resources: str) -> None:
+    """An inventory read of the account after the merge, listing these resources."""
+    run_id = uuid4()
+    with engine.begin() as connection:
+        connection.execute(
+            INVENTORY_RUN, {"run": run_id, "t": tenant, "key": str(run_id), "at": LATER}
+        )
+        for resource in resources:
+            connection.execute(
+                NODE,
+                {
+                    "node": uuid4(),
+                    "t": tenant,
+                    "run": run_id,
+                    "account": ACCOUNT,
+                    "resource": resource,
+                    "at": LATER,
+                },
+            )
+
+
+def test_a_merge_is_recorded_with_whom_and_the_recommendation_waits_for_the_inventory(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, fix, host = opened(engine, tenant_id)
+    reported(host, still_open=False, merged=True, by="octocat")
+    assert run(engine, tenant_id, host).items_written == 1
+    row = fixed(engine, fix)
+    assert (row.status, row.merged_by, row.merged_at) == ("MERGED", "octocat", NOW)
+    assert steps(engine, fix)[-1] == ("OPEN", "MERGED", "octocat")
+    assert lifecycle(engine, recommendation) == "IN_PROGRESS"
+
+
+def test_a_pull_request_closed_without_merging_returns_the_recommendation(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, fix, host = opened(engine, tenant_id)
+    reported(host, still_open=False, merged=False)
+    run(engine, tenant_id, host)
+    row = fixed(engine, fix)
+    assert (row.status, row.closed_at) == ("CLOSED", NOW)
+    assert steps(engine, fix)[-1] == ("OPEN", "CLOSED", "github")
+    assert lifecycle(engine, recommendation) == "ACCEPTED"
+    with engine.connect() as connection:
+        said = connection.execute(
+            text(
+                "SELECT reason FROM recommendation_event WHERE recommendation_id = :id "
+                "AND to_lifecycle = 'ACCEPTED'"
+            ),
+            {"id": recommendation},
+        ).scalar_one()
+    assert "closed without merging" in said
+
+
+def test_an_open_pull_request_is_left_as_it_is(engine: Engine, tenant_id: UUID) -> None:
+    _recommendation, fix, host = opened(engine, tenant_id)
+    assert run(engine, tenant_id, host).items_written == 0
+    assert fixed(engine, fix).status == "OPEN"
+    assert steps(engine, fix) == [("REQUESTED", "OPEN", "meter")]
+
+
+def test_a_merged_removal_is_done_once_the_inventory_no_longer_lists_it(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, fix, host = opened(engine, tenant_id)
+    reported(host, still_open=False, merged=True, by="octocat")
+    run(engine, tenant_id, host)
+    # Read after the merge and still listed: not done.
+    inventoried(engine, tenant_id, volume_of(recommendation))
+    run(engine, tenant_id, host)
+    assert lifecycle(engine, recommendation) == "IN_PROGRESS"
+    with engine.begin() as connection:
+        connection.execute(UNLISTED, {"resource": volume_of(recommendation)})
+    inventoried(engine, tenant_id, f"arn:aws:ec2:eu-west-1:{ACCOUNT}:volume/vol-other")
+    run(engine, tenant_id, host)
+    assert lifecycle(engine, recommendation) == "DONE"
+    assert steps(engine, fix)[-1] == ("MERGED", "MERGED", "meter")
+
+
+def test_a_merged_gp3_edit_is_done_once_the_volume_reads_gp3(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, _fix, host = opened(
+        engine, tenant_id, waste_class="EBS_GP2_TO_GP3", iops=3000, mibps=125
+    )
+    reported(host, still_open=False, merged=True, by="octocat")
+    run(engine, tenant_id, host)
+    observed = {"t": tenant_id, "account": ACCOUNT, "resource": volume_of(recommendation)}
+    with engine.begin() as connection:
+        connection.execute(OBSERVED, {**observed, "type": "gp2", "at": LATER})
+    run(engine, tenant_id, host)
+    assert lifecycle(engine, recommendation) == "IN_PROGRESS"
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE volume_observation SET volume_type = 'gp3' WHERE resource_id = :resource"),
+            observed,
+        )
+    run(engine, tenant_id, host)
+    assert lifecycle(engine, recommendation) == "DONE"
+
+
+def test_a_pull_request_the_host_no_longer_knows_fails_with_its_cause(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    _recommendation, fix, _host = opened(engine, tenant_id)
+    run(engine, tenant_id, RecordingPullRequests())
+    row = fixed(engine, fix)
+    assert (row.status, row.failure_cause) == ("FAILED", "Misconfigured")
+    assert steps(engine, fix)[-1] == ("OPEN", "FAILED", "meter")

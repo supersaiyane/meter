@@ -2411,6 +2411,9 @@ fix_pull_request = Table(
     Column("requested_by", Text, nullable=False),
     Column("requested_at", DateTime(timezone=True), nullable=False),
     Column("merged_by", Text),
+    #: When it merged or closed without merging, TASK-P15-006: a reading older proves nothing.
+    Column("merged_at", DateTime(timezone=True)),
+    Column("closed_at", DateTime(timezone=True)),
     Column("reason", Text),
     Column("failure_cause", Text),
     Column("as_of", DateTime(timezone=True), nullable=False),
@@ -2438,6 +2441,9 @@ fix_pull_request = Table(
         name="ck_fix_pull_request__cause",
     ),
     CheckConstraint("collected_at >= as_of", name="ck_fix_pull_request__collected_after_true"),
+    CheckConstraint(
+        "(status = 'MERGED') = (merged_at IS NOT NULL)", name="ck_fix_pull_request__merged_when"
+    ),
     Index(
         "ux_fix_pull_request__live",
         "tenant_id",
@@ -2464,4 +2470,23 @@ fix_pull_request_event = Table(
     Column("at", DateTime(timezone=True), nullable=False),
     CheckConstraint("length(trim(principal)) > 0", name="ck_fix_pull_request_event__principal"),
     Index("ix_fix_pull_request_event__fix", "fix_id", "at"),
+)
+
+
+#: P15, 0062. What the volume pass read of each volume, restated every run, so a gp2 volume moved
+#: to gp3 can be seen to have moved. TASK-P15-006.
+volume_observation = Table(
+    "volume_observation",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("sub_account_id", Text, primary_key=True),
+    Column("resource_id", Text, primary_key=True),
+    Column("region_id", Text, nullable=False),
+    Column("volume_type", Text, nullable=False),
+    Column("size_gib", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("length(trim(volume_type)) > 0", name="ck_volume_observation__type"),
+    CheckConstraint("size_gib > 0", name="ck_volume_observation__size"),
+    CheckConstraint("collected_at >= as_of", name="ck_volume_observation__collected_after_true"),
 )

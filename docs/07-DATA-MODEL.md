@@ -1464,6 +1464,11 @@ what the gp3 FEAT-074 priced gives a gp2 volume, so FEAT-093's edit sets them ra
 them out of the rationale's sentence. A check holds both to the gp2 to gp3 class and to positive
 figures, and the volume pass fills them on its next run, its write being an upsert.
 
+Migration 0062 adds `merged_at` and `closed_at` to `fix_pull_request`, a check holding `merged_at`
+to a merged fix, and `volume_observation`: what the volume pass read of each volume, its type and
+size, one row each per account and restated every run, so a gp2 volume moved to gp3 can be seen to
+have moved. A merged fix's recommendation is DONE only on a reading taken after `merged_at`.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

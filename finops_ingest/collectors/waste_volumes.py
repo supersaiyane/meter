@@ -26,6 +26,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Final
 
+from sqlalchemy import text
+
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.waste import WasteClass
@@ -56,6 +58,35 @@ class VolumeCandidate:
     monthly_cost: Decimal
     size_gib: int
     volume_type: str
+
+
+#: What the pass read of a volume, restated each run. TASK-P15-006.
+OBSERVE = text(
+    "INSERT INTO volume_observation (tenant_id, sub_account_id, resource_id, region_id, "
+    "volume_type, size_gib, as_of, collected_at) VALUES (:tenant, :account, :resource, :region, "
+    ":type, :size, :now, :now) ON CONFLICT (tenant_id, sub_account_id, resource_id) DO UPDATE SET "
+    "region_id = EXCLUDED.region_id, volume_type = EXCLUDED.volume_type, "
+    "size_gib = EXCLUDED.size_gib, as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at"
+)
+
+
+def observe(
+    connection: Any, tenant: object, volumes: Sequence[VolumeCandidate], now: datetime
+) -> None:
+    """Keep what this run read of every volume, of every type."""
+    for volume in volumes:
+        connection.execute(
+            OBSERVE,
+            {
+                "tenant": tenant,
+                "account": volume.account_id,
+                "resource": volume.resource_id,
+                "region": volume.region_id,
+                "type": volume.volume_type,
+                "size": volume.size_gib,
+                "now": now,
+            },
+        )
 
 
 def gp2_only(volumes: Sequence[VolumeCandidate]) -> list[VolumeCandidate]:

@@ -342,3 +342,22 @@ def test_the_database_allows_one_live_fix_per_recommendation(
         connection.execute(insert, {**values, "fix": uuid4(), **live})
     with pytest.raises(IntegrityError, match="ux_fix_pull_request__live"), engine.begin() as db:
         db.execute(insert, {**values, "fix": uuid4(), **live})
+
+
+def test_every_fix_in_the_readers_scope_is_listed_with_its_steps(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    client, token = client_for(engine, person(tenant_id), settings)
+    assert client.post(FIX.format(asked_about), json={}, headers=auth(token)).status_code == 200
+    (fix,) = get(client, token, "/api/v1/remediation/pull-requests")["data"]["fixes"]
+    assert (fix["recommendation_id"], fix["status"]) == (str(asked_about), "REQUESTED")
+    assert [(one["to_status"], one["principal"]) for one in fix["steps"]] == [
+        ("REQUESTED", SIGNED_IN)
+    ]
+    elsewhere = only(tenant_id, "fake-product-a")
+    narrowed = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=elsewhere.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, narrowed, settings)
+    assert get(client, token, "/api/v1/remediation/pull-requests")["data"]["fixes"] == []

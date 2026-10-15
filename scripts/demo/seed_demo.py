@@ -178,6 +178,8 @@ DEMO_TABLES = (
     # tenant only.
     "code_host_connection",
     "repository_mapping",
+    # P15, TASK-P15-006. What the volume pass read of each volume; the tenant only.
+    "volume_observation",
     # P14, FEAT-089. AWS's purchase advice; the tenant only.
     "purchase_recommendation",
     # P14, FEAT-089. Meter's plans; an event and a line reference their plan, so both go first.

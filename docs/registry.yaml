@@ -2738,6 +2738,12 @@ changes:
   what: TASK-P15-005, gp2 to gp3 as an edit
   commit: pending
   detail: 'finops_query.gp3_edit edits the one aws_ebs_volume block that declares the volume: type to gp3, and iops and throughput where the priced gp3 gives more than gp3 includes, reading past strings, comments and heredocs and keeping an aligned run aligned as terraform fmt would. It refuses, with the sentence, an instance key, a module''s resource, a block in no file or in several, one written on one line, a value set by anything but a literal, a block already gp3, a figure gp3 would not need, and a recommendation without figures. Migration 0061 keeps the figures on the recommendation, target_iops and target_throughput_mibps, held to the gp2 to gp3 class, and the volume pass writes them. The fix_pull_requests collector reads the mapped folder and opens the edit as it opens a removal'
+- id: CHG-0202
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-006, each pull request followed until the inventory sees it
+  commit: pending
+  detail: 'The fix_pull_requests collector reads every open pull request''s state each run: a merge is recorded with the host''s login and merged_at, a close without a merge with closed_at, returning the recommendation to ACCEPTED, which the domain now allows from IN_PROGRESS, and a pull request the host no longer knows is FAILED with its cause. A merged fix''s recommendation is DONE once a reading taken after the merge shows the change: the resource no longer in the inventory for a removal, and the volume reading gp3 for an edit, from volume_observation, which migration 0062 adds and the volume pass restates for every volume it reads. GET /v1/remediation/pull-requests lists every fix in the reader''s scope with its steps'
 issues:
 - id: ISS-301
   severity: MEDIUM

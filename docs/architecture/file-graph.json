@@ -726,6 +726,7 @@
     "migrations/versions/0059_code_host.py",
     "migrations/versions/0060_fix_pull_request.py",
     "migrations/versions/0061_recommendation_gp3_figures.py",
+    "migrations/versions/0062_fix_followed.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -11226,6 +11227,11 @@
     },
     {
       "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
     },
@@ -15612,6 +15618,11 @@
     {
       "s": "tests/ingest/collectors/test_fix_pull_requests.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
       "k": "python"
     },
     {

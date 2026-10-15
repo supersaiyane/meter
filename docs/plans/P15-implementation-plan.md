@@ -214,7 +214,7 @@ collector's suite.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec section 5.6 |
 | Delivers | FEAT-092 |
 | Depends on | TASK-P15-005 |
@@ -222,10 +222,19 @@ collector's suite.
 
 **Acceptance criteria.**
 
-- [ ] Each run reads every open pull request's state and records a merge or a close, with whom
-- [ ] A close without a merge returns the recommendation to `ACCEPTED`; a merge leaves it
+- [x] Each run reads every open pull request's state and records a merge or a close, with whom
+- [x] A close without a merge returns the recommendation to `ACCEPTED`; a merge leaves it
       `IN_PROGRESS` until the inventory sees the change, then `DONE`, so FEAT-029 verifies it
-- [ ] `GET /v1/remediation/pull-requests` returns every fix asked for, its status and its steps
+- [x] `GET /v1/remediation/pull-requests` returns every fix asked for, its status and its steps
+
+**Delivered 2026-10-15.** Each run of `fix_pull_requests` reads every open pull request's state:
+merged is recorded with the host's login and `merged_at`, closed without merging with `closed_at`,
+returning the recommendation to ACCEPTED, which the domain now allows from IN_PROGRESS, and a pull
+request the host no longer knows is FAILED with its cause. A merged fix's recommendation is DONE
+once a reading taken after the merge shows the change: the inventory lists the resource no more for
+a removal, and `volume_observation`, which migration 0062 adds and the volume pass now restates for
+every volume it reads, says gp3 for an edit. Nothing kept a volume's type before. `GET
+/v1/remediation/pull-requests` lists every fix in the reader's scope with its steps.
 
 ---
 

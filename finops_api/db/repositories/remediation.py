@@ -229,3 +229,29 @@ class FixPullRequestRepository(ScopedRepository):
         )
         self._audit(confirmed, action="request", outcome="ALLOWED")
         return row
+
+    def all(self, scope: Scope) -> Sequence[RemediationRow]:
+        """Every fix the scope reaches, the newest ask first."""
+        statement = self.scoped_select(scope).order_by(
+            self.table.c.requested_at.desc(), self.table.c.fix_id
+        )
+        rows: Sequence[RemediationRow] = self.fetch(scope, statement)
+        return rows
+
+    def steps(self, scope: Scope, fixes: Sequence[Any]) -> dict[Any, list[RemediationRow]]:
+        """Each fix's steps, oldest first, through the steps table's own scope rule."""
+        confirmed = require_scope(scope)
+        events = models.fix_pull_request_event
+        found: dict[Any, list[RemediationRow]] = {fix: [] for fix in fixes}
+        if not fixes:
+            return found
+        statement = (
+            select(events)
+            .where(events.c.tenant_id == confirmed.tenant_id)
+            .where(scope_predicate(events, confirmed))
+            .where(events.c.fix_id.in_(list(fixes)))
+            .order_by(events.c.at, events.c.event_id)
+        )
+        for row in self._connection.execute(statement):
+            found[row.fix_id].append(row)
+        return found
