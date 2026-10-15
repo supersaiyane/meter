@@ -577,14 +577,15 @@ def _seed_one_fix(connection: Any, row: Any, status: str, number: int, now: date
 
 
 def _seed_lifecycle(connection: Any, recommendation: Any, to: str, now: datetime) -> None:
-    """Accept the recommendation, with an owner, and move it on where its fix has opened."""
+    """Accept the recommendation and move it on where its fix has opened. It names no owner:
+    only `finops_api/lifecycle.py` writes one, a person's choice, ISS-021."""
     moves = [("OPEN", "ACCEPTED", "seed_demo")]
     if to == "IN_PROGRESS":
         moves.append(("ACCEPTED", "IN_PROGRESS", "fix_pull_requests"))
     for was, now_is, actor in moves:
         connection.execute(
             text(
-                "UPDATE recommendation SET lifecycle = :to, owner = coalesce(owner, 'platform') "
+                "UPDATE recommendation SET lifecycle = :to "
                 "WHERE tenant_id = :t AND recommendation_id = :id"
             ),
             {"to": now_is, "t": DEMO_TENANT, "id": recommendation},

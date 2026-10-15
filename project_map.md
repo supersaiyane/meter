@@ -33,7 +33,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 63 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 64 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 282 | test_*.py under tests/ |
 | Test functions | 3381 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
@@ -1708,6 +1708,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0064_fixes_screen.py  TASK-P15-008. /platform/fixes admitted as a saved
+│       │                      view's screen
 │       ├── 0063_merge_policy.py  TASK-P15-007. Which reversible fixes Meter may
 │       │                      merge, empty to start, held to the reversible set
 │       ├── 0062_fix_followed.py  TASK-P15-006. When a fix merged or closed, and

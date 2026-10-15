@@ -580,7 +580,7 @@ a duplicate.
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | `finops_ingest/composition.py` |
 | `Connected` | class | `finops_ingest/collectors/fix_pull_requests.py:80` | The GitHub App a tenant connected: its id and its key's secret name. | nothing in this tree |
 | `CodeHost` | class | `finops_ingest/collectors/fix_pull_requests.py:87` | What the collector asks of a code host: open, read a folder, follow, and merge. | nothing in this tree |
-| `FixPullRequestsCollector` | class | `finops_ingest/collectors/fix_pull_requests.py:219` | Opens each requested fix in the repository its state is mapped to, or says why not. | `finops_ingest/codehost_bindings.py` |
+| `FixPullRequestsCollector` | class | `finops_ingest/collectors/fix_pull_requests.py:221` | Opens each requested fix in the repository its state is mapped to, or says why not. | `finops_ingest/codehost_bindings.py` |
 | `GpuUtilizationCollector` | class | `finops_ingest/collectors/gpu_utilization.py:64` | One account and Region's GPU instances, read for the unit's window. | `finops_ingest/aws_bindings.py` |
 | `IacStateCollector` | class | `finops_ingest/collectors/iac_state.py:90` | The addresses that own our resources, from the state an operator configured. | `finops_ingest/aws_bindings.py` |
 | `InstanceCatalogCollector` | class | `finops_ingest/collectors/instance_catalog.py:233` | EC2's types placed in every Region they are sold, and the managed services' classes. | `finops_ingest/aws_bindings.py` |

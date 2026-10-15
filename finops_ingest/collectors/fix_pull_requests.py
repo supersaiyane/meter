@@ -139,9 +139,11 @@ OPENED = text(
 #: The classes the tenant lets Meter merge, ADR-0038. Empty until a person names one.
 POLICY = text("SELECT waste_class FROM merge_policy WHERE tenant_id = :tenant")
 
-#: A fix's last step, so a refusal the host repeats every run is recorded once.
-LAST_NOTE = text(
-    "SELECT note FROM fix_pull_request_event WHERE fix_id = :fix ORDER BY at DESC, event_id LIMIT 1"
+#: Whether a fix already carries this refusal, so one the host repeats every run is recorded once.
+#: By the refusal itself rather than by the last step, which ties on time when two share a clock.
+RECORDED = text(
+    "SELECT EXISTS (SELECT 1 FROM fix_pull_request_event WHERE fix_id = :fix "
+    "AND from_status = 'OPEN' AND to_status = 'OPEN' AND note = :note)"
 )
 
 #: The flag that stops every merge at once, whatever a policy names.
@@ -331,7 +333,7 @@ class FixPullRequestsCollector:
     def _refused(self, connection: Any, tenant: UUID, fix: Any, why: str) -> int:
         """A merge the host refused, recorded once while it keeps refusing for the same reason."""
         note = f"Meter did not merge: {why}"
-        if connection.execute(LAST_NOTE, {"fix": fix.fix_id}).scalar() == note:
+        if connection.execute(RECORDED, {"fix": fix.fix_id, "note": note}).scalar_one():
             return 0
         self._step(connection, tenant, fix, "OPEN", "OPEN", METER, note, self._clock())
         return 1

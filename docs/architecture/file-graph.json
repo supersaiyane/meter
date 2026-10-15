@@ -734,6 +734,7 @@
     "migrations/versions/0061_recommendation_gp3_figures.py",
     "migrations/versions/0062_fix_followed.py",
     "migrations/versions/0063_merge_policy.py",
+    "migrations/versions/0064_fixes_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
