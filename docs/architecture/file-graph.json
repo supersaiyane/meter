@@ -581,6 +581,9 @@
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
+    "finops_providers/github/__init__.py",
+    "finops_providers/github/app.py",
+    "finops_providers/github/code_host.py",
     "finops_providers/grafana/__init__.py",
     "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
@@ -967,6 +970,10 @@
     "tests/providers/fake/test_invoices.py",
     "tests/providers/fake/test_surface.py",
     "tests/providers/fake/test_utilization_estates.py",
+    "tests/providers/github/__init__.py",
+    "tests/providers/github/fake.py",
+    "tests/providers/github/test_github_app.py",
+    "tests/providers/github/test_github_code_host.py",
     "tests/providers/test_ai_reports.py",
     "tests/providers/test_amg_surface.py",
     "tests/providers/test_anthropic_reports.py",
@@ -12632,6 +12639,36 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/github/app.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/github/app.py",
+      "t": "finops_providers/ai_reports.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/github/code_host.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/github/code_host.py",
+      "t": "finops_core/ports/merges.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/github/code_host.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/github/code_host.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/grafana/amg.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -13194,6 +13231,16 @@
     {
       "s": "scripts/ops/first_contact.py",
       "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/github/code_host.py",
       "k": "python"
     },
     {
@@ -17307,6 +17354,46 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/github/fake.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/fake.py",
+      "t": "finops_providers/github/code_host.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_app.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_app.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_code_host.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_code_host.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_code_host.py",
+      "t": "finops_core/ports/merges.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_code_host.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/test_ai_reports.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -17889,6 +17976,11 @@
     {
       "s": "tests/scripts/test_first_contact.py",
       "t": "finops_providers/aws/relay_client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_providers/github/code_host.py",
       "k": "python"
     },
     {

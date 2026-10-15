@@ -40,8 +40,8 @@ port has one method, which opens.
 This differs from what was known before the spec, which expected CloudFormation and Grafana
 panel patches as well. Only Terraform removals are authored.
 
-**Why In build.** The sink has a fake and no adapter, because the code host is OPEN-13, and
-nothing in the product calls `propose`, ISS-228.
+**Why In build.** The sink has a GitHub adapter since TASK-P15-002, not yet tried against a real
+installation, ISS-300, and nothing in the product calls `propose` until TASK-P15-004, ISS-228.
 
 ## Failure behaviour
 
@@ -54,8 +54,9 @@ address with an instance key, which a `removed` block cannot target.
 Constraint 6. Nothing applies, merges or approves, and `tests/contract/test_no_llm_writes.py`
 holds three absences: no production module names a merge, an approval or an apply, none
 starts terraform, aws or kubectl as a process, and the member role grants reads only. The
-credential an adapter will need is a repository write, the first write Meter would hold
-anywhere, and it needs to open a pull request and nothing more, OPEN-13.
+adapter's credential is a GitHub App installation token, minted for each request and narrowed to
+the one repository and to what the request needs, OPEN-13; the one merge it may make is ADR-0038's,
+FEAT-094.
 
 ## Interface
 

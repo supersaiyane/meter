@@ -20,12 +20,13 @@ import pytest
 from botocore.exceptions import ClientError
 
 from finops_core.config import Settings
-from finops_core.errors import AccessDenied
+from finops_core.errors import AccessDenied, Misconfigured
 from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS
 from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.reach import LazyClient
 from finops_providers.aws.relay_client import RelayClient
+from finops_providers.github.code_host import GitHubCodeHost
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "ops" / "first_contact.py"
@@ -153,8 +154,9 @@ def test_it_exits_zero_only_when_every_read_answered(
         )
         == status
     )
-    # No key's secret was named, so neither AI provider was read, and nothing counts against it.
-    total = len([one for one in first_contact.PROBES if one.reach != "provider"])
+    # No key's secret was named, so neither AI provider nor GitHub was read, and nothing counts
+    # against it.
+    total = len([one for one in first_contact.PROBES if one.reach not in {"provider", "codehost"}])
     shown = capsys.readouterr().out
     assert f"{total - (0 if answers else 1)} of {total} reads answered." in shown
 
@@ -297,3 +299,85 @@ def test_a_relayed_read_of_what_an_account_holds_is_made_as_that_account(
         relayed = first_contact.clients(target(deployed))(probe(reads), target(deployed))
         assert isinstance(relayed, RelayClient), reads
         assert ACCOUNT in vars(relayed).values(), reads
+
+
+# --- the code host, P15, TASK-P15-002 -------------------------------------------------------------
+
+CODEHOST = "meter/dev/codehost/github-app"
+GITHUB = "GitHub, the app's installation, with its key named"
+NAMED = ["--codehost-secret", CODEHOST, "--codehost-app-id", "1001"]
+
+
+class Installation:
+    """A code host that lists its repositories, or refuses with a typed cause."""
+
+    def __init__(self, refuse: Exception | None = None) -> None:
+        self.refuse = refuse
+        self.asked: list[str] = []
+
+    def installation_repositories(self, repository: str) -> tuple[str, ...]:
+        self.asked.append(repository)
+        if self.refuse is not None:
+            raise self.refuse
+        return (repository,)
+
+
+def test_github_is_read_only_when_its_key_app_and_a_repository_are_named(
+    deployed: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    host = Installation()
+
+    def client_for(one: Any, _target: Any) -> Any:
+        return host if one.reach == "codehost" else Answering()
+
+    common = ["--env", "dev", "--account", ACCOUNT, "--region", "eu-west-1"]
+    for argv, read in ((NAMED, False), ([*NAMED, "--codehost-repository", "acme/infra"], True)):
+        status = first_contact.main(
+            [*common, *argv],
+            credentials=lambda: True,
+            settings_for=lambda _env: deployed,
+            client_for=client_for,
+        )
+        assert status == first_contact.ANSWERED_ALL
+        shown = capsys.readouterr().out
+        assert ("GitHub not read" in shown) is not read
+        assert CODEHOST not in shown, "the report never names a secret"
+    assert host.asked == ["acme/infra"]
+
+
+def test_an_app_github_refuses_is_reported_by_its_typed_cause(deployed: Settings) -> None:
+    refused = Misconfigured(scope_key="github:acme/infra", collector="c", detail="not installed")
+    where = first_contact.Target(
+        deployed,
+        ACCOUNT,
+        "eu-west-1",
+        date(2026, 10, 15),
+        codehost_secret=CODEHOST,
+        codehost_app_id="1001",
+        codehost_repository="acme/infra",
+    )
+    (answer,) = first_contact.contact(
+        [probe(GITHUB)], where, lambda _one, _target: Installation(refused)
+    )
+    assert answer.outcome == "Misconfigured"
+    (unnamed,) = first_contact.contact([probe(GITHUB)], target(deployed), lambda *_: Installation())
+    assert unnamed.outcome == "not tried" and "--codehost-repository" in unnamed.detail
+
+
+def test_githubs_client_reads_its_key_only_when_the_request_is_made(
+    deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("a client was made before it was used")
+
+    monkeypatch.setattr(boto3, "client", refuse)
+    where = first_contact.Target(
+        deployed,
+        ACCOUNT,
+        "eu-west-1",
+        date(2026, 10, 15),
+        codehost_secret=CODEHOST,
+        codehost_app_id="1001",
+        codehost_repository="acme/infra",
+    )
+    assert isinstance(first_contact.clients(where)(probe(GITHUB), where), GitHubCodeHost)

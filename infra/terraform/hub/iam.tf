@@ -155,6 +155,17 @@ data "aws_iam_policy_document" "task" {
     resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:meter/${var.env}/ai/*"]
   }
 
+  # P15, TASK-P15-002, FEAT-091. The GitHub App's private key, one secret under this
+  # environment's code host path and nowhere else, read by the worker for each request to sign the
+  # app's token. As for the AI keys, the API shares the role and never reads it, and only the
+  # worker reaches GitHub, ADR-0036 and ISS-286.
+  statement {
+    sid       = "ReadTheCodeHostKey"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:meter/${var.env}/codehost/*"]
+  }
+
   # TASK-P9-001, ADR-0035. The relay outside the VPC, for the calls no endpoint carries. Its
   # answers are read back under UseTheBucket below.
   statement {

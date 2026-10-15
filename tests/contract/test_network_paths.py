@@ -58,7 +58,8 @@ NO_ENDPOINT = frozenset({"budgets", "support", "invoicing"})
 RELAYED = frozenset({"savingsplans"})
 #: The hosts outside AWS the worker reaches through the NAT gateway, ADR-0036. Nothing else in
 #: the production code names a host outside AWS, which `test_no_host_outside_aws_but_these` holds.
-INTERNET_HOSTS = frozenset({"api.openai.com", "api.anthropic.com"})
+#: GitHub's API is P15's code host, OPEN-13, TASK-P15-002.
+INTERNET_HOSTS = frozenset({"api.openai.com", "api.anthropic.com", "api.github.com"})
 #: What the collectors call in each member account, in every collection Region.
 PER_COLLECTION_REGION = frozenset(
     {

@@ -62,7 +62,10 @@ from finops_providers.aws.reach import (
     payer_of,
     relay,
 )
-from finops_providers.aws.secrets import AiKeyReader
+from finops_providers.aws.secrets import AiKeyReader, CodeHostKeyReader
+from finops_providers.github.app import GitHubApp
+from finops_providers.github.code_host import COLLECTOR as CODEHOST_COLLECTOR
+from finops_providers.github.code_host import GitHubCodeHost
 from finops_providers.openai.reports import COLLECTOR as OPENAI_COLLECTOR
 from finops_providers.openai.reports import OpenAiReports
 
@@ -89,10 +92,19 @@ class Target:
     today: date
     #: Each AI provider's key secret, by provider, P13. A provider not named here is not tried.
     ai_secrets: dict[str, str] = field(default_factory=dict)
+    #: The code host, P15: the app's key secret, its id, and a repository it is installed on.
+    #: Not tried unless all three are named.
+    codehost_secret: str = ""
+    codehost_app_id: str = ""
+    codehost_repository: str = ""
 
     @property
     def payer(self) -> str | None:
         return payer_of(self.settings)
+
+    @property
+    def codehost(self) -> bool:
+        return bool(self.codehost_secret and self.codehost_app_id and self.codehost_repository)
 
 
 @dataclass(frozen=True)
@@ -437,6 +449,13 @@ PROBES: Final[tuple[Probe, ...]] = (
         "anthropic",
         _a_day_of_costs("anthropic"),
     ),
+    Probe(
+        "GitHub, the app's installation, with its key named",
+        "fix_pull_requests",
+        "codehost",
+        "github",
+        lambda host, target: host.installation_repositories(target.codehost_repository),
+    ),
 )
 
 ClientFor = Callable[[Probe, Target], Any]
@@ -455,6 +474,24 @@ def clients(target: Target) -> ClientFor:
             secret = where.ai_secrets[probe.service]
             return make(
                 keys.reader(secret, scope_key=f"{probe.service}:{secret}", collector=collector)
+            )
+        if probe.reach == "codehost":
+            # The worker's path, P15: the app's key read from the code host path when asked.
+            app_keys = CodeHostKeyReader(
+                where.settings.env, hub_client(where.settings, "secretsmanager")
+            )
+            key = app_keys.reader(
+                where.codehost_secret,
+                scope_key=f"github:{where.codehost_repository}",
+                collector=CODEHOST_COLLECTOR,
+            )
+            return GitHubCodeHost(
+                GitHubApp(
+                    app_id=where.codehost_app_id,
+                    private_key=key,
+                    collector=CODEHOST_COLLECTOR,
+                    clock=lambda: datetime.now(UTC),
+                )
             )
         if probe.reach == "payer":
             # The organization reader role in the management account, ISS-294 and ISS-296.
@@ -477,6 +514,8 @@ def clients(target: Target) -> ClientFor:
 def _missing(probe: Probe, target: Target) -> str | None:
     if probe.reach == "provider" and probe.service not in target.ai_secrets:
         return f"--{probe.service}-secret was not given"
+    if probe.reach == "codehost" and not target.codehost:
+        return "--codehost-secret, --codehost-app-id and --codehost-repository were not all given"
     for name in probe.needs:
         if not getattr(target.settings, name):
             return f"{ENV_PREFIX}{name.upper()} is empty"
@@ -485,6 +524,15 @@ def _missing(probe: Probe, target: Target) -> str | None:
     ) and target.payer is None:
         return f"{ENV_PREFIX}ORG_READER_ROLE_ARN names no payer"
     return None
+
+
+def _named(probe: Probe, target: Target) -> bool:
+    """Whether a read whose credential is named on the command line was named."""
+    if probe.reach == "provider":
+        return probe.service in target.ai_secrets
+    if probe.reach == "codehost":
+        return target.codehost
+    return True
 
 
 def contact(probes: Iterable[Probe], target: Target, client_for: ClientFor) -> list[Answer]:
@@ -559,6 +607,15 @@ def main(
             default="",
             help=f"the secret holding a {provider} organization's admin key, under meter/<env>/ai/",
         )
+    parser.add_argument(
+        "--codehost-secret",
+        default="",
+        help="the secret holding the GitHub App's private key, under meter/<env>/codehost/",
+    )
+    parser.add_argument("--codehost-app-id", default="", help="the GitHub App's id")
+    parser.add_argument(
+        "--codehost-repository", default="", help="a repository the app is installed on"
+    )
     arguments = parser.parse_args(argv)
     if not credentials():
         print(
@@ -577,13 +634,18 @@ def main(
             for provider in PROVIDER_REPORTS
             if (secret := getattr(arguments, f"{provider}_secret"))
         },
+        codehost_secret=arguments.codehost_secret,
+        codehost_app_id=arguments.codehost_app_id,
+        codehost_repository=arguments.codehost_repository,
     )
-    asked = [one for one in PROBES if one.reach != "provider" or one.service in target.ai_secrets]
+    asked = [one for one in PROBES if _named(one, target)]
     answers = contact(asked, target, client_for or clients(target))
     print(report(answers))
     unread = sorted(set(PROVIDER_REPORTS) - set(target.ai_secrets))
     if unread:
         print(f"AI providers not read, no key's secret named: {', '.join(unread)}.")
+    if not target.codehost:
+        print("GitHub not read: name the app's key secret, its id and a repository to read it.")
     return ANSWERED_ALL if all(one.outcome == ANSWERED for one in answers) else NOT_ALL_ANSWERED
 
 
