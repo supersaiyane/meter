@@ -32,6 +32,7 @@ function Surface({ meta }: { readonly meta: ApiMeta }) {
 /** The search box in the toolbar reads accounts through the API. Nothing here needs an answer. */
 const PENDING: ApiClient = {
   get: () => new Promise(() => undefined),
+  put: () => Promise.reject(new Error('no put stub')),
   patch: () => Promise.reject(new Error('no patch stub')),
   delete: () => Promise.reject(new Error('no delete stub')),
   getFile: () => new Promise<never>(() => undefined),

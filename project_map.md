@@ -29,8 +29,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 61 in 22 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 31 of 33 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 63 | files in migrations/versions, all of which are listed below in this file |
@@ -872,6 +872,12 @@ meter/
 │   │                          cluster, both better high so neither ramp inverts.
 │   │                          A missing figure says why, and an unreadable fleet and
 │   │                          a Fargate cluster with none are different sentences
+│   ├── screens/RecommendationFix.tsx  FEAT-092, TASK-P15-008. A recommendation's
+│   │                          fix in its detail: ask for it once accepted, its pull
+│   │                          request and steps, and why where there is none
+│   ├── screens/FixSettingsScreen.tsx  FEAT-091 and 094, TASK-P15-008.
+│   │                          /platform/fixes: the code host, where each state's
+│   │                          fixes go and what Meter may merge, the organization's
 │   ├── screens/RecommendationAlternatives.tsx  FEAT-073, TASK-P9-010. What one
 │   │                          rightsizing was compared with, under that finding on
 │   │                          WasteScreen: the chosen type first, an unpriced option

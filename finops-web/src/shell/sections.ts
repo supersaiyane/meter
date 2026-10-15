@@ -206,6 +206,8 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/platform/freshness', label: 'Data Freshness', arrives: null },
       { path: '/platform/ingest', label: 'Ingestion', arrives: null },
       { path: '/platform/cost', label: 'Meter Cost', arrives: null },
+      // P15, FEAT-091 and FEAT-094. Where fixes go and which Meter may merge.
+      { path: '/platform/fixes', label: 'Fixes', arrives: null },
       { path: '/platform/flags', label: 'Flags', arrives: 'P0, not yet surfaced' },
     ],
   },

@@ -124,6 +124,7 @@ function estateClient(changes: Changes = {}): ApiClient {
         ? Promise.reject(new Error(`no stub: ${path}`))
         : Promise.resolve(answer as ApiEnvelope<T>);
     },
+    put: () => Promise.reject(new Error('no put stub')),
     patch: () => Promise.reject(new Error('no patch stub')),
     delete: () => Promise.reject(new Error('no delete stub')),
     getFile: () => Promise.reject(new Error('no file stub')),

@@ -9,6 +9,7 @@ import { MetaProvider } from './shell/MetaProvider';
 import { redirectFor, screenFor } from './shell/sections';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { HomeScreen } from './screens/HomeScreen';
+import { FixSettingsScreen } from './screens/FixSettingsScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
@@ -174,6 +175,7 @@ export function App({
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
                 <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />
+                <Route path="/platform/fixes" element={<FixSettingsScreen />} />
 
                 <Route path="*" element={<MovedOrNotBuilt />} />
               </Routes>

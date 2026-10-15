@@ -2750,6 +2750,12 @@ changes:
   what: TASK-P15-007, the merge policy and Meter's merge
   commit: pending
   detail: 'Migration 0063 creates merge_policy, empty for every tenant, a check holding each class to the reversible set and a test holding that list equal to the domain''s. GET and PUT /v1/remediation/merge-policy show and set it with a reason, for a person whose scope is the organization, audited, refusing any class outside the set by name. The fix_pull_requests collector merges an open pull request of a class the policy names through merge_under_policy once GitHub reports it ready, records the merge as Meter''s step with the policy''s sentence, and records a refusal once while it repeats. The pull_request_merge flag stops every merge, and a run without settings merges nothing. An erasure keeps the policy and replaces the name'
+- id: CHG-0204
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-008, the fix screens
+  commit: pending
+  detail: 'A recommendation''s detail on the recommendations screen asks for an accepted recommendation''s fix with an optional note, links its pull request with every step, says why where there is none, and says to accept it first where it is not. /platform/fixes shows and changes the code host connection, the repository mapping and the merge policy for a person whose scope is the organization, names the states with no mapping, says when merging is off, and tells anyone else why. The API client gains put. Unit tests and a Playwright journey; the demo estate stubs the four routes'
 issues:
 - id: ISS-301
   severity: MEDIUM

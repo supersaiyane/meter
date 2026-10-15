@@ -15,6 +15,7 @@ import { useReportMeta } from '../shell/metaRegistry';
 import { RECOMMENDATION_FILTERS } from '../shell/sections';
 import { ALLOCATION_TAG } from './overviewKpis';
 import { RecommendationAlternatives } from './RecommendationAlternatives';
+import { RecommendationFix } from './RecommendationFix';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiRecommendation, ApiRefusal } from '../api/types';
@@ -297,6 +298,10 @@ export function WasteScreen() {
       {one?.target_instance_type == null ? null : (
         <RecommendationAlternatives recommendationId={one.recommendation_id} />
       )}
+
+      {/* P15, FEAT-092. Asking for the fix, its pull request and its steps, under the one
+          finding a reader chose, so the decision is made with the finding in front of them. */}
+      {one === undefined ? null : <RecommendationFix recommendation={one} />}
 
       {/* What the rules looked at and declined. ADR-0027: Meter cannot honestly say a
           workload is starved, because it cannot verify a performance finding and verification

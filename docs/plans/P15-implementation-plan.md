@@ -274,7 +274,7 @@ stack can.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec section 8 |
 | Delivers | FEAT-091, FEAT-092, FEAT-094 |
 | Depends on | TASK-P15-007 |
@@ -282,11 +282,21 @@ stack can.
 
 **Acceptance criteria.**
 
-- [ ] A recommendation's detail page lets a person ask for a fix, shows its pull request and its
+- [x] A recommendation's detail page lets a person ask for a fix, shows its pull request and its
       steps, and says why where there is none
-- [ ] A settings screen shows and changes the connection, the mapping and the merge policy for a
+- [x] A settings screen shows and changes the connection, the mapping and the merge policy for a
       person whose scope is the organization, and says why to anyone else
-- [ ] Unit tests and a Playwright journey
+- [x] Unit tests and a Playwright journey
+
+**Delivered 2026-10-15.** A recommendation's detail on the recommendations screen gains
+`RecommendationFix`: an accepted recommendation's fix is asked for with an optional note, its pull
+request is linked with every step, a fix with none says why, and a recommendation not yet accepted
+says to accept it first. `/platform/fixes`, `FixSettingsScreen`, shows and changes the connection,
+the mapping, through `DataTable`, and the merge policy for a person whose scope is the organization,
+names the states with no mapping, says when merging is off, and tells anyone else why. The hooks are
+`finops-web/src/api/remediation.ts`, plain queries since none of these routes exports, and the API
+client gains `put`. Unit tests in `RecommendationFix.test.tsx` and `FixSettingsScreen.test.tsx`,
+and a Playwright journey, `e2e/fixes.spec.ts`; the demo estate stubs the four routes.
 
 ---
 

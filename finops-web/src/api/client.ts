@@ -103,7 +103,7 @@ function messageOf(item: unknown): string[] {
   return typeof message === 'string' ? [message.replace(/^Value error, /, '')] : [];
 }
 
-type WriteMethod = 'POST' | 'PATCH' | 'DELETE';
+type WriteMethod = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiClientOptions) {
   /** One write, answered with an envelope or thrown as the failure it was. */
@@ -186,6 +186,14 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
      */
     post<T>(path: string, body?: unknown): Promise<ApiEnvelope<T>> {
       return send<T>('POST', path, body);
+    },
+
+    /**
+     * A setting replaced whole, carried in the body: the code host, where fixes go, or the merge
+     * policy, P15. The answer is the setting as it now stands.
+     */
+    put<T>(path: string, body: unknown): Promise<ApiEnvelope<T>> {
+      return send<T>('PUT', path, body);
     },
 
     /**

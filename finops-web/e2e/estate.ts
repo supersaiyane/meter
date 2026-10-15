@@ -641,6 +641,48 @@ export async function demoEstate(page: Page): Promise<void> {
 
   // P3. Three surfaces, and each one carries the case it exists to render
   // honestly rather than a tidy row of successes.
+  // P15, TASK-P15-008. The fix settings and the fixes asked for: the app connected, one state
+  // mapped and one with nowhere to go, Meter merging gp2 to gp3, and no fix asked for yet.
+  await stub(page, '/api/v1/remediation/connection', {
+    data: {
+      connected: true,
+      host: 'github',
+      app_id: '1001',
+      key_secret_name: 'meter/dev/codehost/github-app',
+      connected_by: 'p-owner',
+      connected_at: '2026-10-15T10:00:00Z',
+    },
+    meta: PAYER_META,
+  });
+  await stub(page, '/api/v1/remediation/repositories', {
+    data: {
+      mappings: [
+        {
+          state_reference: 's3://fake-state/storage/terraform.tfstate',
+          repository: 'acme/infra',
+          base_branch: 'main',
+          folder: 'storage',
+          set_by: 'p-owner',
+          set_at: '2026-10-15T10:00:00Z',
+        },
+      ],
+      unmapped: ['s3://fake-state/network/terraform.tfstate'],
+    },
+    meta: PAYER_META,
+  });
+  await stub(page, '/api/v1/remediation/merge-policy', {
+    data: {
+      classes: ['EBS_GP2_TO_GP3'],
+      reversible: ['EBS_GP2_TO_GP3'],
+      reason: 'reversible, and the repository checks guard it',
+      set_by: 'p-owner',
+      set_at: '2026-10-15T10:00:00Z',
+      merging_on: true,
+    },
+    meta: PAYER_META,
+  });
+  await stub(page, '/api/v1/remediation/pull-requests', { data: { fixes: [] }, meta: META });
+
   await stub(page, '/api/v1/waste/recommendations', {
     data: {
       recommendations: [

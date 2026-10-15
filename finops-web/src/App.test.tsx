@@ -8,6 +8,7 @@ import { metaOf } from './screens/__tests__/fixtures';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
+  put: () => Promise.reject(new Error('no put stub')),
   patch: () => Promise.reject(new Error('no patch stub')),
   delete: () => Promise.reject(new Error('no delete stub')),
   getFile: () => new Promise<never>(() => undefined),
@@ -313,6 +314,7 @@ describe('the account chosen in the address, FEAT-075', () => {
             meta: metaOf(),
           } as unknown as ApiEnvelope<T>)
         : new Promise<ApiEnvelope<T>>(() => undefined),
+    put: () => Promise.reject(new Error('no put stub')),
     patch: () => Promise.reject(new Error('no patch stub')),
     delete: () => Promise.reject(new Error('no delete stub')),
     getFile: () => new Promise<never>(() => undefined),

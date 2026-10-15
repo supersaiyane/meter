@@ -31,6 +31,7 @@
     "finops-web/e2e/estate.ts",
     "finops-web/e2e/export.spec.ts",
     "finops-web/e2e/filters.spec.ts",
+    "finops-web/e2e/fixes.spec.ts",
     "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/e2e/ledger.spec.ts",
@@ -69,6 +70,7 @@
     "finops-web/src/api/fixtures/topology.ts",
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
+    "finops-web/src/api/remediation.ts",
     "finops-web/src/api/savedViews.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components",
@@ -171,6 +173,7 @@
     "finops-web/src/screens/EntityScreen.tsx",
     "finops-web/src/screens/ExploreControls.tsx",
     "finops-web/src/screens/ExploreResult.tsx",
+    "finops-web/src/screens/FixSettingsScreen.tsx",
     "finops-web/src/screens/ForecastScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
@@ -194,6 +197,7 @@
     "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
     "finops-web/src/screens/RecommendationAlternatives.tsx",
+    "finops-web/src/screens/RecommendationFix.tsx",
     "finops-web/src/screens/ReconciliationScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ReportLibraryScreen.tsx",
@@ -220,6 +224,7 @@
     "finops-web/src/screens/__tests__/DigestsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+    "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
@@ -237,6 +242,7 @@
     "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
     "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+    "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
     "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
@@ -1232,6 +1238,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/fixes.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/ledger.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1364,6 +1375,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/EntityScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/FixSettingsScreen.tsx",
       "k": "typescript"
     },
     {
@@ -1699,6 +1715,16 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/remediation.ts",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/remediation.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3622,6 +3648,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ForecastScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -4872,6 +4933,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationFix.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ReconciliationScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -5389,6 +5465,11 @@
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/RecommendationFix.tsx",
       "k": "typescript"
     },
     {
@@ -5932,6 +6013,31 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/FixSettingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -6413,6 +6519,36 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/remediation.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/screens/WasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationFix.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },

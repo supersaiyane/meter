@@ -79,7 +79,7 @@ export const postedBodies: unknown[] = [];
  * posted is not passed by a deletion it never looked for.
  */
 export const changed: {
-  readonly method: 'PATCH' | 'DELETE';
+  readonly method: 'PUT' | 'PATCH' | 'DELETE';
   readonly path: string;
   readonly body: unknown;
 }[] = [];
@@ -102,6 +102,15 @@ export function clientReturning(
         return Promise.reject(new Error(`no file stub for ${path}`));
       }
       return Promise.resolve({ name: fileNameOf(null, path), body: new Blob([answer]) });
+    },
+    put: <T>(path: string, body: unknown): Promise<ApiEnvelope<T>> => {
+      changed.push({ method: 'PUT', path, body });
+      if (failure) return Promise.reject(failure);
+      const answer = answers[path];
+      if (answer === undefined) {
+        return Promise.reject(new Error(`no stub for ${path}`));
+      }
+      return Promise.resolve(answer as ApiEnvelope<T>);
     },
     patch: <T>(path: string, body: unknown): Promise<ApiEnvelope<T>> => {
       changed.push({ method: 'PATCH', path, body });
