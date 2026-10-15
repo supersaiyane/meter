@@ -129,6 +129,12 @@ subprojects:
   spec: specs/2026-10-13-p14-commitments-design.md
   plan: plans/P14-implementation-plan.md
   depends_on: P13
+- id: P15
+  name: Fixes through pull requests
+  status: 'In build. Approved by the owner on 2026-10-15 with OPEN-13 and OPEN-41 to OPEN-43 answered, and chosen the same day as the next priority, proposal 4 of next-in-scope.txt. A GitHub App connected, each fix opened in the repository whose Terraform manages the resource, gp2 to gp3 written as an edit, each pull request followed until the inventory sees the change, and a fix that loses nothing if wrong merged by Meter under the tenant''s policy. Meter never approves and never applies'
+  spec: specs/2026-10-15-p15-pull-request-fixes-design.md
+  plan: plans/P15-implementation-plan.md
+  depends_on: P14
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -676,6 +682,30 @@ features:
   status: Delivered
   detail: '[P14 spec](docs/specs/2026-10-13-p14-commitments-design.md) section 5.2, [P14 plan](docs/plans/P14-implementation-plan.md)'
   doc: docs/features/FEAT-090-plan-approval.md
+- id: FEAT-091
+  name: The code host connection and the repository mapping
+  subproject: P15
+  status: Specified
+  detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) sections 5.1, 5.3 and 6, [P15 plan](docs/plans/P15-implementation-plan.md)'
+  doc: docs/features/FEAT-091-code-host-connection.md
+- id: FEAT-092
+  name: A fix asked for, opened as a pull request, and followed until the inventory sees it
+  subproject: P15
+  status: Specified
+  detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) sections 5.5, 5.6, 6 and 7, [P15 plan](docs/plans/P15-implementation-plan.md)'
+  doc: docs/features/FEAT-092-fix-pull-requests.md
+- id: FEAT-093
+  name: gp2 to gp3 written as an edit to the file that declares the volume
+  subproject: P15
+  status: Specified
+  detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) section 5.4, [P15 plan](docs/plans/P15-implementation-plan.md)'
+  doc: docs/features/FEAT-093-gp3-edit.md
+- id: FEAT-094
+  name: Meter merges a reversible fix under the tenant's merge policy
+  subproject: P15
+  status: Specified
+  detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) section 5.2, [P15 plan](docs/plans/P15-implementation-plan.md)'
+  doc: docs/features/FEAT-094-merge-policy.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -829,6 +859,10 @@ adrs:
   decision: A read made once a day may go through the relay where an endpoint exists
   status: Accepted
   doc: docs/adr/ADR-0037-daily-reads-through-the-relay.md
+- id: ADR-0038
+  decision: Meter may merge a pull request it opened for a reversible fix, under the tenant's policy
+  status: Accepted
+  doc: docs/adr/ADR-0038-meter-merges-a-reversible-fix-under-policy.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2668,6 +2702,12 @@ changes:
   what: The commitments screen says its figures as a reader reads them, ISS-298
   commit: pending
   detail: 'finops_query.purchase_plan.difference says an hourly amount to the tenth of a cent with trailing noughts dropped and the plan''s split naming only the parts it has. The commitments screen shows unit counts and unpriced shares as plain numbers and an EC2 Instance Savings Plan by that name. Found proving TASK-P14-010 on the local stack'
+- id: CHG-0196
+  date: '2026-10-15'
+  type: Docs
+  what: P15 Fixes through pull requests specified and planned, OPEN-13 and OPEN-41 to OPEN-43 answered
+  commit: pending
+  detail: 'The owner chose proposal 4 of next-in-scope.txt as the next build and answered four questions: a GitHub App receives the fix, OPEN-13; Meter merges a fix that loses nothing if wrong under the tenant''s policy and nothing else, OPEN-41, which ADR-0038 records as the change to FEAT-040''s rule that a fix is never merged; the repository comes from a mapping the owner sets, OPEN-42; and the first cut writes the eight removals and gp2 to gp3, OPEN-43. The spec, the plan of nine tasks, ADR-0038 and FEAT-091 to FEAT-094'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5512,8 +5552,8 @@ open_questions:
     runaway. A per person limit is a policy decision nobody has made'
   detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13'
 - id: OPEN-13
-  question: Which code host receives a remediation pull request, and with what credential
-  status: OPEN
+  question: 'Which code host receives a remediation pull request, and with what credential? ANSWERED 2026-10-15 as recommended: GitHub, through a GitHub App'
+  status: ANSWERED
   blocks: 'FEAT-040 opening anything, ISS-228. The authoring is built and tested against the
     PullRequestSink port, so the answer costs one adapter'
   detail: '[P7 plan](docs/plans/P7-implementation-plan.md) TASK-P7-009. The credential would be
@@ -5750,3 +5790,18 @@ open_questions:
   status: ANSWERED
   blocks: TASK-P14-007
   detail: 'Raised 2026-10-13 while building TASK-P14-007; the spec named the baseline per program but not which program a plan buys. Compute only follows usage across family, Region and operating system; EC2 Instance only saves the most and binds each line to a family and Region. The owner chose the split: each family steady in a Region buys an EC2 Instance plan, and steady usage that moves between families buys a Compute plan. P14 spec section 5.6.'
+- id: OPEN-41
+  question: 'May Meter merge a pull request it opened? ANSWERED 2026-10-15 as recommended: a fix that loses nothing if wrong, under the tenant''s policy, through the repository''s protections; never a deletion'
+  status: ANSWERED
+  blocks: TASK-P15-007
+  detail: 'Raised 2026-10-15 by the P15 spec, section 5.2. FEAT-040 said a fix is never merged and a contract test held it. ADR-0038 records the change: a reversible set in the domain, gp2 to gp3 alone, a per tenant merge policy that starts empty, and a merge only when GitHub reports the pull request mergeable with checks passed and reviews given.'
+- id: OPEN-42
+  question: 'How does Meter know which repository and folder hold a resource''s Terraform? ANSWERED 2026-10-15 as recommended: a mapping the owner sets, per state file'
+  status: ANSWERED
+  blocks: TASK-P15-003
+  detail: 'Raised 2026-10-15 by the P15 spec, section 5.3. FEAT-057 already records the state file that owns each managed resource; the tenant maps each state file to a repository, a base branch and a folder. Searching every repository was the alternative, rejected for reading more and risking the wrong file.'
+- id: OPEN-43
+  question: 'Which fixes does P15''s first cut write? ANSWERED 2026-10-15 as recommended: the eight removals already written, and gp2 to gp3 as an edit'
+  status: ANSWERED
+  blocks: TASK-P15-005
+  detail: 'Raised 2026-10-15 by the P15 spec, section 5.4. gp2 to gp3 needs the file that declares the volume, which Meter reads through the app. Instance resizing touches running workloads and is left to a later sub project.'

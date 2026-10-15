@@ -5,7 +5,7 @@
 | Sub project | P7 |
 | Status | In build |
 | Specification | [P7 spec](../specs/2026-09-28-p7-insight-and-llm-layer-design.md), section 3 |
-| Tasks | TASK-P7-009, TASK-P7-014 |
+| Tasks | TASK-P7-009, TASK-P7-014, and in P15 TASK-P15-002 and TASK-P15-004 |
 | Refresh cadence | On demand |
 
 ## What it does
@@ -18,7 +18,7 @@ Meter is read only in v1. Remediation as a reviewable code change is how it acts
 
 ## What is already known
 
-Never merged automatically. The same constraint as the security autofix, and for the same reason.
+Never merged automatically. The same constraint as the security autofix, and for the same reason. Superseded on 2026-10-15 for fixes that lose nothing if wrong, by ADR-0038: under the tenant's merge policy, Meter may merge a reversible fix it opened through the repository's own protections, FEAT-094. A deletion, which every fix written here is, is still never merged by Meter.
 
 ## How it works
 
