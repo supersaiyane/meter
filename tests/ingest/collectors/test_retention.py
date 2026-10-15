@@ -529,6 +529,46 @@ def test_an_erasure_keeps_a_plans_steps_and_takes_the_name_off_them(
     assert (step.principal, step.note) == (TOMBSTONE, "within the ladder")
 
 
+def test_an_erasure_keeps_where_fixes_go_and_takes_the_name_off(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """TASK-P15-003. The connection and the mapping are the organization's; the person goes."""
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+        who = {"t": tenant_id, "who": str(principal), "at": AT}
+        connection.execute(
+            text(
+                "INSERT INTO code_host_connection (tenant_id, host, app_id, key_secret_name, "
+                "connected_by, connected_at) VALUES (:t, 'github', '1001', "
+                "'meter/dev/codehost/github-app', :who, :at)"
+            ),
+            who,
+        )
+        connection.execute(
+            text(
+                "INSERT INTO repository_mapping (tenant_id, state_reference, repository, "
+                "base_branch, folder, set_by, set_at) VALUES (:t, 's3://state/storage.tfstate', "
+                "'acme/infra', 'main', 'storage', :who, :at)"
+            ),
+            who,
+        )
+        report = erase_principal.erase(
+            connection, tenant_id, principal, "operator-1", "ticket-9", clock=at
+        )
+        connected = connection.execute(
+            text("SELECT connected_by, app_id FROM code_host_connection WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).one()
+        mapped = connection.execute(
+            text("SELECT set_by, repository FROM repository_mapping WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).one()
+
+    assert (report.code_host_reattributed, report.mappings_reattributed) == (1, 1)
+    assert tuple(connected) == (TOMBSTONE, "1001")
+    assert tuple(mapped) == (TOMBSTONE, "acme/infra")
+
+
 def test_the_report_says_out_loud_that_nothing_was_removed_from_the_audit_log() -> None:
     report = erase_principal.ErasureReport(uuid4(), 1, 0, 0, 2)
     assert any("never removed, by design" in line for line in report.lines())

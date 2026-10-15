@@ -118,7 +118,7 @@ both modules at 100 percent coverage, measured. Unproved against a real installa
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec sections 5.1, 5.3, 6 and 8, OPEN-42 |
 | Delivers | FEAT-091 |
 | Depends on | TASK-P15-002 |
@@ -126,11 +126,23 @@ both modules at 100 percent coverage, measured. Unproved against a real installa
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `code_host_connection` and `repository_mapping`, a check holding the key's
+- [x] A migration creates `code_host_connection` and `repository_mapping`, a check holding the key's
       name to the code host path
-- [ ] `GET` and `PUT /v1/remediation/connection` and `/repositories`, a change needing a person whose
+- [x] `GET` and `PUT /v1/remediation/connection` and `/repositories`, a change needing a person whose
       scope is the organization, audited ALLOWED or DENIED
-- [ ] An erasure keeps both and replaces the person's name on them
+- [x] An erasure keeps both and replaces the person's name on them
+
+**Delivered 2026-10-15.** Migration `0059_code_host` creates `code_host_connection`, the app's id
+and its key's secret name with a check holding the name to a code host path, and
+`repository_mapping`, keyed by the state reference FEAT-057 records, with checks on the
+repository's form, the branch and a folder that never climbs out of the repository. Both are
+`PayerWide`. `finops_api/routes/remediation.py` answers `GET` and `PUT /v1/remediation/connection`
+and `/repositories`: a narrowed reader is told why with a 404, a change needs a person whose scope
+is the organization and is audited ALLOWED or DENIED, a key outside this environment's code host
+path is refused, and the mapping is set whole, an unchanged state keeping who set it. The GET names
+the states read with no mapping. No installation id is stored, TASK-P15-002. `erase_principal`
+keeps both and replaces the name. Tests in `tests/api/test_remediation_routes.py` and the erasure
+test in `tests/ingest/collectors/test_retention.py`.
 
 ---
 

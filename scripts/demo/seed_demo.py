@@ -174,6 +174,10 @@ DEMO_TABLES = (
     "commitment_inventory",
     # P14, FEAT-088. What the tenant's purchase plans aim for; the tenant only.
     "commitment_policy",
+    # P15, FEAT-091. The code host a tenant connected and where each state's fixes go; the
+    # tenant only.
+    "code_host_connection",
+    "repository_mapping",
     # P14, FEAT-089. AWS's purchase advice; the tenant only.
     "purchase_recommendation",
     # P14, FEAT-089. Meter's plans; an event and a line reference their plan, so both go first.
