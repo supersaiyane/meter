@@ -131,7 +131,7 @@ subprojects:
   depends_on: P13
 - id: P15
   name: Fixes through pull requests
-  status: 'In build. Approved by the owner on 2026-10-15 with OPEN-13 and OPEN-41 to OPEN-43 answered, and chosen the same day as the next priority, proposal 4 of next-in-scope.txt. A GitHub App connected, each fix opened in the repository whose Terraform manages the resource, gp2 to gp3 written as an edit, each pull request followed until the inventory sees the change, and a fix that loses nothing if wrong merged by Meter under the tenant''s policy. Meter never approves and never applies'
+  status: 'Delivered on 2026-10-15 against fakes, proven by TASK-P15-009 against the seeded demo through the API and the collector. No GitHub App is installed yet, ISS-300. Approved by the owner on 2026-10-15 with OPEN-13 and OPEN-41 to OPEN-43 answered, and chosen the same day as the next priority, proposal 4 of next-in-scope.txt. A GitHub App connected, each fix opened in the repository whose Terraform manages the resource, gp2 to gp3 written as an edit, each pull request followed until the inventory sees the change, and a fix that loses nothing if wrong merged by Meter under the tenant''s policy. Meter never approves and never applies'
   spec: specs/2026-10-15-p15-pull-request-fixes-design.md
   plan: plans/P15-implementation-plan.md
   depends_on: P14
