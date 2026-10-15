@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 94 total, 15 specified, 13 in build, 63 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 198 recorded |
+| Changes | 199 recorded |
 | Issues | 188 fixed, 109 open, 0 parked |
 | Open questions | 43 awaiting a decision |
 
@@ -178,6 +178,8 @@ gp3, and Meter merges a fix that loses nothing if wrong under the tenant's polic
 TASK-P15-001 was done the same day: the reversible set and the merge rule in the domain, the one
 merge path, and ISS-299, a removal file placed in a folder Terraform never reads. TASK-P15-002
 followed: the GitHub App adapter, a token per request, unproved against a real installation, ISS-300.
+TASK-P15-003 added the connection and the repository mapping, set by a person whose scope is the
+organization.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -356,7 +358,7 @@ ISS-003.
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
-| P15 | 2 | 0 | 0 | 0 | 7 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
+| P15 | 3 | 0 | 0 | 0 | 6 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -667,6 +669,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P15-001` | Done 2026-10-15 | the reversible set, the merge rule and the port |
 | `TASK-P15-002` | Done 2026-10-15 | the GitHub App adapter |
+| `TASK-P15-003` | Done 2026-10-15 | the connection and the repository mapping |
 
 <!-- generated:task-status end -->
 

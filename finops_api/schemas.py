@@ -2879,3 +2879,100 @@ class PlanTransitionIn(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     note: str = Field(min_length=3, max_length=500)
+
+
+# --- P15, where fixes go: TASK-P15-003, FEAT-091 ------------------------------------------------
+
+
+class CodeHostConnectionIn(BaseModel):
+    """The GitHub App fixes go through: its id and its key's secret name. FEAT-091, OPEN-13."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    host: Literal["github"] = "github"
+    #: The App ID, or the Client ID, GitHub shows on the app's page.
+    app_id: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9.]+$")
+    #: A Secrets Manager name under `meter/<env>/codehost/`. Never the key itself.
+    key_secret_name: str = Field(min_length=1, max_length=512, pattern=r"^[A-Za-z0-9/_+=.@-]+$")
+
+
+class CodeHostConnectionOut(BaseModel):
+    """The connection, or that there is none. The key's value is never here. FEAT-091."""
+
+    model_config = ConfigDict(frozen=True)
+
+    connected: bool
+    host: str | None
+    app_id: str | None
+    key_secret_name: str | None
+    connected_by: str | None
+    connected_at: datetime | None
+
+
+class RepositoryMappingIn(BaseModel):
+    """Where one Terraform state's fixes go: a repository, its base branch and a folder. OPEN-42."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    #: The state as FEAT-057 records it, `resource_management.state_reference`.
+    state_reference: str = Field(min_length=1, max_length=1024)
+    #: `owner/name`.
+    repository: str = Field(max_length=200, pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+    base_branch: str = Field(min_length=1, max_length=255)
+    #: Relative to the repository's root; empty for the root itself.
+    folder: str = Field(default="", max_length=1024)
+
+    @field_validator("state_reference", "base_branch")
+    @classmethod
+    def _said(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("must say something, not only spaces")
+        return value
+
+    @field_validator("folder")
+    @classmethod
+    def _inside_the_repository(cls, folder: str) -> str:
+        if folder and any(part in ("", ".", "..") for part in folder.split("/")):
+            raise ValueError(
+                "a folder is relative to the repository's root: no leading or trailing slash, "
+                "no empty part, and no . or .."
+            )
+        return folder
+
+
+class RepositoryMappingsIn(BaseModel):
+    """The whole mapping. A state left out loses its mapping."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    mappings: list[RepositoryMappingIn] = Field(max_length=1000)
+
+    @model_validator(mode="after")
+    def _one_per_state(self) -> RepositoryMappingsIn:
+        states = [one.state_reference for one in self.mappings]
+        if len(states) != len(set(states)):
+            raise ValueError("each state is mapped once")
+        return self
+
+
+class RepositoryMappingOut(BaseModel):
+    """One state's mapping, with who set it and when."""
+
+    model_config = ConfigDict(frozen=True)
+
+    state_reference: str
+    repository: str
+    base_branch: str
+    folder: str
+    set_by: str
+    set_at: datetime
+
+
+class RepositoryMappingsOut(BaseModel):
+    """Every mapping, and the states whose fixes would have nowhere to go. OPEN-42."""
+
+    model_config = ConfigDict(frozen=True)
+
+    mappings: list[RepositoryMappingOut]
+    #: The states FEAT-057 read resources from that no mapping names.
+    unmapped: list[str]

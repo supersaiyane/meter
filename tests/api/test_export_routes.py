@@ -37,6 +37,8 @@ EXEMPT: Mapping[str, str] = {
     "/api/v1/reports/runs": "The reader's run records, each of which is already a file of its own",
     "/api/v1/reports/runs/{run_id}/file": "A stored report, which is the file itself",
     "/api/v1/commitments/policy": "The tenant's purchase policy, one setting and not a table",
+    "/api/v1/remediation/connection": "The code host connection, one setting and not a table",
+    "/api/v1/remediation/repositories": "Where fixes go, configuration a settings screen edits",
 }
 
 

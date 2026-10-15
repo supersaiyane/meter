@@ -2339,3 +2339,47 @@ FACT_TABLES = tuple(
     for table in metadata.sorted_tables
     if "as_of" in table.c and table.name not in NOT_FACT_TABLES
 )
+
+
+#: P15, 0059. The GitHub App a tenant connected, FEAT-091: its id and its key's secret name, never
+#: the key. The installation is found from the repository on each request, so it is not here.
+code_host_connection = Table(
+    "code_host_connection",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("host", Text, nullable=False),
+    Column("app_id", Text, nullable=False),
+    Column("key_secret_name", Text, nullable=False),
+    Column("connected_by", Text, nullable=False),
+    Column("connected_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    CheckConstraint("host IN ('github')", name="ck_code_host_connection__host"),
+    CheckConstraint("app_id ~ '^[A-Za-z0-9.]+$'", name="ck_code_host_connection__app"),
+    CheckConstraint(
+        "key_secret_name ~ '^meter/[a-z]+/codehost/[A-Za-z0-9/_+=.@-]+$'",
+        name="ck_code_host_connection__key",
+    ),
+)
+
+#: P15, 0059. Where each Terraform state's fixes go, OPEN-42: keyed by the state reference FEAT-057
+#: records in `resource_management`.
+repository_mapping = Table(
+    "repository_mapping",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("state_reference", Text, primary_key=True),
+    Column("repository", Text, nullable=False),
+    Column("base_branch", Text, nullable=False),
+    #: Relative to the repository's root; empty for the root itself.
+    Column("folder", Text, nullable=False, server_default=""),
+    Column("set_by", Text, nullable=False),
+    Column("set_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    CheckConstraint("length(trim(state_reference)) > 0", name="ck_repository_mapping__state"),
+    CheckConstraint(
+        "repository ~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'", name="ck_repository_mapping__repository"
+    ),
+    CheckConstraint("length(trim(base_branch)) > 0", name="ck_repository_mapping__branch"),
+    CheckConstraint(
+        r"folder = '' OR (folder !~ '^/' AND folder !~ '/$' AND folder !~ '(^|/)\.\.?(/|$)')",
+        name="ck_repository_mapping__folder",
+    ),
+)

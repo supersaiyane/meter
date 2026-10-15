@@ -189,6 +189,9 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "commitment_inventory": PayerWide(),
     # TASK-P14-005. What purchase plans aim for is the payer's choice, so the payer's to read.
     "commitment_policy": PayerWide(),
+    # P15, TASK-P15-003. Where the organization's fixes go, ADR-0025.
+    "code_host_connection": PayerWide(),
+    "repository_mapping": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
     "purchase_plan": PayerWide(),

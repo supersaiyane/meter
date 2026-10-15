@@ -340,6 +340,7 @@
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
     "finops_api/db/repositories/quotas.py",
+    "finops_api/db/repositories/remediation.py",
     "finops_api/db/repositories/reports.py",
     "finops_api/db/repositories/schedules.py",
     "finops_api/db/repositories/topology.py",
@@ -378,6 +379,7 @@
     "finops_api/routes/query.py",
     "finops_api/routes/quotas.py",
     "finops_api/routes/reconciliation.py",
+    "finops_api/routes/remediation.py",
     "finops_api/routes/schedules.py",
     "finops_api/routes/views.py",
     "finops_api/routes/waste.py",
@@ -718,6 +720,7 @@
     "migrations/versions/0056_purchase_recommendation.py",
     "migrations/versions/0057_purchase_plan.py",
     "migrations/versions/0058_purchase_plan_match.py",
+    "migrations/versions/0059_code_host.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -785,6 +788,7 @@
     "tests/api/test_recommendation_alternatives.py",
     "tests/api/test_recommendation_owner.py",
     "tests/api/test_reconciliation.py",
+    "tests/api/test_remediation_routes.py",
     "tests/api/test_report_schedules.py",
     "tests/api/test_routes.py",
     "tests/api/test_saved_views.py",
@@ -8029,6 +8033,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/remediation.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/remediation.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/remediation.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/remediation.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/reports.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -9261,6 +9285,46 @@
     {
       "s": "finops_api/routes/reconciliation.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/db/repositories/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_providers/aws/secrets.py",
       "k": "python"
     },
     {
@@ -14146,6 +14210,16 @@
     {
       "s": "tests/api/test_reconciliation.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_remediation_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_remediation_routes.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {

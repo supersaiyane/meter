@@ -1373,6 +1373,43 @@ outside the AI path, whatever the role would allow. A provider's cost lands in `
 with its own `ingest_source`, the organization as the billing account and the project or workspace
 as the sub account, and its usage in `ai_usage_daily`.
 
+### Where fixes go, P15
+
+```sql
+-- P15, FEAT-091, migration 0059. The GitHub App a tenant connected, one row per tenant, OPEN-13.
+-- Payer wide, ADR-0025.
+CREATE TABLE code_host_connection (
+    tenant_id        UUID        NOT NULL REFERENCES tenant(tenant_id),
+    host             TEXT        NOT NULL,   -- github, the one host P15 supports
+    app_id           TEXT        NOT NULL,   -- the App ID or Client ID GitHub shows
+    key_secret_name  TEXT        NOT NULL,   -- a secret under meter/<env>/codehost/, never the key
+    connected_by     TEXT        NOT NULL,
+    connected_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT pk_code_host_connection PRIMARY KEY (tenant_id)
+    -- and a check holding the key's name to a code host path
+);
+
+-- P15, FEAT-091, migration 0059. Where each Terraform state's fixes go, OPEN-42: keyed by the
+-- state reference FEAT-057 records in resource_management. Payer wide, ADR-0025.
+CREATE TABLE repository_mapping (
+    tenant_id        UUID        NOT NULL REFERENCES tenant(tenant_id),
+    state_reference  TEXT        NOT NULL,
+    repository       TEXT        NOT NULL,   -- owner/name
+    base_branch      TEXT        NOT NULL,
+    folder           TEXT        NOT NULL DEFAULT '',   -- relative to the root, '' for the root
+    set_by           TEXT        NOT NULL,
+    set_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT pk_repository_mapping PRIMARY KEY (tenant_id, state_reference)
+    -- and checks on the repository's form, a branch, and a folder that never climbs out
+);
+```
+
+The installation is not stored: the worker asks GitHub which installation holds a repository on
+each request, TASK-P15-002. Both are changed through `PUT /v1/remediation/connection` and
+`/repositories` by a person whose scope is the organization, audited ALLOWED or DENIED; the mapping
+is set whole, a state left out losing its mapping and an unchanged one keeping who set it. An
+erasure keeps both and replaces `connected_by` and `set_by`.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

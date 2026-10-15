@@ -110,12 +110,10 @@ CODEHOST = "meter/dev/codehost/github-app"
 
 
 def test_the_code_host_key_is_read_from_its_own_path_and_no_other() -> None:
-    client = StubSecrets(
-        {"SecretString": "-----BEGIN PRIVATE KEY-----\nk\n-----END PRIVATE KEY-----\n"}
-    )
+    client = StubSecrets({"SecretString": "pem-text-for-the-test\n"})
     keys = CodeHostKeyReader("dev", client)
     assert keys.reader(CODEHOST, scope_key="github:acme/infra", collector="c")().startswith(
-        "-----BEGIN PRIVATE KEY-----"
+        "pem-text-for-the-test"
     )
     with pytest.raises(errors.Misconfigured, match="the code host app's private key"):
         keys.reader(NAME, scope_key="github:acme/infra", collector="c")()

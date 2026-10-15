@@ -270,6 +270,13 @@ def p14_routers() -> tuple[APIRouter, ...]:
     return (commitments.router,)
 
 
+def p15_routers() -> tuple[APIRouter, ...]:
+    """The fix routes, from the P15 spec's section 8, as each task delivers them."""
+    from finops_api.routes import remediation
+
+    return (remediation.router,)
+
+
 def p7_routers() -> tuple[APIRouter, ...]:
     """The assistant routes, from the P7 spec's section 8 table.
 
@@ -432,6 +439,7 @@ def create_app(
         *(p11_routers() if include_p0_routes else ()),
         *(p13_routers() if include_p0_routes else ()),
         *(p14_routers() if include_p0_routes else ()),
+        *(p15_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 61 in 22 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 58 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 278 | test_*.py under tests/ |
-| Test functions | 3328 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 59 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 279 | test_*.py under tests/ |
+| Test functions | 3337 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1499,6 +1499,10 @@ meter/
 │   │   ├── commitments.py     P14, FEAT-086 to 090. GET /commitments/savings-rate, the
 │   │   │                      effective savings rate by month, measured, TASK-P14-004;
 │   │   │                      inventory, calendar and the policy, payer only, TASK-P14-005
+│   │   ├── remediation.py     P15, FEAT-091, TASK-P15-003. GET and PUT
+│   │   │                      /remediation/connection and /repositories: the
+│   │   │                      organization's only, each change audited; the GET
+│   │   │                      names the states read with no mapping
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1589,6 +1593,8 @@ meter/
 │                              usage, GPU utilization and the connected providers.
 │                              commitments.py holds P14's: what is held and the
 │                              policy, its change audited ALLOWED or DENIED.
+│                              remediation.py holds P15's: the code host and the
+│                              repository mapping, set whole, audited the same.
 │                              latest_audit_only confines a read to the newest
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
@@ -1680,6 +1686,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0059_code_host.py  TASK-P15-003. The GitHub App a tenant connected and
+│       │                      where each state's fixes go, checks on the key's path,
+│       │                      the repository and a folder that never climbs out
 │       ├── 0058_purchase_plan_match.py  TASK-P14-008. A commitment pays for one plan
 │       │                      line at most, a partial unique index
 │       ├── 0057_purchase_plan.py  TASK-P14-007. Plans, lines and events, a trigger

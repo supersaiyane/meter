@@ -29,6 +29,12 @@ regexes = [
   # a database column value, and it is the opposite of a secret: a run that
   # could not name its collector would be unattributable.
   '''collector=COLLECTOR''',
+  # A fixture, not a key. TASK-P15-002 wrote a PEM header and footer around the single letter
+  # k in tests/providers/aws/test_secrets.py, to prove the code host key reader returns what the
+  # secret holds; the letter k is the whole of the key, in plain sight. The test no longer writes
+  # one, but the commit that did, 3aa38cf, is public history the scan reads on every run. This
+  # matches a key whose body is that one letter and nothing else.
+  '''KEY-----\\nk\\n-----END''',
 ]
 
 stopwords = [
