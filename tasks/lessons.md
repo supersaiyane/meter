@@ -793,3 +793,19 @@ project term may follow once its meaning has been given in the same message.
 
 **Triggers:** AskUserQuestion, a closing summary, a choice between proposals, any of the
 project's own terms: sub project, gate, exit criteria, scan record, worktree.
+
+## 2026-10-15: long stretches with no word while tasks queued behind a gate
+
+**Mistake:** Building P15, I drafted and committed four tasks ahead while each gate ran, about
+forty minutes apiece, and said nothing between notifications for long stretches. Five tasks sat
+committed and unmerged behind one gate, and the owner could not tell from outside whether work was
+moving or stuck.
+
+**Correction:** The owner asked: "what is going on ??".
+
+**Rule:** While working through a sequence, say in one line what is merged, what is gating and what
+is next whenever a gate starts, whenever a gate ends, and at least every thirty minutes otherwise.
+The moment tasks begin to queue behind a gate, say so and say how long the queue will take.
+
+**Triggers:** a gate started in the background, a second task drafted before the first merged, a
+branch stacked on an unmerged branch, a wait of more than one gate's length.
