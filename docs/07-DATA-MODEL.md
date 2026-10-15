@@ -1469,6 +1469,22 @@ to a merged fix, and `volume_observation`: what the volume pass read of each vol
 size, one row each per account and restated every run, so a gp2 volume moved to gp3 can be seen to
 have moved. A merged fix's recommendation is DONE only on a reading taken after `merged_at`.
 
+```sql
+-- P15, FEAT-094, migration 0063. Which reversible fixes a tenant lets Meter merge, ADR-0038. Empty
+-- to start. Payer wide, ADR-0025.
+CREATE TABLE merge_policy (
+    tenant_id    UUID        NOT NULL REFERENCES tenant(tenant_id),
+    waste_class  TEXT        NOT NULL,   -- held to the reversible set, gp2 to gp3 alone
+    reason       TEXT        NOT NULL,
+    set_by       TEXT        NOT NULL,
+    set_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT pk_merge_policy PRIMARY KEY (tenant_id, waste_class)
+);
+```
+
+Set whole through `PUT /v1/remediation/merge-policy` by a person whose scope is the organization,
+with a reason, audited. An erasure keeps it and replaces `set_by`.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

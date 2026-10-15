@@ -685,25 +685,25 @@ features:
 - id: FEAT-091
   name: The code host connection and the repository mapping
   subproject: P15
-  status: Specified
+  status: In build
   detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) sections 5.1, 5.3 and 6, [P15 plan](docs/plans/P15-implementation-plan.md)'
   doc: docs/features/FEAT-091-code-host-connection.md
 - id: FEAT-092
   name: A fix asked for, opened as a pull request, and followed until the inventory sees it
   subproject: P15
-  status: Specified
+  status: In build
   detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) sections 5.5, 5.6, 6 and 7, [P15 plan](docs/plans/P15-implementation-plan.md)'
   doc: docs/features/FEAT-092-fix-pull-requests.md
 - id: FEAT-093
   name: gp2 to gp3 written as an edit to the file that declares the volume
   subproject: P15
-  status: Specified
+  status: In build
   detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) section 5.4, [P15 plan](docs/plans/P15-implementation-plan.md)'
   doc: docs/features/FEAT-093-gp3-edit.md
 - id: FEAT-094
   name: Meter merges a reversible fix under the tenant's merge policy
   subproject: P15
-  status: Specified
+  status: In build
   detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) section 5.2, [P15 plan](docs/plans/P15-implementation-plan.md)'
   doc: docs/features/FEAT-094-merge-policy.md
 adrs:
@@ -2744,6 +2744,12 @@ changes:
   what: TASK-P15-006, each pull request followed until the inventory sees it
   commit: pending
   detail: 'The fix_pull_requests collector reads every open pull request''s state each run: a merge is recorded with the host''s login and merged_at, a close without a merge with closed_at, returning the recommendation to ACCEPTED, which the domain now allows from IN_PROGRESS, and a pull request the host no longer knows is FAILED with its cause. A merged fix''s recommendation is DONE once a reading taken after the merge shows the change: the resource no longer in the inventory for a removal, and the volume reading gp3 for an edit, from volume_observation, which migration 0062 adds and the volume pass restates for every volume it reads. GET /v1/remediation/pull-requests lists every fix in the reader''s scope with its steps'
+- id: CHG-0203
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-007, the merge policy and Meter's merge
+  commit: pending
+  detail: 'Migration 0063 creates merge_policy, empty for every tenant, a check holding each class to the reversible set and a test holding that list equal to the domain''s. GET and PUT /v1/remediation/merge-policy show and set it with a reason, for a person whose scope is the organization, audited, refusing any class outside the set by name. The fix_pull_requests collector merges an open pull request of a class the policy names through merge_under_policy once GitHub reports it ready, records the merge as Meter''s step with the policy''s sentence, and records a refusal once while it repeats. The pull_request_merge flag stops every merge, and a run without settings merges nothing. An erasure keeps the policy and replaces the name'
 issues:
 - id: ISS-301
   severity: MEDIUM

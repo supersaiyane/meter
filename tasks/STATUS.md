@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 94 total, 15 specified, 13 in build, 63 delivered |
+| Features | 94 total, 11 specified, 17 in build, 63 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 202 recorded |
+| Changes | 203 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
 | Open questions | 43 awaiting a decision |
 
@@ -181,7 +181,8 @@ followed: the GitHub App adapter, a token per request, unproved against a real i
 TASK-P15-003 added the connection and the repository mapping, set by a person whose scope is the
 organization. TASK-P15-004 lets a person ask for a fix and opens it as a removal, closing ISS-228. TASK-P15-005
 opens gp2 to gp3 as an edit to the block that declares the volume. TASK-P15-006 follows each pull
-request until the inventory sees the change, then marks the recommendation done.
+request until the inventory sees the change, then marks the recommendation done. TASK-P15-007 lets
+Meter merge a ready gp3 fix the tenant's merge policy names, behind the pull_request_merge flag.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -360,7 +361,7 @@ ISS-003.
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
-| P15 | 6 | 0 | 0 | 0 | 3 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
+| P15 | 7 | 0 | 0 | 0 | 2 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -675,6 +676,7 @@ ISS-003.
 | `TASK-P15-004` | Done 2026-10-15 | a fix asked for, and a removal opened |
 | `TASK-P15-005` | Done 2026-10-15 | gp2 to gp3 as an edit |
 | `TASK-P15-006` | Done 2026-10-15 | each pull request followed until the inventory sees it |
+| `TASK-P15-007` | Done 2026-10-15 | the merge policy and Meter's merge |
 
 <!-- generated:task-status end -->
 

@@ -80,6 +80,8 @@ class ErasureReport:
     #: TASK-P15-004. The fixes they asked for and their steps on them: each kept, the name gone.
     fixes_reattributed: int = 0
     fix_steps_reattributed: int = 0
+    #: TASK-P15-007. The merge policy they set: the decision kept, the name gone.
+    merge_policies_reattributed: int = 0
     #: Always zero. Present so the report says out loud what was left alone,
     #: rather than leaving the reader to infer it from an absence.
     audit_events_removed: int = 0
@@ -103,6 +105,7 @@ class ErasureReport:
             f"  repository mappings reattributed {self.mappings_reattributed}",
             f"  fixes asked for reattributed   {self.fixes_reattributed}",
             f"  fix steps reattributed         {self.fix_steps_reattributed}",
+            f"  merge policy rows reattributed {self.merge_policies_reattributed}",
             f"  audit events written           {self.audit_events_written}",
             f"  audit events removed           {self.audit_events_removed}"
             " (never removed, by design)",
@@ -257,6 +260,15 @@ def erase(
         {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
     ).rowcount
 
+    # The merge policy a person set: the tenant's decision stays, only the name goes. P15-007.
+    merge_rows = connection.execute(
+        text(
+            "UPDATE merge_policy SET set_by = :tombstone "
+            "WHERE tenant_id = :tenant AND set_by = :who"
+        ),
+        {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
+    ).rowcount
+
     reached = _reach_personal_tables(connection, tenant_id, str(principal_id))
 
     _audit(connection, tenant_id, principal_id, "erasure.completed", request_id, requested_by, at)
@@ -272,6 +284,7 @@ def erase(
         mappings_reattributed=mapping_rows or 0,
         fixes_reattributed=fix_rows or 0,
         fix_steps_reattributed=fix_step_rows or 0,
+        merge_policies_reattributed=merge_rows or 0,
         audit_events_written=2,
         **reached,
     )

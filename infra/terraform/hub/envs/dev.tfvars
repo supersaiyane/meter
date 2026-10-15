@@ -123,4 +123,5 @@ settings = {
   METER_FEATURE_RETENTION_JOBS                        = "true"
   METER_FEATURE_SCOPE_AUDIT                           = "true"
   METER_FEATURE_LOCAL_AUTH                            = "true"
+  METER_FEATURE_PULL_REQUEST_MERGE                    = "true"
 }

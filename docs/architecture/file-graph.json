@@ -727,6 +727,7 @@
     "migrations/versions/0060_fix_pull_request.py",
     "migrations/versions/0061_recommendation_gp3_figures.py",
     "migrations/versions/0062_fix_followed.py",
+    "migrations/versions/0063_merge_policy.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -9332,7 +9333,17 @@
     },
     {
       "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
+      "t": "finops_core/flags.py",
       "k": "python"
     },
     {
@@ -11242,7 +11253,22 @@
     },
     {
       "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/flags.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/ports/merges.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
       "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_ingest/fix_merge.py",
       "k": "python"
     },
     {
@@ -14318,6 +14344,11 @@
     {
       "s": "tests/api/test_remediation_routes.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_remediation_routes.py",
+      "t": "finops_core/domain/fixes.py",
       "k": "python"
     },
     {

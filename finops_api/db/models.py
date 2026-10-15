@@ -2490,3 +2490,18 @@ volume_observation = Table(
     CheckConstraint("size_gib > 0", name="ck_volume_observation__size"),
     CheckConstraint("collected_at >= as_of", name="ck_volume_observation__collected_after_true"),
 )
+
+
+#: P15, 0063. Which reversible fixes a tenant lets Meter merge, FEAT-094: empty to start, and a
+#: check holding each class to the reversible set, ADR-0038.
+merge_policy = Table(
+    "merge_policy",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("waste_class", Text, primary_key=True),
+    Column("reason", Text, nullable=False),
+    Column("set_by", Text, nullable=False),
+    Column("set_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    CheckConstraint("waste_class IN ('EBS_GP2_TO_GP3')", name="ck_merge_policy__reversible"),
+    CheckConstraint("length(trim(reason)) > 0", name="ck_merge_policy__reason"),
+)

@@ -552,6 +552,13 @@ def test_an_erasure_keeps_where_fixes_go_and_takes_the_name_off(
             ),
             who,
         )
+        connection.execute(
+            text(
+                "INSERT INTO merge_policy (tenant_id, waste_class, reason, set_by, set_at) "
+                "VALUES (:t, 'EBS_GP2_TO_GP3', 'reversible', :who, :at)"
+            ),
+            who,
+        )
         report = erase_principal.erase(
             connection, tenant_id, principal, "operator-1", "ticket-9", clock=at
         )
@@ -565,6 +572,7 @@ def test_an_erasure_keeps_where_fixes_go_and_takes_the_name_off(
         ).one()
 
     assert (report.code_host_reattributed, report.mappings_reattributed) == (1, 1)
+    assert report.merge_policies_reattributed == 1
     assert tuple(connected) == (TOMBSTONE, "1001")
     assert tuple(mapped) == (TOMBSTONE, "acme/infra")
 

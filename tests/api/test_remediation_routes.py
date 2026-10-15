@@ -361,3 +361,82 @@ def test_every_fix_in_the_readers_scope_is_listed_with_its_steps(
     )
     client, token = client_for(engine, narrowed, settings)
     assert get(client, token, "/api/v1/remediation/pull-requests")["data"]["fixes"] == []
+
+
+# -- the merge policy, TASK-P15-007, ADR-0038 ----------------------------------------------------
+
+POLICY = "/api/v1/remediation/merge-policy"
+
+
+def test_the_merge_policy_starts_empty_and_a_person_names_gp3_with_a_reason(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    client, token = client_for(engine, person(tenant_id), settings)
+    empty = get(client, token, POLICY)["data"]
+    assert (empty["classes"], empty["reversible"], empty["merging_on"]) == (
+        [],
+        ["EBS_GP2_TO_GP3"],
+        True,
+    )
+    body = {"classes": ["EBS_GP2_TO_GP3"], "reason": "  gp3 is reversible and checked  "}
+    named = put(client, token, POLICY, body)["data"]
+    assert (named["classes"], named["reason"], named["set_by"]) == (
+        ["EBS_GP2_TO_GP3"],
+        "gp3 is reversible and checked",
+        SIGNED_IN,
+    )
+    assert audited(engine, tenant_id, "merge_policy") == ["ALLOWED"]
+    off = settings.model_copy(update={"feature_pull_request_merge": False})
+    client, token = client_for(engine, person(tenant_id), off)
+    assert get(client, token, POLICY)["data"]["merging_on"] is False
+
+
+def test_a_class_that_is_not_reversible_is_refused_before_it_is_stored(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    client, token = client_for(engine, person(tenant_id), settings)
+    body = {"classes": ["EBS_UNATTACHED"], "reason": "deletions too"}
+    refused = client.put(POLICY, json=body, headers=auth(token))
+    assert refused.status_code == 422
+    assert "cannot be merged by Meter" in refused.text
+    assert get(client, token, POLICY)["data"]["classes"] == []
+
+
+def test_a_narrowed_person_may_neither_read_nor_change_the_merge_policy(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    narrowed = only(tenant_id, ACCOUNT)
+    scope = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=narrowed.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, scope, settings)
+    assert client.get(POLICY, headers=auth(token)).status_code == 404
+    body = {"classes": ["EBS_GP2_TO_GP3"], "reason": "from a narrowed scope"}
+    assert client.put(POLICY, json=body, headers=auth(token)).status_code == 403
+    assert audited(engine, tenant_id, "merge_policy") == ["DENIED"]
+
+
+def test_the_database_holds_the_policy_to_the_reversible_set(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """The check and the domain's set are one list written twice; this holds them equal."""
+    import re
+
+    from finops_core.domain.fixes import REVERSIBLE
+
+    with engine.connect() as connection:
+        defined = connection.execute(
+            text(
+                "SELECT pg_get_constraintdef(oid) FROM pg_constraint "
+                "WHERE conname = 'ck_merge_policy__reversible'"
+            )
+        ).scalar_one()
+    assert set(re.findall(r"'([A-Z0-9_]+)'", defined)) == {one.value for one in REVERSIBLE}
+    with pytest.raises(IntegrityError, match="ck_merge_policy__reversible"), engine.begin() as db:
+        db.execute(
+            text(
+                "INSERT INTO merge_policy (tenant_id, waste_class, reason, set_by) "
+                "VALUES (:t, 'EBS_UNATTACHED', 'a deletion', 'x')"
+            ),
+            {"t": tenant_id},
+        )

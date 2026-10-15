@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -121,7 +122,7 @@ def estate(
     return recommendation, fix
 
 
-def run(engine: Engine, tenant: UUID, host: Any) -> CollectorOutcome:
+def run(engine: Engine, tenant: UUID, host: Any, settings: Any = None) -> CollectorOutcome:
     work = WorkUnit(
         tenant_id=tenant,
         collector=COLLECTOR,
@@ -130,7 +131,10 @@ def run(engine: Engine, tenant: UUID, host: Any) -> CollectorOutcome:
     )
     collector = FixPullRequestsCollector(lambda _context, _connected: host, clock=lambda: NOW)
     with engine.begin() as connection:
-        return collector(CollectorContext(unit=work, connection=connection, run_id=uuid4()))
+        context = CollectorContext(
+            unit=work, connection=connection, run_id=uuid4(), settings=settings
+        )
+        return collector(context)
 
 
 def fixed(engine: Engine, fix: UUID) -> Any:
@@ -480,3 +484,103 @@ def test_a_pull_request_the_host_no_longer_knows_fails_with_its_cause(
     row = fixed(engine, fix)
     assert (row.status, row.failure_cause) == ("FAILED", "Misconfigured")
     assert steps(engine, fix)[-1] == ("OPEN", "FAILED", "meter")
+
+
+# -- Meter's merge under the policy, TASK-P15-007, ADR-0038 -----------------------------------
+
+MERGING = SimpleNamespace(feature_pull_request_merge=True)
+NOT_MERGING = SimpleNamespace(feature_pull_request_merge=False)
+
+
+def named(engine: Engine, tenant: UUID, *classes: str) -> None:
+    with engine.begin() as connection:
+        for waste_class in classes:
+            connection.execute(
+                text(
+                    "INSERT INTO merge_policy (tenant_id, waste_class, reason, set_by) "
+                    "VALUES (:t, :class, 'reversible, so merged when the checks pass', 'owner')"
+                ),
+                {"t": tenant, "class": waste_class},
+            )
+
+
+def ready(host: RecordingPullRequests, readiness: Readiness = Readiness.READY) -> None:
+    host.set_state(
+        "acme/infra",
+        PullRequestState(
+            number=1,
+            url="https://code.example/acme/infra/pull/1",
+            open=True,
+            merged=False,
+            readiness=readiness,
+            head_sha="head-1",
+        ),
+    )
+
+
+GP3_FIX = {"waste_class": "EBS_GP2_TO_GP3", "iops": 3000, "mibps": 125}
+
+
+def test_meter_merges_a_ready_gp3_fix_the_policy_names_and_says_why(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    recommendation, fix, host = opened(engine, tenant_id, **GP3_FIX)
+    named(engine, tenant_id, "EBS_GP2_TO_GP3")
+    ready(host)
+    run(engine, tenant_id, host, MERGING)
+    row = fixed(engine, fix)
+    assert (row.status, row.merged_by) == ("MERGED", "meter")
+    assert host.merges == [("acme/infra", 1, "head-1")]
+    assert steps(engine, fix)[-1] == ("OPEN", "MERGED", "meter")
+    with engine.connect() as connection:
+        note = connection.execute(
+            text(
+                "SELECT note FROM fix_pull_request_event WHERE fix_id = :fix "
+                "AND to_status = 'MERGED'"
+            ),
+            {"fix": fix},
+        ).scalar_one()
+    assert "merge policy names EBS_GP2_TO_GP3" in note
+    # Merged is not done: the volume must read gp3 first.
+    assert lifecycle(engine, recommendation) == "IN_PROGRESS"
+
+
+@pytest.mark.parametrize(
+    ("fix_class", "policy", "settings", "readiness"),
+    [
+        (GP3_FIX, (), MERGING, Readiness.READY),
+        (GP3_FIX, ("EBS_GP2_TO_GP3",), NOT_MERGING, Readiness.READY),
+        (GP3_FIX, ("EBS_GP2_TO_GP3",), None, Readiness.READY),
+        (GP3_FIX, ("EBS_GP2_TO_GP3",), MERGING, Readiness.WAITING),
+        (GP3_FIX, ("EBS_GP2_TO_GP3",), MERGING, Readiness.BLOCKED),
+        ({}, ("EBS_GP2_TO_GP3",), MERGING, Readiness.READY),
+    ],
+)
+def test_nothing_is_merged_unless_every_condition_holds(
+    engine: Engine,
+    tenant_id: UUID,
+    fix_class: dict[str, Any],
+    policy: tuple[str, ...],
+    settings: Any,
+    readiness: Readiness,
+) -> None:
+    _recommendation, fix, host = opened(engine, tenant_id, **fix_class)
+    named(engine, tenant_id, *policy)
+    ready(host, readiness)
+    run(engine, tenant_id, host, settings)
+    assert host.merges == []
+    assert fixed(engine, fix).status == "OPEN"
+
+
+def test_a_merge_the_host_refuses_is_recorded_once_and_left_for_a_person(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    _recommendation, fix, host = opened(engine, tenant_id, **GP3_FIX)
+    named(engine, tenant_id, "EBS_GP2_TO_GP3")
+    ready(host)
+    host.refuse_merges = "Required status check plan is expected."
+    run(engine, tenant_id, host, MERGING)
+    run(engine, tenant_id, host, MERGING)
+    assert fixed(engine, fix).status == "OPEN"
+    assert len(host.merges) == 2
+    assert steps(engine, fix)[1:] == [("OPEN", "OPEN", "meter")]

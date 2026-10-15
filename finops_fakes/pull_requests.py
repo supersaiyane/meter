@@ -9,6 +9,7 @@ was given, reports the states it was given, and its merger records each merge it
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import replace
 
 from finops_core.domain.fixes import PullRequestState, Readiness
 from finops_core.errors import Misconfigured
@@ -24,9 +25,17 @@ COLLECTOR = "fix_pull_requests"
 
 
 class RecordingPullRequests:
-    """A `PullRequestSink`, `RepositoryReader` and `PullRequestTracker` holding what it opened."""
+    """Every code host port: opens, reads a folder, reports state and merges. TASK-P15-007.
+
+    One object for all four, as the GitHub adapter is, so the local stack's collector can follow
+    a pull request it opened and merge it. A merge succeeds at the head it reported and refuses
+    any other, as GitHub does, or refuses every time with `refuse_merges` set.
+    """
 
     def __init__(self, files: Mapping[str, str] | None = None) -> None:
+        #: Set to a sentence to refuse every merge with it, as a repository's protection would.
+        self.refuse_merges: str | None = None
+        self.merges: list[tuple[str, int, str]] = []
         self._opened: dict[str, OpenedPullRequest] = {}
         self._drafts: list[PullRequestDraft] = []
         self._targets: list[RepositoryTarget] = []
@@ -88,6 +97,19 @@ class RecordingPullRequests:
                 detail="the fake host holds no such pull request",
             )
         return found
+
+    def merge_pull_request(self, repository: str, number: int, head_sha: str) -> MergeAnswer:
+        """Merge at the head reported, as GitHub's own merge does, and report it merged."""
+        state = self.pull_request_state(repository, number)
+        self.merges.append((repository, number, head_sha))
+        if self.refuse_merges is not None:
+            return MergeAnswer(merged=False, reason=self.refuse_merges)
+        if state.head_sha != head_sha:
+            return MergeAnswer(merged=False, reason="The head moved, so nothing was merged.")
+        self.set_state(
+            repository, replace(state, open=False, merged=True, merged_by="meter-app[bot]")
+        )
+        return MergeAnswer(merged=True, reason="Merged.", sha=f"merge-{number}")
 
 
 class RecordingMerger:

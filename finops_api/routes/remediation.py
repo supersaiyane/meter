@@ -23,6 +23,7 @@ from finops_api.db.repositories.remediation import (
     CodeHostConnectionRepository,
     FixPullRequestRepository,
     Mapping,
+    MergePolicyRepository,
     RemediationRow,
     RepositoryMappingRepository,
 )
@@ -38,13 +39,17 @@ from finops_api.schemas import (
     FixPullRequestsOut,
     FixRequestIn,
     FixStepOut,
+    MergePolicyIn,
+    MergePolicyOut,
     Meta,
     RepositoryMappingOut,
     RepositoryMappingsIn,
     RepositoryMappingsOut,
 )
 from finops_core.config import Settings
+from finops_core.domain.fixes import REVERSIBLE
 from finops_core.domain.tenant import Scope
+from finops_core.flags import FlagResolver
 from finops_providers.aws.secrets import codehost_key_prefix
 
 router = APIRouter(prefix=API_PREFIX, tags=["remediation"])
@@ -62,7 +67,8 @@ def _organization_only(scope: Scope) -> None:
 
 
 def _refused(
-    repository: CodeHostConnectionRepository | RepositoryMappingRepository, scope: Scope
+    repository: CodeHostConnectionRepository | RepositoryMappingRepository | MergePolicyRepository,
+    scope: Scope,
 ) -> JSONResponse | None:
     """Refuse a change by anyone but a person whose scope is the organization, audited DENIED.
 
@@ -306,3 +312,63 @@ def remediation_pull_requests(
         connection, scope, context, visible=len(rows), rows=rows, coverage_unit="recommendations"
     )
     return Envelope(data=found, meta=meta)
+
+
+#: The flag that stops every merge at once, ADR-0038.
+MERGE_FLAG = "pull_request_merge"
+
+
+def _policy(
+    connection: Connection, scope: Scope, context: AccessContext, settings: Settings
+) -> Envelope[MergePolicyOut]:
+    rows = MergePolicyRepository(connection, context).current(scope)
+    newest = max(rows, key=lambda row: row.set_at, default=None)
+    found = MergePolicyOut(
+        classes=[str(row.waste_class) for row in rows],
+        reversible=sorted(one.value for one in REVERSIBLE),
+        reason=None if newest is None else newest.reason,
+        set_by=None if newest is None else newest.set_by,
+        set_at=None if newest is None else newest.set_at,
+        merging_on=FlagResolver(settings).is_enabled(MERGE_FLAG),
+    )
+    stamps = [] if newest is None else [_Stamp(newest.set_at)]
+    return Envelope(data=found, meta=_meta(connection, scope, context, stamps))
+
+
+@router.get("/remediation/merge-policy", response_model=Envelope[MergePolicyOut])
+def remediation_merge_policy(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+    settings: Settings = Depends(get_settings),
+) -> Envelope[MergePolicyOut]:
+    """Which reversible fixes Meter may merge, empty until a person names one. FEAT-094."""
+    _organization_only(scope)
+    return _policy(connection, scope, context, settings)
+
+
+@router.put("/remediation/merge-policy", response_model=Envelope[MergePolicyOut])
+def change_remediation_merge_policy(
+    body: MergePolicyIn,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+    settings: Settings = Depends(get_settings),
+) -> Envelope[MergePolicyOut] | JSONResponse:
+    """Set the classes Meter may merge, with a reason. The organization's only. ADR-0038."""
+    repository = MergePolicyRepository(connection, context)
+    refused = _refused(repository, scope)
+    if refused is not None:
+        return refused
+    reversible = {one.value for one in REVERSIBLE}
+    outside = sorted(set(body.classes) - reversible)
+    if outside:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{', '.join(outside)} cannot be merged by Meter: only a fix that loses nothing "
+            f"if wrong may be, {', '.join(sorted(reversible))}. ADR-0038.",
+        )
+    repository.replace(
+        scope, sorted(set(body.classes)), reason=body.reason.strip(), at=datetime.now(UTC)
+    )
+    return _policy(connection, scope, context, settings)

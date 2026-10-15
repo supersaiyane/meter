@@ -197,6 +197,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "fix_pull_request_event": ByAccount("sub_account_id"),
     # TASK-P15-006. What each volume is, read by the volume pass, by its account.
     "volume_observation": ByAccount("sub_account_id"),
+    # TASK-P15-007. Which reversible fixes Meter may merge, the organization's, ADR-0025.
+    "merge_policy": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
     "purchase_plan": PayerWide(),

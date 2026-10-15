@@ -3038,3 +3038,28 @@ class FixPullRequestsOut(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     fixes: list[FixPullRequestFollowedOut]
+
+
+class MergePolicyIn(BaseModel):
+    """The classes of fix Meter may merge, the whole set, with the reason. FEAT-094, ADR-0038."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    classes: list[str] = Field(max_length=20)
+    #: A policy is a decision, so it says why; required even to empty it.
+    reason: str = Field(min_length=3, max_length=500)
+
+
+class MergePolicyOut(BaseModel):
+    """What Meter may merge, what it could ever merge, and whether merging is on. FEAT-094."""
+
+    model_config = ConfigDict(frozen=True)
+
+    classes: list[str]
+    #: The reversible set from the domain, the only classes a policy may name, ADR-0038.
+    reversible: list[str]
+    reason: str | None
+    set_by: str | None
+    set_at: datetime | None
+    #: The `pull_request_merge` flag: off stops every merge whatever the policy names.
+    merging_on: bool

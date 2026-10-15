@@ -23,6 +23,13 @@ closed without merging returns the recommendation to ACCEPTED. A merged fix's re
 IN_PROGRESS until the inventory sees the change, read after the merge: the resource no longer
 listed for a removal, the volume reading gp3 for an edit. Then it is DONE, and FEAT-029 measures
 the saving from the bill sixty days on.
+
+**Meter merges only what loses nothing if wrong, ADR-0038, TASK-P15-007.** An open pull request of a
+class the tenant's merge policy names, gp2 to gp3 alone ever, is merged through
+`finops_ingest.fix_merge.merge_under_policy`, the one merge path, once GitHub reports every required
+check passed and review given, at the head it reported, and never with the `pull_request_merge`
+flag off. The merge is a step naming the policy that allowed it; a merge GitHub refuses is a step
+recorded once while it keeps refusing, and a person can still merge it.
 """
 
 from __future__ import annotations
@@ -38,12 +45,15 @@ from sqlalchemy import text
 from finops_core.domain.fixes import PullRequestState
 from finops_core.domain.waste import Lifecycle, WasteClass
 from finops_core.errors import AccessDenied, Misconfigured, SchemaDrift, Throttled, Unreachable
+from finops_core.flags import FlagResolver
+from finops_core.ports.merges import PullRequestMerger
 from finops_core.ports.pull_requests import (
     PullRequestSink,
     PullRequestTracker,
     RepositoryReader,
     RepositoryTarget,
 )
+from finops_ingest.fix_merge import merge_under_policy
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.gp3_edit import Gp3Figures, author_gp3, edit_volume
 from finops_query.remediation import (
@@ -74,8 +84,8 @@ class Connected:
     key_secret_name: str
 
 
-class CodeHost(PullRequestSink, RepositoryReader, PullRequestTracker, Protocol):
-    """What the collector asks of a code host: open, read a folder, and follow."""
+class CodeHost(PullRequestSink, RepositoryReader, PullRequestTracker, PullRequestMerger, Protocol):
+    """What the collector asks of a code host: open, read a folder, follow, and merge."""
 
 
 #: The code host for a tenant's connection, built for this run.
@@ -119,10 +129,23 @@ STEP = text(
 )
 
 OPENED = text(
-    "SELECT f.fix_id, f.recommendation_id, f.sub_account_id, f.repository, f.number "
-    "FROM fix_pull_request f WHERE f.tenant_id = :tenant AND f.status = 'OPEN' "
+    "SELECT f.fix_id, f.recommendation_id, f.sub_account_id, f.repository, f.number, "
+    "r.waste_class FROM fix_pull_request f JOIN recommendation r "
+    "ON r.recommendation_id = f.recommendation_id AND r.tenant_id = f.tenant_id "
+    "WHERE f.tenant_id = :tenant AND f.status = 'OPEN' "
     "ORDER BY f.requested_at, f.fix_id FOR UPDATE OF f SKIP LOCKED"
 )
+
+#: The classes the tenant lets Meter merge, ADR-0038. Empty until a person names one.
+POLICY = text("SELECT waste_class FROM merge_policy WHERE tenant_id = :tenant")
+
+#: A fix's last step, so a refusal the host repeats every run is recorded once.
+LAST_NOTE = text(
+    "SELECT note FROM fix_pull_request_event WHERE fix_id = :fix ORDER BY at DESC, event_id LIMIT 1"
+)
+
+#: The flag that stops every merge at once, whatever a policy names.
+MERGE_FLAG: Final = "pull_request_merge"
 
 #: Merged fixes whose recommendation the inventory has not yet been seen to change.
 AWAITING = text(
@@ -228,16 +251,29 @@ class FixPullRequestsCollector:
             if outcome.status == "REQUESTED":
                 # Throttled or not answering: asking again this run only spends the limit.
                 return CollectorOutcome(items_written=moved)
+        allowed = frozenset(
+            WasteClass(str(one)) for one in connection.execute(POLICY, {"tenant": tenant}).scalars()
+        )
+        merging_on = _merging_on(context)
         for fix in opened:
             with connection.begin_nested():
-                followed = self._follow(connection, tenant, fix, host)
+                followed = self._follow(connection, tenant, fix, host, allowed, merging_on)
             if followed is None:
                 break
             moved += followed
         return CollectorOutcome(items_written=moved)
 
-    def _follow(self, connection: Any, tenant: UUID, fix: Any, host: CodeHost) -> int | None:
-        """Record what the host says of one open pull request. None stops following this run."""
+    def _follow(
+        self,
+        connection: Any,
+        tenant: UUID,
+        fix: Any,
+        host: CodeHost,
+        allowed: frozenset[WasteClass],
+        merging_on: bool,
+    ) -> int | None:
+        """Record what the host says of one open pull request, and merge it where the rule says
+        yes. None stops following this run."""
         try:
             state = host.pull_request_state(str(fix.repository), int(fix.number))
         except FOR_NOW:
@@ -254,7 +290,51 @@ class FixPullRequestsCollector:
             return self._merged(connection, tenant, fix, state)
         if not state.open:
             return self._closed(connection, tenant, fix)
+        return self._merge(connection, tenant, fix, host, state, allowed, merging_on)
+
+    def _merge(
+        self,
+        connection: Any,
+        tenant: UUID,
+        fix: Any,
+        host: CodeHost,
+        state: PullRequestState,
+        allowed: frozenset[WasteClass],
+        merging_on: bool,
+    ) -> int | None:
+        """ADR-0038: GitHub's own merge, through the one merge function, where the rule allows."""
+        try:
+            outcome = merge_under_policy(
+                host,
+                repository=str(fix.repository),
+                state=state,
+                waste_class=WasteClass(fix.waste_class),
+                allowed_classes=allowed,
+                # Every fix pull request is one Meter opened; a person's never enters this table.
+                opened_by_meter=True,
+                merging_on=merging_on,
+            )
+        except FOR_NOW:
+            return None
+        except FOR_GOOD as failure:
+            return self._refused(connection, tenant, fix, f"{failure.cause}: {failure.detail}")
+        if outcome.merged:
+            now = self._clock()
+            connection.execute(SET_MERGED, {"by": METER, "now": now, "fix": fix.fix_id})
+            note = f"Merged by Meter at {outcome.sha}: {outcome.reason}"
+            self._step(connection, tenant, fix, "OPEN", "MERGED", METER, note, now)
+            return 1
+        if outcome.attempted:
+            return self._refused(connection, tenant, fix, outcome.reason)
         return 0
+
+    def _refused(self, connection: Any, tenant: UUID, fix: Any, why: str) -> int:
+        """A merge the host refused, recorded once while it keeps refusing for the same reason."""
+        note = f"Meter did not merge: {why}"
+        if connection.execute(LAST_NOTE, {"fix": fix.fix_id}).scalar() == note:
+            return 0
+        self._step(connection, tenant, fix, "OPEN", "OPEN", METER, note, self._clock())
+        return 1
 
     def _merged(self, connection: Any, tenant: UUID, fix: Any, state: PullRequestState) -> int:
         now = self._clock()
@@ -489,6 +569,13 @@ def _moved(
                 "now": now,
             },
         )
+
+
+def _merging_on(context: CollectorContext) -> bool:
+    """The `pull_request_merge` flag, off where the run has no settings to read it from."""
+    if context.settings is None:
+        return False
+    return FlagResolver(context.settings).is_enabled(MERGE_FLAG)
 
 
 def _not_authored(reason: str) -> _Moved:

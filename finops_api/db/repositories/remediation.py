@@ -255,3 +255,37 @@ class FixPullRequestRepository(ScopedRepository):
         for row in self._connection.execute(statement):
             found[row.fix_id].append(row)
         return found
+
+
+class MergePolicyRepository(ScopedRepository):
+    """Which reversible fixes the tenant lets Meter merge. FEAT-094, ADR-0038, TASK-P15-007."""
+
+    table: ClassVar[Table] = models.merge_policy
+    resource: ClassVar[str] = "merge_policy"
+
+    def current(self, scope: Scope) -> Sequence[RemediationRow]:
+        """Each class the policy names, with its reason."""
+        statement = self.scoped_select(scope).order_by(self.table.c.waste_class)
+        rows: Sequence[RemediationRow] = self.fetch(scope, statement)
+        return rows
+
+    def replace(self, scope: Scope, classes: Sequence[str], *, reason: str, at: datetime) -> None:
+        """Make the policy exactly `classes`, each with this reason, audited ALLOWED."""
+        confirmed = _person(scope)
+        table = self.table
+        self._connection.execute(table.delete().where(table.c.tenant_id == confirmed.tenant_id))
+        for waste_class in classes:
+            self._connection.execute(
+                table.insert().values(
+                    tenant_id=confirmed.tenant_id,
+                    waste_class=waste_class,
+                    reason=reason,
+                    set_by=confirmed.principal_id,
+                    set_at=at,
+                )
+            )
+        self._audit(confirmed, action="change", outcome="ALLOWED")
+
+    def refuse(self, scope: Scope) -> None:
+        """Record a refused change, so a narrowed attempt is in the audit trail."""
+        self._audit(require_scope(scope), action="change", outcome="DENIED")

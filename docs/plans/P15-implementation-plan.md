@@ -242,7 +242,7 @@ every volume it reads, says gp3 for an edit. Nothing kept a volume's type before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec section 5.2, OPEN-41, ADR-0038 |
 | Delivers | FEAT-094 |
 | Depends on | TASK-P15-006 |
@@ -250,12 +250,23 @@ every volume it reads, says gp3 for an edit. Nothing kept a volume's type before
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `merge_policy`, a check holding each class to the reversible set
-- [ ] `GET` and `PUT /v1/remediation/merge-policy`, with a reason, by a person whose scope is the
+- [x] A migration creates `merge_policy`, a check holding each class to the reversible set
+- [x] `GET` and `PUT /v1/remediation/merge-policy`, with a reason, by a person whose scope is the
       organization, audited
-- [ ] The collector merges a pull request Meter opened, of a class the policy names, only when GitHub
+- [x] The collector merges a pull request Meter opened, of a class the policy names, only when GitHub
       reports it mergeable with checks passed and reviews given, records the step, and merges
       nothing with the `pull_request_merge` flag off
+
+**Delivered 2026-10-15.** Migration `0063_merge_policy` creates the policy, empty for every
+tenant, with a check holding each class to the reversible set, and a test holds the check's list
+equal to the domain's. `GET` and `PUT /v1/remediation/merge-policy` show and set it, with a reason,
+for a person whose scope is the organization, audited, and refuse any class outside the set by
+name. The `fix_pull_requests` collector merges an open pull request of a class the policy names
+through `merge_under_policy` once GitHub reports it ready, records the merge as Meter's step with
+the policy's sentence, and records a refusal once while GitHub repeats it. The `pull_request_merge`
+flag is in the settings, `.env.example`, both tfvars maps and the register, and a run without
+settings merges nothing. The fake code host merges too, at the head it reported, so the local
+stack can.
 
 ---
 
