@@ -674,14 +674,14 @@ changes:
   what: The memory layer given a validity gate. Resume vectors, cited commits and identifiers
     are checked, the checkpoint archive rule became a script, and recording a lesson became one
     command
-  commit: pending
+  commit: a7e44b7
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
 - id: CHG-0035
   date: '2026-08-24'
   type: Process
   what: Every file that forms the reusable base of the project tagged Basic boiler Plate Doc, with
     why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project
-  commit: pending
+  commit: 798dda0
   detail: '[scripts/README.md](scripts/README.md)'
 issues:
 - id: ISS-001
