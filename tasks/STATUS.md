@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 90 total, 11 specified, 13 in build, 63 delivered |
-| Decisions | 37 architecture decision records |
-| Changes | 195 recorded |
+| Features | 94 total, 15 specified, 13 in build, 63 delivered |
+| Decisions | 38 architecture decision records |
+| Changes | 196 recorded |
 | Issues | 187 fixed, 108 open, 0 parked |
-| Open questions | 40 awaiting a decision |
+| Open questions | 43 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -170,6 +170,11 @@ writes the owner's runbook, `docs/runbooks/commitments.md`. P14 is delivered aga
 account has been read, ISS-002, and four of Cost Explorer's service names wait on first contact,
 ISS-297. Proving it on the rebuilt local stack found ISS-298, the screen reading a
 column's places aloud, fixed the same day.
+
+P15, fixes through pull requests, was chosen on 2026-10-15 as proposal 4 of `next-in-scope.txt` and
+specified the same day with OPEN-13 and OPEN-41 to OPEN-43 answered: a GitHub App receives each fix,
+the repository comes from a mapping the owner sets, the first cut writes the eight removals and gp2 to
+gp3, and Meter merges a fix that loses nothing if wrong under the tenant's policy, ADR-0038. Nine tasks.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -348,6 +353,7 @@ ISS-003.
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
+| P15 | 0 | 0 | 0 | 0 | 9 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
 
 **P0, not in the default state**
 
