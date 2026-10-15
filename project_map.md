@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 58 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 274 | test_*.py under tests/ |
-| Test functions | 3279 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 276 | test_*.py under tests/ |
+| Test functions | 3288 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -485,6 +485,9 @@ meter/
 │       │                      states, before tax and tax apart, the tolerance a
 │       │                      modelled 0.01 percent with a one cent floor, and no
 │       │                      figure at all for a state that is not a comparison
+│       ├── fixes.py           FEAT-094, TASK-P15-001, ADR-0038. REVERSIBLE, gp2
+│       │                      to gp3 alone, and may_merge, the pure rule deciding
+│       │                      whether Meter may merge a fix, saying why each no
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              The Ports section of docs/02-ARCHITECTURE.md says
@@ -526,10 +529,15 @@ meter/
 │       ├── llm.py             LlmProvider, one method, complete, over messages,
 │       │                      tool schemas and tool calls. It names no vendor, no
 │       │                      model and no region. ADR-0028, TASK-P7-001
+│       ├── merges.py          PullRequestMerger, the one write into a repository:
+│       │                      merging a fix Meter opened. Its own module, so the
+│       │                      contract test names its one caller. TASK-P15-001
 │       ├── metrics.py         MetricSource. A fake and no adapter, ISS-240
-│       ├── pull_requests.py   PullRequestSink. Opens a pull request, and has no
-│       │                      method to merge, approve or apply one. A fake and no
-│       │                      adapter, since the code host is OPEN-13. TASK-P7-009
+│       ├── pull_requests.py   PullRequestSink, RepositoryReader and
+│       │                      PullRequestTracker. Opens a pull request in the
+│       │                      mapped repository and folder, reads a folder and a
+│       │                      pull request's state, and names no merge, approval
+│       │                      or apply. TASK-P7-009, TASK-P15-001
 │       ├── query.py           QuerySurface, the first port not about a cloud, with
 │       │                      RefreshFloor and PanelRewrite beside it, and
 │       │                      QueryEvidence and QueryParser. An adapter may not
@@ -1166,8 +1174,9 @@ meter/
 │   │                     ForbiddenModel, which fails a test if it is asked
 │   │                     anything. The evaluation sets run on it in make verify
 │   ├── pull_requests.py   RecordingPullRequests, idempotent by reference, so a
-│   │                     recommendation never gets a second pull request. It
-│   │                     stands in for the adapter OPEN-13 has not chosen
+│   │                     recommendation never gets a second pull request; it
+│   │                     reads a folder from files it is given and reports a
+│   │                     state a test sets. RecordingMerger records merges
 │   ├── fixtures.py        one root, two units, five accounts, one denied
 │   ├── provider.py        the failure plan. Any of the six, for any scope.
 │   │                     Takes the time it is observed at, because the
@@ -1238,6 +1247,9 @@ meter/
 │   │                          if it did not take, and records nothing when it
 │   │                          does, because a change row claims the estate
 │   │                          changed and stayed changed
+│   ├── fix_merge.py           FEAT-094, TASK-P15-001, ADR-0038. The one place
+│   │                          Meter merges: asks may_merge first, merges at the
+│   │                          head the host reported, records a refusal as one
 │   ├── worker.py              one transaction per unit. Only the six are caught.
 │   │                          python -m finops_ingest.worker, TASK-P12-004
 │   ├── processes.py           TASK-P12-004. The dispatcher, one shot with windows
@@ -1857,7 +1869,8 @@ meter/
 │   ├── remediation.py         FEAT-040, TASK-P7-009. A Terraform removed block for
 │   │                          the removal classes, as a pull request draft through
 │   │                          PullRequestSink. Everything else is refused with its
-│   │                          reason, never guessed. Nothing calls it yet, ISS-228
+│   │                          reason, never guessed. The file goes in the mapped
+│   │                          folder, ISS-299. Nothing calls it yet, ISS-228
 │   ├── digest.py              FEAT-041, TASK-P7-012. A week of spend, Monday to
 │   │                          Sunday in UTC, composed into an Answer for a team or
 │   │                          for the whole organization. No model writes it, and a

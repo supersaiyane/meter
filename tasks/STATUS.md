@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-10-12
+Last updated: 2026-10-15
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 94 total, 15 specified, 13 in build, 63 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 196 recorded |
-| Issues | 187 fixed, 108 open, 0 parked |
+| Changes | 197 recorded |
+| Issues | 188 fixed, 108 open, 0 parked |
 | Open questions | 43 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -175,6 +175,8 @@ P15, fixes through pull requests, was chosen on 2026-10-15 as proposal 4 of `nex
 specified the same day with OPEN-13 and OPEN-41 to OPEN-43 answered: a GitHub App receives each fix,
 the repository comes from a mapping the owner sets, the first cut writes the eight removals and gp2 to
 gp3, and Meter merges a fix that loses nothing if wrong under the tenant's policy, ADR-0038. Nine tasks.
+TASK-P15-001 was done the same day: the reversible set and the merge rule in the domain, the one
+merge path, and ISS-299, a removal file placed in a folder Terraform never reads.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -353,7 +355,7 @@ ISS-003.
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
-| P15 | 0 | 0 | 0 | 0 | 9 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
+| P15 | 1 | 0 | 0 | 0 | 8 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -657,6 +659,12 @@ ISS-003.
 | `TASK-P14-008` | Done 2026-10-13 | approval, the purchase recorded, and verification |
 | `TASK-P14-009` | Done 2026-10-13 | the commitments screen |
 | `TASK-P14-010` | Done 2026-10-13 | the local stack, first contact, proof and documents |
+
+**P15, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P15-001` | Done 2026-10-15 | the reversible set, the merge rule and the port |
 
 <!-- generated:task-status end -->
 

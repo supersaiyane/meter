@@ -20,7 +20,7 @@ Proposal 4 asks for graded autonomy: the low risk fixes merged without waiting f
 
 ## How it works
 
-Not built yet. The reversible set, `EBS_GP2_TO_GP3` alone, is in the domain, and a pure rule decides from the policy, the class, who opened the pull request and GitHub's report whether Meter may merge. `merge_policy` lists the classes a tenant allows, starts empty, and a database check refuses any class outside the reversible set. The `fix_pull_requests` collector merges through GitHub's own merge, so branch protection applies, and records the merge as a step with the policy that allowed it. The `pull_request_merge` flag turns every merge off.
+Built so far, TASK-P15-001: the reversible set, `EBS_GP2_TO_GP3` alone, is in the domain, and a pure rule, `may_merge`, decides from the policy, the class, who opened the pull request and GitHub's report whether Meter may merge, and says why for every no. The one function that merges, `merge_under_policy` in `finops_ingest/fix_merge.py`, asks it first and merges at the head GitHub reported; a contract test refuses a merge called from anywhere else. Not built yet, TASK-P15-007: `merge_policy` lists the classes a tenant allows, starts empty, and a database check refuses any class outside the reversible set. The `fix_pull_requests` collector merges through GitHub's own merge, so branch protection applies, and records the merge as a step with the policy that allowed it. The `pull_request_merge` flag turns every merge off.
 
 ## Data sources and freshness
 

@@ -17,7 +17,7 @@ import pytest
 
 from finops_core.domain.waste import WasteClass
 from finops_core.ports import pull_requests
-from finops_core.ports.pull_requests import PullRequestDraft, PullRequestSink
+from finops_core.ports.pull_requests import PullRequestDraft, PullRequestSink, RepositoryTarget
 from finops_fakes.pull_requests import RecordingPullRequests
 from finops_query import remediation
 from finops_query.remediation import (
@@ -31,6 +31,7 @@ from finops_query.remediation import (
 
 ADDRESS = "module.storage.aws_ebs_volume.scratch"
 MANAGED = Management(address=ADDRESS, state_reference="s3://estate-state/storage.tfstate")
+TARGET = RepositoryTarget(repository="acme/infra", base_branch="main", folder="storage")
 
 
 def recommendation(**overrides: Any) -> RecommendationFacts:
@@ -62,7 +63,7 @@ def test_a_removal_is_authored_as_a_removed_block_naming_the_address() -> None:
     draft = drafted(recommendation(), MANAGED, "narrow")
 
     (change,) = draft.changes
-    assert change.path == "meter/remediation/rec-41.tf"
+    assert change.path == "meter_remediation_rec-41.tf"
     assert f"from = {ADDRESS}" in change.content
     assert "destroy = true" in change.content
     assert (draft.branch, draft.reference) == ("meter/remediation/rec-41", "rec-41")
@@ -115,18 +116,32 @@ def test_an_address_naming_one_instance_of_several_is_refused(address: str) -> N
 def test_an_authored_change_is_opened_for_review_exactly_once() -> None:
     host = RecordingPullRequests()
 
-    first = propose(recommendation(), MANAGED, "narrow", host)
-    second = propose(recommendation(), MANAGED, "narrow", host)
+    first = propose(recommendation(), MANAGED, "narrow", host, TARGET)
+    second = propose(recommendation(), MANAGED, "narrow", host, TARGET)
 
     assert isinstance(first, Proposed) and isinstance(second, Proposed)
-    assert first.host_reference == second.host_reference
+    assert first.pull_request == second.pull_request
     assert len(host.drafts) == 1
     assert isinstance(host, PullRequestSink)
 
 
+def test_the_file_is_placed_in_the_folder_whose_terraform_declares_the_resource() -> None:
+    """ISS-299. Terraform reads only the files directly in a module's folder."""
+    host = RecordingPullRequests()
+    proposed = propose(recommendation(), MANAGED, "narrow", host, TARGET)
+    assert isinstance(proposed, Proposed)
+    (change,) = proposed.draft.changes
+    assert change.path == "storage/meter_remediation_rec-41.tf"
+    assert host.targets == (TARGET,)
+    root = RepositoryTarget(repository="acme/infra", base_branch="main", folder="")
+    other = propose(recommendation(recommendation_id="rec-42"), MANAGED, None, host, root)
+    assert isinstance(other, Proposed)
+    assert other.draft.changes[0].path == "meter_remediation_rec-42.tf"
+
+
 def test_a_refused_change_reaches_no_host() -> None:
     host = RecordingPullRequests()
-    assert isinstance(propose(recommendation(), None, None, host), NotAuthored)
+    assert isinstance(propose(recommendation(), None, None, host, TARGET), NotAuthored)
     assert host.drafts == ()
 
 

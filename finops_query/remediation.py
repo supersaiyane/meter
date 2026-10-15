@@ -28,13 +28,20 @@ against, and the refusal says so rather than writing a template for a stack nobo
 
 from __future__ import annotations
 
+import posixpath
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from decimal import Decimal
 
 from finops_core.domain.waste import WasteClass
-from finops_core.ports.pull_requests import FileChange, PullRequestDraft, PullRequestSink
+from finops_core.ports.pull_requests import (
+    FileChange,
+    OpenedPullRequest,
+    PullRequestDraft,
+    PullRequestSink,
+    RepositoryTarget,
+)
 
 #: The classes whose remedy is to remove the resource. Each needs nothing the product
 #: does not already hold, so each can be authored whole.
@@ -56,8 +63,10 @@ REMOVALS = frozenset(
 #: would remove every instance, which is not what was recommended.
 INSTANCE_KEY = re.compile(r"\[[^\]]*\]")
 
-#: Where the authored file goes, relative to the repository the host adapter is pointed at.
-REMEDIATION_DIRECTORY = "meter/remediation"
+#: The authored file's name, in the folder whose Terraform declares the resource. Terraform reads
+#: only the `.tf` files directly in a module's folder, so a file anywhere else would never be
+#: seen and its `removed` block would do nothing. ISS-299, found specifying P15.
+REMEDIATION_FILE_PREFIX = "meter_remediation_"
 
 
 @dataclass(frozen=True)
@@ -96,7 +105,7 @@ class Proposed:
     """A pull request the host opened for review, and what it holds."""
 
     draft: PullRequestDraft
-    host_reference: str
+    pull_request: OpenedPullRequest
 
 
 def author(
@@ -134,7 +143,7 @@ def author(
         branch=f"meter/remediation/{recommendation.recommendation_id}",
         changes=(
             FileChange(
-                path=f"{REMEDIATION_DIRECTORY}/{recommendation.recommendation_id}.tf",
+                path=f"{REMEDIATION_FILE_PREFIX}{recommendation.recommendation_id}.tf",
                 content=_removed_block(recommendation, management),
             ),
         ),
@@ -147,6 +156,7 @@ def propose(
     management: Management | None,
     blast_radius_band: str | None,
     sink: PullRequestSink,
+    target: RepositoryTarget,
 ) -> Proposed | NotAuthored:
     """Author the change, and open it for review if one could be authored.
 
@@ -156,7 +166,8 @@ def propose(
     draft = author(recommendation, management, blast_radius_band)
     if isinstance(draft, NotAuthored):
         return draft
-    return Proposed(draft=draft, host_reference=sink.open_pull_request(draft))
+    draft = placed(draft, target.folder)
+    return Proposed(draft=draft, pull_request=sink.open_pull_request(draft, target))
 
 
 def _removed_block(recommendation: RecommendationFacts, management: Management) -> str:
@@ -197,3 +208,18 @@ def _body(recommendation: RecommendationFacts, management: Management, band: str
             "Meter opened this pull request and will never merge, approve or apply it.",
         )
     )
+
+
+def placed(draft: PullRequestDraft, folder: str) -> PullRequestDraft:
+    """The draft with each file moved into `folder`, so its paths are from the repository root.
+
+    The authoring names files relative to the folder whose Terraform declares the resource; the
+    port takes paths from the root. A root folder, empty, leaves them where they are.
+    """
+    if not folder:
+        return draft
+    changes = tuple(
+        FileChange(path=posixpath.join(folder, change.path), content=change.content)
+        for change in draft.changes
+    )
+    return replace(draft, changes=changes)

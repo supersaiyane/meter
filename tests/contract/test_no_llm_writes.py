@@ -10,7 +10,10 @@ Four assertions, each in a place an absence can be undone:
 
 1. No production module names a merge, an approve or an apply for a pull request, with
    comments and docstrings stripped first, for the reason `test_no_quota_writes.py` gives:
-   the modules explain in prose that they never do it, and a grep would fail on that.
+   the modules explain in prose that they never do it, and a grep would fail on that. One
+   exception since ADR-0038, 2026-10-15: the merge method may be named in the port that
+   declares it, the one function that calls it and the adapter that implements it, and only
+   that function may call it. Approving and applying stay forbidden everywhere.
 2. No production module starts `terraform`, `aws` or `kubectl` as a process.
 3. The role Meter holds in a member account grants reads and nothing else, read from the
    template the StackSet deploys.
@@ -29,9 +32,11 @@ from decimal import Decimal
 import pytest
 
 from finops_core.domain.waste import WasteClass
+from finops_core.ports.pull_requests import RepositoryTarget
 from finops_fakes.pull_requests import RecordingPullRequests
 from finops_query.remediation import Management, Proposed, RecommendationFacts, propose
 from tests.contract.test_no_quota_writes import (
+    ROOT,
     _actions_in,
     code_only,
     member_role,
@@ -53,6 +58,19 @@ PULL_REQUEST_WRITES = (
     "auto-approve",
     "terraform apply",
 )
+
+#: ADR-0038. The one merge spelling Meter may hold, and where: the port that declares it, the one
+#: function that calls it, and the GitHub adapter that implements it, TASK-P15-002.
+PERMITTED_MERGE = "merge_pull_request"
+MERGE_PATH = frozenset(
+    {
+        "finops_core/ports/merges.py",
+        "finops_ingest/fix_merge.py",
+        "finops_providers/github/code_host.py",
+    }
+)
+#: The one module that may call it, after asking the merge rule.
+MERGE_CALLER = "finops_ingest/fix_merge.py"
 
 #: Tools that change a cloud or a cluster when started as a process.
 FORBIDDEN_TOOLS = frozenset({"terraform", "aws", "kubectl"})
@@ -105,12 +123,32 @@ def spawned(source: str) -> Iterator[str]:
 # --- what must stay absent -----------------------------------------------------------------
 
 
+def relative(path: pathlib.Path) -> str:
+    return path.relative_to(ROOT).as_posix()
+
+
 @pytest.mark.parametrize("name", PULL_REQUEST_WRITES)
 def test_no_production_module_merges_approves_or_applies(name: str) -> None:
     offenders = [
-        str(path) for path in production_sources() if name in code_only(path.read_text("utf-8"))
+        relative(path)
+        for path in production_sources()
+        if name in code_only(path.read_text("utf-8"))
+        and not (name == PERMITTED_MERGE and relative(path) in MERGE_PATH)
     ]
     assert offenders == [], f"{name} appears in production code: {offenders}"
+
+
+def test_only_the_merge_function_calls_a_merge() -> None:
+    """ADR-0038. A second caller is a second path to a merge that skips the rule."""
+    callers = {
+        relative(path)
+        for path in production_sources()
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == PERMITTED_MERGE
+    }
+    assert callers == {MERGE_CALLER}
 
 
 def test_no_production_module_starts_a_tool_that_changes_a_cloud() -> None:
@@ -180,6 +218,7 @@ def test_a_remediation_is_still_authored_and_opened_for_review() -> None:
         Management(address="module.network.aws_nat_gateway.spare", state_reference="s3://state"),
         "narrow",
         host,
+        RepositoryTarget(repository="acme/infra", base_branch="main", folder="network"),
     )
 
     assert isinstance(proposed, Proposed)

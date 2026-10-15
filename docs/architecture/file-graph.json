@@ -398,6 +398,7 @@
     "finops_core/domain/cost.py",
     "finops_core/domain/explore.py",
     "finops_core/domain/fact.py",
+    "finops_core/domain/fixes.py",
     "finops_core/domain/geography.py",
     "finops_core/domain/iac.py",
     "finops_core/domain/identity.py",
@@ -435,6 +436,7 @@
     "finops_core/ports/inventory.py",
     "finops_core/ports/invoice.py",
     "finops_core/ports/llm.py",
+    "finops_core/ports/merges.py",
     "finops_core/ports/metrics.py",
     "finops_core/ports/ownership.py",
     "finops_core/ports/pull_requests.py",
@@ -528,6 +530,7 @@
     "finops_ingest/composition.py",
     "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
+    "finops_ingest/fix_merge.py",
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
     "finops_ingest/processes.py",
@@ -822,6 +825,7 @@
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
     "tests/core/test_explore_periods.py",
+    "tests/core/test_fixes.py",
     "tests/core/test_geography.py",
     "tests/core/test_gpu.py",
     "tests/core/test_iac.py",
@@ -902,6 +906,7 @@
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_dispatcher_tenants.py",
     "tests/ingest/test_entry_points.py",
+    "tests/ingest/test_fix_merge.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
     "tests/ingest/test_process_mains.py",
@@ -9557,6 +9562,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/fixes.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/iac.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -9884,6 +9894,11 @@
     {
       "s": "finops_core/ports/ownership.py",
       "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
       "k": "python"
     },
     {
@@ -10394,6 +10409,21 @@
     {
       "s": "finops_fakes/provider.py",
       "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/pull_requests.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/pull_requests.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/pull_requests.py",
+      "t": "finops_core/ports/merges.py",
       "k": "python"
     },
     {
@@ -11779,6 +11809,21 @@
     {
       "s": "finops_ingest/dispatcher.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/fix_merge.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/fix_merge.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/fix_merge.py",
+      "t": "finops_core/ports/merges.py",
       "k": "python"
     },
     {
@@ -14548,6 +14593,11 @@
     },
     {
       "s": "tests/contract/test_no_llm_writes.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_no_llm_writes.py",
       "t": "finops_query/remediation.py",
       "k": "python"
     },
@@ -14744,6 +14794,16 @@
     {
       "s": "tests/core/test_explore_periods.py",
       "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_fixes.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_fixes.py",
+      "t": "finops_core/domain/waste.py",
       "k": "python"
     },
     {
@@ -16204,6 +16264,21 @@
     {
       "s": "tests/ingest/test_entry_points.py",
       "t": "finops_ingest/processes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_fix_merge.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_fix_merge.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_fix_merge.py",
+      "t": "finops_ingest/fix_merge.py",
       "k": "python"
     },
     {
