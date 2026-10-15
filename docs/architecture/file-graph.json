@@ -486,6 +486,7 @@
     "finops_ingest/ai_accounts.py",
     "finops_ingest/ai_bindings.py",
     "finops_ingest/aws_bindings.py",
+    "finops_ingest/codehost_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/ai_providers.py",
@@ -501,6 +502,7 @@
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/digests.py",
+    "finops_ingest/collectors/fix_pull_requests.py",
     "finops_ingest/collectors/gpu_utilization.py",
     "finops_ingest/collectors/iac_state.py",
     "finops_ingest/collectors/instance_catalog.py",
@@ -721,6 +723,7 @@
     "migrations/versions/0057_purchase_plan.py",
     "migrations/versions/0058_purchase_plan_match.py",
     "migrations/versions/0059_code_host.py",
+    "migrations/versions/0060_fix_pull_request.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -879,6 +882,7 @@
     "tests/ingest/collectors/test_cost_focus_sources.py",
     "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_digests.py",
+    "tests/ingest/collectors/test_fix_pull_requests.py",
     "tests/ingest/collectors/test_gpu_utilization.py",
     "tests/ingest/collectors/test_iac_state.py",
     "tests/ingest/collectors/test_instance_catalog.py",
@@ -9299,6 +9303,11 @@
     },
     {
       "s": "finops_api/routes/remediation.py",
+      "t": "finops_api/db/repositories/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/remediation.py",
       "t": "finops_api/deps.py",
       "k": "python"
     },
@@ -10124,6 +10133,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/gpu_utilization.py",
       "k": "python"
     },
@@ -10933,6 +10947,36 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/github/app.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_providers/github/code_host.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -11175,6 +11219,31 @@
     {
       "s": "finops_ingest/collectors/digests.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/fix_pull_requests.py",
+      "t": "finops_query/remediation.py",
       "k": "python"
     },
     {
@@ -11805,6 +11874,11 @@
     {
       "s": "finops_ingest/composition.py",
       "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/codehost_bindings.py",
       "k": "python"
     },
     {
@@ -15513,6 +15587,31 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_fix_pull_requests.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_gpu_utilization.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -16299,6 +16398,16 @@
     },
     {
       "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/codehost_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/composition.py",
       "k": "python"
     },
@@ -16310,6 +16419,11 @@
     {
       "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_providers/github/code_host.py",
       "k": "python"
     },
     {

@@ -230,3 +230,115 @@ def test_the_database_refuses_a_folder_that_climbs_out_of_the_repository(
             ),
             {"t": tenant_id},
         )
+
+
+# -- asking for a fix, TASK-P15-004 ----------------------------------------------------------
+
+FIX = "/api/v1/waste/recommendations/{}/pull-request"
+
+
+def recommendation(engine: Engine, tenant: UUID, lifecycle: str = "ACCEPTED") -> UUID:
+    identifier = uuid4()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
+                "source_reference, waste_class, resource_id, region_id, "
+                "estimated_monthly_saving, confidence, severity, observation_days, lifecycle, "
+                "owner, rationale, as_of, collected_at) VALUES (:id, :t, :account, 'METER', :ref, "
+                "'EBS_UNATTACHED', 'vol-0abc', 'eu-west-1', 41.20, 'HIGH', 'HIGH', 30, "
+                ":lifecycle, 'team-storage', 'unattached for 30 days', :at, :at)"
+            ),
+            {
+                "id": identifier,
+                "t": tenant,
+                "account": ACCOUNT,
+                "ref": f"ref:{identifier}",
+                "lifecycle": lifecycle,
+                "at": datetime.now(UTC),
+            },
+        )
+    return identifier
+
+
+def test_a_person_asks_for_a_fix_once_and_the_ask_is_recorded(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    client, token = client_for(engine, person(tenant_id), settings)
+    response = client.post(
+        FIX.format(asked_about), json={"note": "  storage team agrees  "}, headers=auth(token)
+    )
+    assert response.status_code == 200, response.text
+    found = response.json()["data"]
+    assert (found["status"], found["note"], found["requested_by"]) == (
+        "REQUESTED",
+        "storage team agrees",
+        SIGNED_IN,
+    )
+    assert found["number"] is None and found["url"] is None
+    again = client.post(FIX.format(asked_about), json={}, headers=auth(token))
+    assert again.status_code == 409
+    assert "already asked" in again.text
+    with engine.connect() as connection:
+        steps = connection.execute(
+            text("SELECT to_status, principal FROM fix_pull_request_event WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).all()
+        audited_asks = connection.execute(
+            text(
+                "SELECT outcome FROM audit_event WHERE tenant_id = :t "
+                "AND resource = 'fix_pull_request' AND action = 'request'"
+            ),
+            {"t": tenant_id},
+        ).scalars()
+        assert [tuple(one) for one in steps] == [("REQUESTED", SIGNED_IN)]
+        assert list(audited_asks) == ["ALLOWED"]
+
+
+@pytest.mark.parametrize("lifecycle", ["OPEN", "DISMISSED", "IN_PROGRESS"])
+def test_a_fix_is_asked_for_only_once_the_recommendation_is_accepted(
+    engine: Engine, settings: Settings, tenant_id: UUID, lifecycle: str
+) -> None:
+    asked_about = recommendation(engine, tenant_id, lifecycle)
+    client, token = client_for(engine, person(tenant_id), settings)
+    refused = client.post(FIX.format(asked_about), json={}, headers=auth(token))
+    assert refused.status_code == 409
+    assert "accepted with an owner" in refused.text and lifecycle in refused.text
+
+
+def test_a_person_who_cannot_see_the_account_cannot_ask(
+    engine: Engine, settings: Settings, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    elsewhere = only(tenant_id, "fake-product-a")
+    scope = Scope(
+        tenant_id=tenant_id, is_global=False, accounts=elsewhere.accounts, principal_id=OWNER
+    )
+    client, token = client_for(engine, scope, settings)
+    assert client.post(FIX.format(asked_about), json={}, headers=auth(token)).status_code == 404
+    with engine.connect() as connection:
+        asked = connection.execute(
+            text("SELECT count(*) FROM fix_pull_request WHERE tenant_id = :t"), {"t": tenant_id}
+        ).scalar_one()
+    assert asked == 0
+
+
+def test_the_database_allows_one_live_fix_per_recommendation(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    asked_about = recommendation(engine, tenant_id)
+    insert = text(
+        "INSERT INTO fix_pull_request (fix_id, tenant_id, recommendation_id, sub_account_id, "
+        "status, reason, failure_cause, requested_by, requested_at, as_of, collected_at) VALUES "
+        "(:fix, :t, :id, :account, :status, :reason, :cause, 'x', now(), now(), now())"
+    )
+    values = {"t": tenant_id, "id": asked_about, "account": ACCOUNT}
+    with engine.begin() as connection:
+        # A failed fix is history, so it does not stop the next ask.
+        failed = {"status": "FAILED", "reason": "refused", "cause": "AccessDenied"}
+        connection.execute(insert, {**values, "fix": uuid4(), **failed})
+        live = {"status": "REQUESTED", "reason": None, "cause": None}
+        connection.execute(insert, {**values, "fix": uuid4(), **live})
+    with pytest.raises(IntegrityError, match="ux_fix_pull_request__live"), engine.begin() as db:
+        db.execute(insert, {**values, "fix": uuid4(), **live})

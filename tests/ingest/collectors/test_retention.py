@@ -569,6 +569,58 @@ def test_an_erasure_keeps_where_fixes_go_and_takes_the_name_off(
     assert tuple(mapped) == (TOMBSTONE, "acme/infra")
 
 
+def test_an_erasure_keeps_the_fixes_a_person_asked_for_and_takes_the_name_off(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """TASK-P15-004. A fix's history is the tenant's record of a change; the person goes."""
+    recommendation, fix = uuid4(), uuid4()
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+        who = {"t": tenant_id, "who": str(principal), "at": AT, "id": recommendation, "fix": fix}
+        connection.execute(
+            text(
+                "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
+                "source_reference, waste_class, resource_id, region_id, "
+                "estimated_monthly_saving, confidence, severity, observation_days, lifecycle, "
+                "rationale, as_of, collected_at) VALUES (:id, :t, 'acct', 'METER', 'ref-fix', "
+                "'EBS_UNATTACHED', 'vol-1', 'eu-west-1', 1, 'HIGH', 'HIGH', 30, 'ACCEPTED', "
+                "'unattached', :at, :at)"
+            ),
+            who,
+        )
+        connection.execute(
+            text(
+                "INSERT INTO fix_pull_request (fix_id, tenant_id, recommendation_id, "
+                "sub_account_id, status, note, requested_by, requested_at, as_of, collected_at) "
+                "VALUES (:fix, :t, :id, 'acct', 'REQUESTED', 'agreed', :who, :at, :at, :at)"
+            ),
+            who,
+        )
+        connection.execute(
+            text(
+                "INSERT INTO fix_pull_request_event (event_id, fix_id, tenant_id, sub_account_id, "
+                "to_status, principal, note, at) VALUES (gen_random_uuid(), :fix, :t, 'acct', "
+                "'REQUESTED', :who, 'agreed', :at)"
+            ),
+            who,
+        )
+        report = erase_principal.erase(
+            connection, tenant_id, principal, "operator-1", "ticket-9", clock=at
+        )
+        asked = connection.execute(
+            text("SELECT requested_by, note FROM fix_pull_request WHERE fix_id = :fix"),
+            {"fix": fix},
+        ).one()
+        step = connection.execute(
+            text("SELECT principal, note FROM fix_pull_request_event WHERE fix_id = :fix"),
+            {"fix": fix},
+        ).one()
+
+    assert (report.fixes_reattributed, report.fix_steps_reattributed) == (1, 1)
+    assert tuple(asked) == (TOMBSTONE, "agreed")
+    assert tuple(step) == (TOMBSTONE, "agreed")
+
+
 def test_the_report_says_out_loud_that_nothing_was_removed_from_the_audit_log() -> None:
     report = erase_principal.ErasureReport(uuid4(), 1, 0, 0, 2)
     assert any("never removed, by design" in line for line in report.lines())

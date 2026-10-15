@@ -12,6 +12,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -20,16 +21,20 @@ from sqlalchemy import Connection
 from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.remediation import (
     CodeHostConnectionRepository,
+    FixPullRequestRepository,
     Mapping,
     RemediationRow,
     RepositoryMappingRepository,
 )
+from finops_api.db.repositories.waste import RecommendationRepository
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     CodeHostConnectionIn,
     CodeHostConnectionOut,
     Envelope,
+    FixPullRequestOut,
+    FixRequestIn,
     Meta,
     RepositoryMappingOut,
     RepositoryMappingsIn,
@@ -206,3 +211,63 @@ def change_remediation_repositories(
         at=datetime.now(UTC),
     )
     return _mappings(connection, scope, context)
+
+
+NO_RECOMMENDATION = "No recommendation has that identifier in this scope."
+ACCEPT_FIRST = (
+    "A fix is asked for once the recommendation is accepted with an owner, so somebody owns the "
+    "pull request it opens. ISS-021."
+)
+ALREADY_ASKED = "A fix is already asked for, or open, for this recommendation."
+A_PERSON_ASKS = "A fix is asked for by a person, and this session names none."
+
+
+@router.post(
+    "/waste/recommendations/{recommendation_id}/pull-request",
+    response_model=Envelope[FixPullRequestOut],
+)
+def ask_for_a_fix(
+    recommendation_id: UUID,
+    body: FixRequestIn,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[FixPullRequestOut] | JSONResponse:
+    """Ask for the fix to be opened as a pull request. FEAT-092, TASK-P15-004.
+
+    Recorded here and opened by the `fix_pull_requests` collector within ten minutes, because only
+    the worker reaches GitHub, ADR-0036. A person whose scope includes the account asks, once the
+    recommendation is accepted, and one fix is live per recommendation.
+    """
+    # Read through the scoped repository first, so nobody asks about one they may not see.
+    recommendation = RecommendationRepository(connection, context).one(scope, recommendation_id)
+    if recommendation is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=NO_RECOMMENDATION)
+    if scope.principal_id is None:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": A_PERSON_ASKS}
+        )
+    if recommendation.lifecycle != "ACCEPTED":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{ACCEPT_FIRST} It is {recommendation.lifecycle}.",
+        )
+    note = body.note.strip() if body.note and body.note.strip() else None
+    row = FixPullRequestRepository(connection, context).request(
+        scope, recommendation, note=note, at=datetime.now(UTC)
+    )
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=ALREADY_ASKED)
+    found = FixPullRequestOut(
+        **{name: getattr(row, name) for name in FixPullRequestOut.model_fields}
+    )
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1,
+        rows=[row],
+        coverage=(1, 1),
+        coverage_unit="recommendations",
+    )
+    return Envelope(data=found, meta=meta)

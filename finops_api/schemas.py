@@ -2976,3 +2976,36 @@ class RepositoryMappingsOut(BaseModel):
     mappings: list[RepositoryMappingOut]
     #: The states FEAT-057 read resources from that no mapping names.
     unmapped: list[str]
+
+
+class FixRequestIn(BaseModel):
+    """An ask for a recommendation's fix to be opened as a pull request. FEAT-092."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    #: Anything the person wants the reviewers to read; optional.
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class FixPullRequestOut(BaseModel):
+    """A fix asked for: its status, its pull request once opened, and why where there is none."""
+
+    model_config = ConfigDict(frozen=True)
+
+    fix_id: UUID
+    recommendation_id: UUID
+    sub_account_id: str
+    #: REQUESTED, OPEN, MERGED, CLOSED, NOT_AUTHORED or FAILED.
+    status: str
+    repository: str | None
+    branch: str | None
+    number: int | None
+    url: str | None
+    note: str | None
+    requested_by: str
+    requested_at: datetime
+    merged_by: str | None
+    #: Why there is no pull request, where there is none.
+    reason: str | None
+    #: The typed cause of a failure: AccessDenied, Misconfigured, SchemaDrift and the rest.
+    failure_cause: str | None

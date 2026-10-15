@@ -11,7 +11,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Final
+from uuid import uuid4
 
 from sqlalchemy import Row, Table, select
 from sqlalchemy.dialects.postgresql import insert
@@ -165,3 +166,66 @@ class RepositoryMappingRepository(ScopedRepository):
     def refuse(self, scope: Scope) -> None:
         """Record a refused change, so a narrowed attempt is in the audit trail."""
         self._audit(require_scope(scope), action="change", outcome="DENIED")
+
+
+#: The statuses in which a fix is live: asked for and not yet opened, or open. One per
+#: recommendation, held by a partial unique index too.
+LIVE: Final = ("REQUESTED", "OPEN")
+
+
+class FixPullRequestRepository(ScopedRepository):
+    """The fixes asked for, scoped as their recommendation's account. FEAT-092, TASK-P15-004."""
+
+    table: ClassVar[Table] = models.fix_pull_request
+    resource: ClassVar[str] = "fix_pull_request"
+
+    def request(
+        self, scope: Scope, recommendation: Any, *, note: str | None, at: datetime
+    ) -> RemediationRow | None:
+        """Record an ask, audited ALLOWED, or None where a fix is already requested or open.
+
+        The caller has read `recommendation` through its own scoped repository, so the scope
+        covers its account. Only a person asks.
+        """
+        confirmed = require_scope(scope)
+        if confirmed.principal_id is None:
+            raise ScopeViolationError("A fix is asked for by a person, so a scope names one.")
+        table = self.table
+        statement = (
+            insert(table)
+            .values(
+                fix_id=uuid4(),
+                tenant_id=confirmed.tenant_id,
+                recommendation_id=recommendation.recommendation_id,
+                sub_account_id=recommendation.sub_account_id,
+                status="REQUESTED",
+                note=note,
+                requested_by=confirmed.principal_id,
+                requested_at=at,
+                as_of=at,
+                collected_at=at,
+            )
+            .on_conflict_do_nothing(
+                index_elements=[table.c.tenant_id, table.c.recommendation_id],
+                index_where=table.c.status.in_(LIVE),
+            )
+            .returning(*table.c)
+        )
+        row: RemediationRow | None = self._connection.execute(statement).first()
+        if row is None:
+            return None
+        self._connection.execute(
+            models.fix_pull_request_event.insert().values(
+                event_id=uuid4(),
+                fix_id=row.fix_id,
+                tenant_id=confirmed.tenant_id,
+                sub_account_id=row.sub_account_id,
+                from_status=None,
+                to_status="REQUESTED",
+                principal=confirmed.principal_id,
+                note=note,
+                at=at,
+            )
+        )
+        self._audit(confirmed, action="request", outcome="ALLOWED")
+        return row

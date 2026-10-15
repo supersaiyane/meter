@@ -1410,6 +1410,55 @@ each request, TASK-P15-002. Both are changed through `PUT /v1/remediation/connec
 is set whole, a state left out losing its mapping and an unchanged one keeping who set it. An
 erasure keeps both and replaces `connected_by` and `set_by`.
 
+### Fixes asked for, P15
+
+```sql
+-- P15, FEAT-092, migration 0060. A fix a person asked for and its pull request. Scoped as its
+-- recommendation's account.
+CREATE TABLE fix_pull_request (
+    fix_id             UUID        NOT NULL,
+    tenant_id          UUID        NOT NULL REFERENCES tenant(tenant_id),
+    recommendation_id  UUID        NOT NULL REFERENCES recommendation(recommendation_id),
+    sub_account_id     TEXT        NOT NULL,
+    status             TEXT        NOT NULL,   -- REQUESTED, OPEN, MERGED, CLOSED, NOT_AUTHORED, FAILED
+    repository         TEXT,                   -- these four once a pull request is opened
+    branch             TEXT,
+    number             INTEGER,
+    url                TEXT,
+    note               TEXT,                   -- what the person asked the reviewers to read
+    requested_by       TEXT        NOT NULL,
+    requested_at       TIMESTAMPTZ NOT NULL,
+    merged_by          TEXT,                   -- the code host's login, TASK-P15-006
+    reason             TEXT,                   -- why there is none, where there is none
+    failure_cause      TEXT,                   -- a typed cause, on a FAILED fix only
+    as_of              TIMESTAMPTZ NOT NULL,
+    collected_at       TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_fix_pull_request PRIMARY KEY (fix_id)
+    -- and checks: an opened fix names its pull request, one not authored or failed says why
+);
+-- One live fix per recommendation, so asking twice is refused by the database too.
+CREATE UNIQUE INDEX ux_fix_pull_request__live ON fix_pull_request (tenant_id, recommendation_id)
+    WHERE status IN ('REQUESTED', 'OPEN');
+
+-- Every step, append only, with its principal: a person, meter, or the host's login.
+CREATE TABLE fix_pull_request_event (
+    event_id        UUID        NOT NULL,
+    fix_id          UUID        NOT NULL REFERENCES fix_pull_request(fix_id),
+    tenant_id       UUID        NOT NULL REFERENCES tenant(tenant_id),
+    sub_account_id  TEXT        NOT NULL,
+    from_status     TEXT,
+    to_status       TEXT        NOT NULL,
+    principal       TEXT        NOT NULL,
+    note            TEXT,
+    at              TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_fix_pull_request_event PRIMARY KEY (event_id)
+);
+```
+
+Asked for through `POST /v1/waste/recommendations/{id}/pull-request` by a person whose scope
+includes the account, once the recommendation is accepted. The `fix_pull_requests` collector opens
+it every ten minutes, or records why it cannot. An erasure keeps both and replaces the name.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

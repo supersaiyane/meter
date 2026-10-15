@@ -2383,3 +2383,82 @@ repository_mapping = Table(
         name="ck_repository_mapping__folder",
     ),
 )
+
+
+#: P15, 0060. A fix a person asked for and its pull request, FEAT-092: one live per recommendation,
+#: scoped as the recommendation's account.
+fix_pull_request = Table(
+    "fix_pull_request",
+    metadata,
+    Column("fix_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("sub_account_id", Text, nullable=False),
+    Column("status", Text, nullable=False),
+    Column("repository", Text),
+    Column("branch", Text),
+    Column("number", Integer),
+    Column("url", Text),
+    Column("note", Text),
+    Column("requested_by", Text, nullable=False),
+    Column("requested_at", DateTime(timezone=True), nullable=False),
+    Column("merged_by", Text),
+    Column("reason", Text),
+    Column("failure_cause", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "status IN ('REQUESTED', 'OPEN', 'MERGED', 'CLOSED', 'NOT_AUTHORED', 'FAILED')",
+        name="ck_fix_pull_request__status",
+    ),
+    CheckConstraint(
+        "status NOT IN ('OPEN', 'MERGED', 'CLOSED') OR (repository IS NOT NULL AND branch IS NOT "
+        "NULL AND number IS NOT NULL AND url IS NOT NULL)",
+        name="ck_fix_pull_request__opened_names_it",
+    ),
+    CheckConstraint(
+        "status NOT IN ('NOT_AUTHORED', 'FAILED') OR length(trim(coalesce(reason, ''))) > 0",
+        name="ck_fix_pull_request__none_says_why",
+    ),
+    CheckConstraint(
+        "(status = 'FAILED') = (failure_cause IS NOT NULL)",
+        name="ck_fix_pull_request__failure_typed",
+    ),
+    CheckConstraint(
+        "failure_cause IS NULL OR failure_cause IN ('AccessDenied', 'Throttled', 'NotOptedIn', "
+        "'NoData', 'Unreachable', 'Misconfigured', 'SchemaDrift')",
+        name="ck_fix_pull_request__cause",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_fix_pull_request__collected_after_true"),
+    Index(
+        "ux_fix_pull_request__live",
+        "tenant_id",
+        "recommendation_id",
+        unique=True,
+        postgresql_where=text("status IN ('REQUESTED', 'OPEN')"),
+    ),
+    Index("ix_fix_pull_request__status", "tenant_id", "status"),
+)
+
+#: P15, 0060. Each step of a fix, append only, with its principal: a person, Meter, or the code
+#: host's login of whoever merged or closed it.
+fix_pull_request_event = Table(
+    "fix_pull_request_event",
+    metadata,
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column("fix_id", UUID(as_uuid=True), ForeignKey("fix_pull_request.fix_id"), nullable=False),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("from_status", Text),
+    Column("to_status", Text, nullable=False),
+    Column("principal", Text, nullable=False),
+    Column("note", Text),
+    Column("at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("length(trim(principal)) > 0", name="ck_fix_pull_request_event__principal"),
+    Index("ix_fix_pull_request_event__fix", "fix_id", "at"),
+)

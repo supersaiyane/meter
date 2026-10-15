@@ -239,6 +239,9 @@ DEMO_TABLES = (
     "savings_credit",
     "realized_saving",
     "recommendation_event",
+    # P15, FEAT-092. A step references its fix and a fix its recommendation, so both go first.
+    "fix_pull_request_event",
+    "fix_pull_request",
     # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
     "recommendation_option",
     "recommendation",

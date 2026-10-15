@@ -20,7 +20,7 @@ A fix nobody sends is a fix nobody makes, ISS-228, and a merged fix is not yet a
 
 ## How it works
 
-Not built yet. The API records the ask in `fix_pull_request`, because only the worker reaches GitHub, ADR-0036. The `fix_pull_requests` collector, every ten minutes, authors the fix with FEAT-040 or FEAT-093, opens it, and reads every open pull request's state. Opening moves the recommendation to `IN_PROGRESS`; a close without a merge returns it to `ACCEPTED`; after a merge it stays `IN_PROGRESS` until the inventory shows the resource gone, or the volume's type changed, and then it is `DONE`. Each step is a `fix_pull_request_event` with its principal.
+Built so far, TASK-P15-004: `POST /v1/waste/recommendations/{id}/pull-request` records the ask in `fix_pull_request`, by a person whose scope includes the account and once the recommendation is accepted, one live fix per recommendation, because only the worker reaches GitHub, ADR-0036. The `fix_pull_requests` collector, every ten minutes, reads the resource's Terraform address from FEAT-057 and the repository its state is mapped to, authors the fix with FEAT-040, and opens it; a fix with nowhere to go is `NOT_AUTHORED` with the sentence why, one the code host will refuse again is `FAILED` with its cause, and one throttled waits for the next run. Not built yet: FEAT-093's edit, TASK-P15-005, and reading every open pull request's state, TASK-P15-006. Opening moves the recommendation to `IN_PROGRESS`; a close without a merge returns it to `ACCEPTED`; after a merge it stays `IN_PROGRESS` until the inventory shows the resource gone, or the volume's type changed, and then it is `DONE`. Each step is a `fix_pull_request_event` with its principal.
 
 ## Data sources and freshness
 

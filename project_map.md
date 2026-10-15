@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 61 in 22 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 41 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 59 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 279 | test_*.py under tests/ |
-| Test functions | 3337 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 60 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 280 | test_*.py under tests/ |
+| Test functions | 3348 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1240,6 +1240,8 @@ meter/
 │   │                          as Misconfigured until TASK-P12-002. ISS-182
 │   ├── commitment_policy.py   FEAT-088, TASK-P14-005. The cautious default installed for a
 │   │                          tenant, and the policy read, the default where none is set
+│   ├── codehost_bindings.py   FEAT-092, TASK-P15-004. fix_pull_requests, built on
+│   │                          the GitHub adapter and the code host key reader
 │   ├── ai_bindings.py         FEAT-083, TASK-P13-004. The AI provider collectors for a
 │   │                          deployment, each organization's key read from Secrets
 │   │                          Manager when a request is about to be made
@@ -1311,6 +1313,10 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── fix_pull_requests.py  FEAT-092, TASK-P15-004. Every ten minutes, opens
+│       │                      each fix asked for through propose in the mapped
+│       │                      repository, each in a savepoint; nowhere to go is
+│       │                      NOT_AUTHORED with why, a repeatable refusal FAILED
 │       ├── purchase_plan.py   FEAT-089 and 090, TASK-P14-007 and 008. Daily, from
 │       │                      Meter's own tables; lapses a stale draft, verifies a
 │       │                      bought plan, drafts or redrafts this month's
@@ -1502,7 +1508,9 @@ meter/
 │   │   ├── remediation.py     P15, FEAT-091, TASK-P15-003. GET and PUT
 │   │   │                      /remediation/connection and /repositories: the
 │   │   │                      organization's only, each change audited; the GET
-│   │   │                      names the states read with no mapping
+│   │   │                      names the states read with no mapping. POST
+│   │   │                      /waste/recommendations/{id}/pull-request asks for a
+│   │   │                      fix, TASK-P15-004
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1686,6 +1694,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0060_fix_pull_request.py  TASK-P15-004. A fix asked for and its steps,
+│       │                      one live per recommendation, and the cadence
 │       ├── 0059_code_host.py  TASK-P15-003. The GitHub App a tenant connected and
 │       │                      where each state's fixes go, checks on the key's path,
 │       │                      the repository and a folder that never climbs out
@@ -1892,7 +1902,7 @@ meter/
 │   │                          the removal classes, as a pull request draft through
 │   │                          PullRequestSink. Everything else is refused with its
 │   │                          reason, never guessed. The file goes in the mapped
-│   │                          folder, ISS-299. Nothing calls it yet, ISS-228
+│   │                          folder, ISS-299. fix_pull_requests calls it, ISS-228
 │   ├── digest.py              FEAT-041, TASK-P7-012. A week of spend, Monday to
 │   │                          Sunday in UTC, composed into an Answer for a team or
 │   │                          for the whole organization. No model writes it, and a

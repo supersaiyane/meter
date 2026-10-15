@@ -47,6 +47,7 @@ from finops_fakes.invoices import FakeInvoices
 from finops_fakes.ownership import FakeResourceCreators, FakeServiceCatalogue
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
+from finops_fakes.pull_requests import RecordingPullRequests
 from finops_fakes.quotas import FakeQuotaSource
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface
@@ -63,6 +64,7 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.collectors.fix_pull_requests import FixPullRequestsCollector
 from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
@@ -165,6 +167,11 @@ def _query_audit(context: CollectorContext) -> CollectorRunner:
     )
 
 
+#: The local stack's code host, TASK-P15-004: one for the life of the worker, so a pull request it
+#: opened in one run is still there to follow in the next. Nothing leaves the process.
+LOCAL_CODE_HOST = RecordingPullRequests()
+
+
 def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
     """Each collector, built from its fake for one unit, on the clock it is handed."""
     return {
@@ -198,6 +205,10 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         "finops_score": lambda _c: ScoreCollector(clock=clock),
         "gpu_utilization": lambda _c: GpuUtilizationCollector(
             FakeGpuMetrics(at=clock()), clock=clock
+        ),
+        # FEAT-092. Opens each fix asked for in the local stack's one fake code host.
+        "fix_pull_requests": lambda _c: FixPullRequestsCollector(
+            lambda _context, _connected: LOCAL_CODE_HOST, clock=clock
         ),
         "iac_state": lambda _c: IacStateCollector(FakeTerraformState(), clock=clock),
         "instance_catalog": lambda _c: InstanceCatalogCollector(

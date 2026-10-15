@@ -41,7 +41,8 @@ This differs from what was known before the spec, which expected CloudFormation 
 panel patches as well. Only Terraform removals are authored.
 
 **Why In build.** The sink has a GitHub adapter since TASK-P15-002, not yet tried against a real
-installation, ISS-300, and nothing in the product calls `propose` until TASK-P15-004, ISS-228.
+installation, ISS-300. The `fix_pull_requests` collector calls `propose` for each fix a person
+asks for, TASK-P15-004, which closed ISS-228.
 
 ## Failure behaviour
 
@@ -60,8 +61,9 @@ FEAT-094.
 
 ## Interface
 
-None yet, ISS-228. `author` and `propose` in `finops_query/remediation.py`, and a refusal
-is a `NotAuthored` carrying its reason.
+`POST /v1/waste/recommendations/{id}/pull-request` asks for the fix, FEAT-092, and the
+`fix_pull_requests` collector calls `author` and `propose` in `finops_query/remediation.py`; a
+refusal is a `NotAuthored` carrying its reason, recorded on the fix.
 
 ## Not doing
 

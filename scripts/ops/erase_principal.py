@@ -77,6 +77,9 @@ class ErasureReport:
     #: the name gone.
     code_host_reattributed: int = 0
     mappings_reattributed: int = 0
+    #: TASK-P15-004. The fixes they asked for and their steps on them: each kept, the name gone.
+    fixes_reattributed: int = 0
+    fix_steps_reattributed: int = 0
     #: Always zero. Present so the report says out loud what was left alone,
     #: rather than leaving the reader to infer it from an absence.
     audit_events_removed: int = 0
@@ -98,6 +101,8 @@ class ErasureReport:
             f"  purchase plan steps reattributed {self.plan_steps_reattributed}",
             f"  code host connections reattributed {self.code_host_reattributed}",
             f"  repository mappings reattributed {self.mappings_reattributed}",
+            f"  fixes asked for reattributed   {self.fixes_reattributed}",
+            f"  fix steps reattributed         {self.fix_steps_reattributed}",
             f"  audit events written           {self.audit_events_written}",
             f"  audit events removed           {self.audit_events_removed}"
             " (never removed, by design)",
@@ -235,6 +240,23 @@ def erase(
         {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
     ).rowcount
 
+    # The fixes a person asked for and their steps on them: a fix's history is the tenant's record
+    # of a change to its estate and stays, and only the name goes. TASK-P15-004.
+    fix_rows = connection.execute(
+        text(
+            "UPDATE fix_pull_request SET requested_by = :tombstone "
+            "WHERE tenant_id = :tenant AND requested_by = :who"
+        ),
+        {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
+    ).rowcount
+    fix_step_rows = connection.execute(
+        text(
+            "UPDATE fix_pull_request_event SET principal = :tombstone "
+            "WHERE tenant_id = :tenant AND principal = :who"
+        ),
+        {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
+    ).rowcount
+
     reached = _reach_personal_tables(connection, tenant_id, str(principal_id))
 
     _audit(connection, tenant_id, principal_id, "erasure.completed", request_id, requested_by, at)
@@ -248,6 +270,8 @@ def erase(
         plan_steps_reattributed=step_rows or 0,
         code_host_reattributed=code_host_rows or 0,
         mappings_reattributed=mapping_rows or 0,
+        fixes_reattributed=fix_rows or 0,
+        fix_steps_reattributed=fix_step_rows or 0,
         audit_events_written=2,
         **reached,
     )

@@ -2726,7 +2726,18 @@ changes:
   what: TASK-P15-003, the code host connection and the repository mapping
   commit: pending
   detail: 'Migration 0059 creates code_host_connection, the GitHub App''s id and its key''s secret name with a check holding the name to a code host path, and repository_mapping, one row per Terraform state FEAT-057 records, with checks on the repository''s form, the branch and a folder that never climbs out of the repository; both PayerWide, ADR-0025. GET and PUT /v1/remediation/connection and /repositories: a narrowed reader is answered 404 with the reason, a change needs a person whose scope is the organization and is audited ALLOWED or DENIED, a key outside this environment''s code host path is refused, the mapping is set whole with an unchanged state keeping who set it, and the GET names the states read with no mapping. No installation id is stored. An erasure keeps both and replaces the name'
+- id: CHG-0200
+  date: '2026-10-15'
+  type: Feature
+  what: TASK-P15-004, a fix asked for and a removal opened, ISS-228 and ISS-301
+  commit: pending
+  detail: 'Migration 0060 creates fix_pull_request, one live fix per recommendation by a partial unique index, with checks that an opened fix names its pull request and one not authored or failed says why, and fix_pull_request_event, every step with its principal; it installs the fix_pull_requests cadence, every ten minutes, for every tenant. POST /v1/waste/recommendations/{id}/pull-request records the ask for a person whose scope includes the account, once the recommendation is accepted, audited. The fix_pull_requests collector reads the resource''s address from FEAT-057 and the repository its state is mapped to, authors the removal with FEAT-040 and opens it, moving the recommendation to IN_PROGRESS; a fix with nowhere to go is NOT_AUTHORED with the sentence why, one the host will refuse again FAILED with its cause, and one throttled waits. It is composed for a deployed environment through the GitHub adapter and for the local stack with one fake code host. An erasure keeps every fix and step and replaces the name. The secret scan also reads the files the change would commit, ISS-301'
 issues:
+- id: ISS-301
+  severity: MEDIUM
+  status: FIXED
+  summary: The secret scan read committed history only, so a change's own secret passed its gate
+  detail: 'Found 2026-10-15 verifying TASK-P15-003. scripts/security/scan.sh ran gitleaks detect, which reads the repository''s commits, and a gate runs before its change is committed. A test fixture TASK-P15-002 wrote, a PEM header and footer around the single letter k, passed that task''s gate uncommitted and failed the next task''s once it was in history; the fixture was no credential and is allowlisted by its exact shape, with the reason, in .gitleaks.toml. Fixed the same day, CHG-0200: the scan copies out the files a commit would carry, changed since HEAD or new and not ignored, and scans them without git, and the report reads that pass with the first. Proved against an uncommitted key in a throwaway repository'
 - id: ISS-300
   severity: MEDIUM
   status: OPEN
@@ -4756,14 +4767,14 @@ issues:
     a read only change history collector and a place on the anomaly screen'
 - id: ISS-228
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: Remediation pull requests are authored and only a fake receives them
   detail: 'finops_query/remediation.py authors a Terraform removed block with destroy for the
     eight removal classes, and refuses any other class and any address with an instance key,
     naming why. PullRequestSink has RecordingPullRequests and no adapter, because the code host
     is OPEN-13, and no route or screen calls propose, so FEAT-040 is In build. Only removals
     are authored: a resize needs the target value and the file that sets it, and nothing reads
-    either'
+    either. Fixed 2026-10-15, CHG-0200: a person asks for the fix through POST /v1/waste/recommendations/{id}/pull-request and the fix_pull_requests collector calls propose through the GitHub adapter, TASK-P15-002 and TASK-P15-004'
 - id: ISS-229
   severity: LOW
   status: OPEN

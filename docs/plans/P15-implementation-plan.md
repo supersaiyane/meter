@@ -150,7 +150,7 @@ test in `tests/ingest/collectors/test_retention.py`.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-15 |
 | Implements | Spec sections 5.5, 6 and 7 |
 | Delivers | FEAT-040, FEAT-092 |
 | Depends on | TASK-P15-003 |
@@ -158,12 +158,23 @@ test in `tests/ingest/collectors/test_retention.py`.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `fix_pull_request` and `fix_pull_request_event`, one live pull request per
+- [x] A migration creates `fix_pull_request` and `fix_pull_request_event`, one live pull request per
       recommendation, and installs the `fix_pull_requests` cadence, every ten minutes
-- [ ] `POST /v1/waste/recommendations/{id}/pull-request` records the ask for a person whose scope
+- [x] `POST /v1/waste/recommendations/{id}/pull-request` records the ask for a person whose scope
       includes the account; the collector opens a removal in the mapped repository, or records why
       it cannot, and the recommendation moves to `IN_PROGRESS`
-- [ ] The collector is scheduled, composed in both modes, and has a fake GitHub for the local stack
+- [x] The collector is scheduled, composed in both modes, and has a fake GitHub for the local stack
+
+**Delivered 2026-10-15.** Migration `0060_fix_pull_request` creates the fix and its steps, one live
+fix per recommendation held by a partial unique index, and installs the `fix_pull_requests` cadence
+for every tenant. `POST /v1/waste/recommendations/{id}/pull-request`, in
+`finops_api/routes/remediation.py`, records the ask for a person whose scope includes the account,
+once the recommendation is accepted, audited. `finops_ingest/collectors/fix_pull_requests.py` opens
+each requested fix through `propose`, each in its own savepoint: opened moves the recommendation to
+IN_PROGRESS; nowhere to go is NOT_AUTHORED with the sentence why; a refusal the host will repeat is
+FAILED with its cause; a throttled or silent host leaves the fix requested and ends the run.
+`finops_ingest/codehost_bindings.py` builds it on the GitHub adapter, and the local stack on one fake
+code host for the worker's life. It closed ISS-228, `propose` having had no caller.
 
 ---
 
