@@ -2804,6 +2804,12 @@ changes:
   what: TASK-P16-002, a Terraform plan reduced to what sets its price
   commit: pending
   detail: 'finops_query/plan_reading.py reduces terraform show -json output to each managed hashicorp/aws resource change: address, type, actions, Region and the attributes PRICED names, before and after, with the names known only after apply. The Region comes from the resource''s own region, its availability zone, or the provider configuration it names. Checked against Terraform''s documentation, the JSON carries sensitive values in plain text, so spec section 5.2''s claim otherwise is corrected and a priced attribute marked sensitive is named and never kept. A value planted in every dropped field is found nowhere in the result'
+- id: CHG-0208
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-003, instances and EBS volumes in a plan priced from the catalog
+  commit: pending
+  detail: 'finops_query/plan_pricing.py prices a reduced plan through a Catalogue protocol: an instance as its hours, Linux, on demand, with its block devices as volumes, and a volume as its storage, gp3 IOPS and throughput above what it includes, and io1 IOPS. A line that cannot rest on its principal part carries the reason and no figure; a secondary part left out is a note. StoredCatalogue in catalog_reads.py reads the newest version per service and Region through the comparable filter every collector shares, and refuses two prices for one volume term as tiers. The price list adapter keeps only instance and EBS rows at shared tenancy, so TASK-P16-004 widens it for RDS and OpenSearch storage'
 issues:
 - id: ISS-301
   severity: MEDIUM

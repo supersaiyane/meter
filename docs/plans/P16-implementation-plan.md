@@ -98,7 +98,7 @@ in every field the reduction drops; the module is at 99 percent coverage, measur
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec sections 5.3 and 5.4 |
 | Delivers | FEAT-095 |
 | Depends on | TASK-P16-002 |
@@ -106,13 +106,28 @@ in every field the reduction drops; the module is at 99 percent coverage, measur
 
 **Acceptance criteria.**
 
-- [ ] A catalogue port in `finops_core` and its reads beside `catalog_reads.py`, sharing the
-      comparable price's filter rather than copying it
-- [ ] `aws_instance` priced at its type's hourly price as Linux, with its root and EBS block devices
+- [x] A catalogue protocol beside the pricing and its reads in `catalog_reads.py`, sharing the
+      comparable price's filter rather than copying it. Planned as a port in `finops_core`; it is a
+      read of Meter's own tables, not an outside system, so it sits with the pricing that needs it
+- [x] `aws_instance` priced at its type's hourly price as Linux, with its root and EBS block devices
       as volumes; `aws_ebs_volume` for every volume type's storage, io1 and gp3 IOPS, gp3 throughput
-- [ ] Each line keeps its components with unit prices, price identifiers and version, as figures
-- [ ] A Region the catalogue lacks, a type it does not sell, an attribute unknown until apply, and
+- [x] Each line keeps its components with unit prices, price identifiers and version, as figures
+- [x] A Region the catalogue lacks, a type it does not sell, an attribute unknown until apply, and
       io2's tiered IOPS each a reason with no figure
+
+**Delivered 2026-10-16.** `price_plan` and `price_change` in `finops_query/plan_pricing.py` price a
+reduced plan through the `Catalogue` protocol into an `Estimate` of `EstimateLine`s, each with its
+`Component`s, or a reason and no figure. A line rests on its principal part, an instance's hours or
+a volume's storage; a secondary part that cannot be priced, a block device whose size is known only
+after apply, gp3 IOPS the catalog lacks, io2's tiered IOPS or a standard volume's I/O requests, is
+a note and left out. Dedicated and host tenancy and spot instances are reasons. `StoredCatalogue` in
+`finops_ingest/collectors/catalog_reads.py` answers from the newest version per service and Region,
+through `price_of`'s comparable filter for an instance, and refuses two prices for one volume term as
+tiers. Reading the price list adapter found it keeps only instance rows and EBS volume rows, at
+shared tenancy, so RDS and OpenSearch storage are not in the catalog today; TASK-P16-004 widens it
+from real price rows, which the owner approved downloading on 2026-10-16. 24 tests in
+`tests/query/test_plan_pricing.py` and 3 against the database; the module is at 99 percent
+coverage, measured.
 
 ---
 
