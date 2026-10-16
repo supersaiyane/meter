@@ -30,6 +30,7 @@ from finops_core.domain.fixes import PullRequestState, Readiness
 from finops_core.ports.merges import MergeAnswer
 from finops_core.ports.pull_requests import (
     OpenedPullRequest,
+    PostedComment,
     PullRequestDraft,
     RepositoryFile,
     RepositoryTarget,
@@ -78,6 +79,13 @@ MERGE_METHODS: Final[tuple[tuple[str, str], ...]] = (
 #: The most repositories first contact lists, one page.
 LISTED: Final = 100  # allow-hardcoded: GitHub's documented largest page
 
+#: What a comment asks of the app. GitHub accepts an issue comment on a pull request from an app
+#: with Pull requests write, which P15 granted, so commenting asks nothing new. FEAT-096.
+COMMENT: Final[Mapping[str, str]] = {"pull_requests": "write"}
+#: The pages of comments read looking for Meter's own: three thousand comments. A pull request with
+#: more is refused rather than given a second estimate.
+COMMENT_PAGES: Final = 30  # allow-hardcoded: a bound on one read, not a setting
+
 
 def trailer(reference: str) -> str:
     """The commit message line that marks a commit as Meter's for one fix."""
@@ -85,7 +93,8 @@ def trailer(reference: str) -> str:
 
 
 class GitHubCodeHost:
-    """PullRequestSink, RepositoryReader, PullRequestTracker and PullRequestMerger over GitHub."""
+    """PullRequestSink, RepositoryReader, PullRequestTracker, PullRequestMerger and, for P16's
+    estimate, PullRequestCommenter, over GitHub."""
 
     def __init__(self, app: GitHubApp) -> None:
         self._app = app
@@ -195,6 +204,27 @@ class GitHubCodeHost:
             body = session.body(answer, "the merge")
             return MergeAnswer(True, f"Merged by {method}.", sha=str(field(session, body, "sha")))
 
+    # -- PullRequestCommenter, FEAT-096 -------------------------------------
+
+    def write_comment(self, repository: str, number: int, marker: str, body: str) -> PostedComment:
+        """Edit the comment Meter wrote, the one an app wrote that opens with `marker`, or write
+        one. A person quoting the marker is never edited: the marker must open the comment and
+        an app must have written it."""
+        absent = f"no pull request #{number} in {repository}"
+        with self._app.session(repository, COMMENT) as (session, repo):
+            mine = _marked(session, repo, number, marker, absent)
+            if mine is None:
+                path = f"{repo.path}/issues/{number}/comments"
+                answer = session.json("POST", path, json={"body": body}, absent=absent)
+            else:
+                path = f"{repo.path}/issues/comments/{mine}"
+                gone = f"Meter's comment {mine} on #{number} in {repository} is gone"
+                answer = session.json("PATCH", path, json={"body": body}, absent=gone)
+            return PostedComment(
+                comment_id=str(field(session, answer, "id")),
+                url=str(field(session, answer, "html_url")),
+            )
+
     # -- first contact ------------------------------------------------------
 
     def installation_repositories(self, repository: str) -> tuple[str, ...]:
@@ -203,6 +233,31 @@ class GitHubCodeHost:
             body = session.json("GET", "/installation/repositories", params={"per_page": LISTED})
             listed = field(session, body, "repositories")
             return tuple(sorted(str(field(session, one, "full_name")) for one in listed))
+
+
+# -- commenting, FEAT-096 -------------------------------------------------------------
+
+
+def _marked(
+    session: Session, repo: Repository, number: int, marker: str, absent: str
+) -> str | None:
+    """The identifier of the comment an app wrote opening with `marker`, read a page at a time."""
+    path = f"{repo.path}/issues/{number}/comments"
+    for page in range(1, COMMENT_PAGES + 1):
+        params = {"per_page": LISTED, "page": page}
+        listed = session.json("GET", path, params=params, absent=absent)
+        if not isinstance(listed, list):
+            raise session.drift("GitHub listed comments as something that is not a list")
+        for one in listed:
+            text = field(session, one, "body") or ""
+            if str(text).startswith(marker) and field(session, one, "user", "type") == "Bot":
+                return str(field(session, one, "id"))
+        if len(listed) < LISTED:
+            return None
+    raise session.misconfigured(
+        f"#{number} has more than {COMMENT_PAGES * LISTED} comments, more than Meter reads for "
+        "its own"
+    )
 
 
 # -- opening, one step at a time ------------------------------------------------

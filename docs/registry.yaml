@@ -721,7 +721,7 @@ features:
 - id: FEAT-096
   name: The estimate as one comment on the pull request, edited in place
   subproject: P16
-  status: Specified
+  status: In build
   detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.5, [P16 plan](docs/plans/P16-implementation-plan.md)'
   doc: docs/features/FEAT-096-estimate-comment.md
 - id: FEAT-097
@@ -2822,6 +2822,12 @@ changes:
   what: TASK-P16-005, plans and their estimates stored, the plan_estimates collector
   commit: pending
   detail: 'Migration 0065 adds terraform_plan, planned_change, plan_estimate and plan_estimate_line, payer wide, with checks that a line with a reason carries no figure and no components, a priced line carries a figure, a refusal says why and a change is the after less the before; and the plan_estimates cadence. finops_ingest/plan_records.py is the one writer every arrival route will use, one plan per commit and folder, the folder''s state from the repository mapping. The plan_estimates collector prices every plan received through StoredCatalogue and writes the estimate and a line per change. It reads only Meter''s tables; the comment will be its own collector, TASK-P16-006, and retention moved to TASK-P16-007 so no plan is pruned before its comparison'
+- id: CHG-0211
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-006, the estimate as its pull request's one comment, the plan_comments collector
+  commit: pending
+  detail: 'finops_query/estimate_comment.py renders the comment, the unpriced count first, list prices only. PullRequestCommenter joins the code host ports, and GitHubCodeHost.write_comment edits the comment an app wrote that opens with the folder''s marker, or writes one, asking for Pull requests write alone, so a person quoting the marker is never edited. The plan_comments collector, on the GitHub App beside fix_pull_requests, writes the head''s estimate, supersedes an older commit''s or one whose pull request merged first, fails a refusal for good with its cause and leaves a throttled one waiting. Migration 0066 adds the comment''s state to plan_estimate and plan_pull_request, each pull request''s state with when it was first seen merged'
 issues:
 - id: ISS-301
   severity: MEDIUM

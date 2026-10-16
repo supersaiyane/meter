@@ -713,6 +713,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.00",
     ),
+    # FEAT-096, TASK-P16-006. Migration 0066 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="plan_comments",
+        cadence_seconds=TEN_MINUTES,
+        reason=(
+            "Writes or edits each estimate's one comment on its pull request and follows the pull "
+            "request until it merges or closes, P16 spec section 7. Every ten minutes, so the "
+            "comment follows its estimate within the next run. GitHub's API is free within its "
+            "rate limit: modelled at 0.00 USD a run. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.00",
+    ),
 )
 
 

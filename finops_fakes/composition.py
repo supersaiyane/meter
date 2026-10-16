@@ -73,6 +73,7 @@ from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
+from finops_ingest.collectors.plan_comments import PlanCommentsCollector
 from finops_ingest.collectors.plan_estimates import PlanEstimatesCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
@@ -209,6 +210,9 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         ),
         # FEAT-092. Opens each fix asked for in the local stack's one fake code host.
         "fix_pull_requests": lambda _c: FixPullRequestsCollector(
+            lambda _context, _connected: LOCAL_CODE_HOST, clock=clock
+        ),
+        "plan_comments": lambda _c: PlanCommentsCollector(
             lambda _context, _connected: LOCAL_CODE_HOST, clock=clock
         ),
         "iac_state": lambda _c: IacStateCollector(FakeTerraformState(), clock=clock),

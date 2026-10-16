@@ -43,6 +43,7 @@ that before there is data in it, which is the only cheap moment to do it.
 | `planned_change` | O | Each change's address, type, actions, Region and priced attributes before and after, the names unknown until apply and withheld as sensitive | As `terraform_plan` | Not applicable |
 | `plan_estimate` | O | A plan's modelled monthly figures and line counts | As `terraform_plan` | Not applicable |
 | `plan_estimate_line` | O | Each change's modelled figures and components, or the reason it is not priced | As `terraform_plan` | Not applicable |
+| `plan_pull_request` | O | Each pull request a plan came from: its state, head commit and when it was first seen merged. Names no person | As `terraform_plan` | Not applicable |
 | `commitment_inventory` | O | Each commitment's term, end, payment and owning account | Life of the tenant | No |
 | `purchase_recommendation` | O | AWS's purchase advice per program, its own estimate, and any typed failure | Restated daily | Not applicable |
 | `purchase_plan`, `purchase_plan_line` | O | Meter's plan per month, the policy it was drafted under, and its modelled lines | Life of the tenant | Not applicable |

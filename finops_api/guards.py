@@ -204,6 +204,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "planned_change": PayerWide(),
     "plan_estimate": PayerWide(),
     "plan_estimate_line": PayerWide(),
+    # P16, TASK-P16-006. The pull requests the plans came from, payer wide as their plans are.
+    "plan_pull_request": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
     "purchase_plan": PayerWide(),

@@ -167,10 +167,11 @@ absolute percentage error.
 
 ### 5.7 The worker prices and posts; the API reads
 
-The `plan_estimates` collector prices each plan recorded, writes the estimate, posts or edits the
-comment, and follows the pull request's state through P15's tracker. Only the worker reaches
-GitHub, ADR-0036. Pricing reads the catalogue from the database, so it could run anywhere, and
-runs in the worker so that an estimate and its comment are written by one run.
+The `plan_estimates` collector prices each plan recorded and writes the estimate; it reads only
+Meter's own tables. The `plan_comments` collector posts or edits the comment and follows the pull
+request's state through P15's tracker. Only the worker reaches GitHub, ADR-0036. Changed on
+2026-10-16 by TASK-P16-005 and 006 from one collector doing both: apart, a code host that is down
+holds back only the comment, never the estimate.
 
 ### 5.8 Payer wide
 
@@ -190,8 +191,10 @@ New tables, each with `as_of` and `collected_at`, constraint 10, payer wide:
 - `planned_change`: one per resource change kept, 5.2: the address, the type, the actions, the
   Region, the priced attributes before and after, and the names of those unknown until apply.
 - `plan_estimate`: one per plan priced: monthly before, after and change, lines priced and not
-  priced, the comment's identifier and link, when it was written, a failure's typed cause, and the
-  pull request's state.
+  priced, and what happened to its comment: written with its identifier, link and time, superseded
+  with why, or failed with its typed cause.
+- `plan_pull_request`: one per pull request a plan came from, its state as the code host last
+  reported it, its head, and when Meter first saw it merged.
 - `plan_estimate_line`: one per resource change: monthly before and after, the components with
   their unit prices, price identifiers and version, or the reason it is not priced. A check holds
   that a line not priced carries no figure, and that a priced one carries at least one.
@@ -206,7 +209,8 @@ merge, and a year of accuracy is what is published.
 
 | Collector | Unit | Cadence | Reads and writes |
 | --- | --- | --- | --- |
-| `plan_estimates` | organization | every 10 minutes | Prices each plan received, writes its estimate, posts or edits its comment, and follows its pull request |
+| `plan_estimates` | organization | every 10 minutes | Prices each plan received and writes its estimate, from Meter's own tables |
+| `plan_comments` | organization | every 10 minutes | Writes or edits the head's estimate as its pull request's comment, supersedes an older commit's, and follows each pull request until it merges or closes |
 | `estimate_comparison` | billing | daily | Compares each merged pull request's created resources with the bill once their window is billed, and restates the verdict as the bill is restated |
 
 Both join the registry, both compositions, the fakes, and a migration installing their cadence for

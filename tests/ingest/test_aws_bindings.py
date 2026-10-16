@@ -165,6 +165,25 @@ def test_the_code_host_collector_is_built_on_the_github_adapter_with_no_call_mad
     assert isinstance(built._code_host_for(work, connected), GitHubCodeHost)
 
 
+def test_the_comment_collector_is_built_on_the_github_adapter_with_no_call_made(
+    deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """TASK-P16-006. Nothing reaches AWS or GitHub until an estimate waits for its comment."""
+    from finops_ingest.collectors.plan_comments import PlanCommentsCollector
+    from finops_providers.github.code_host import GitHubCodeHost
+
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("a client was made before it was used")
+
+    monkeypatch.setattr(boto3, "client", refuse)
+    work = context("plan_comments", deployed)
+    built = CODEHOST_BUILDERS["plan_comments"](work)
+    assert isinstance(built, PlanCommentsCollector)
+    assert fakes_in(built) == []
+    connected = Connected("1001", f"meter/{deployed.env}/codehost/github-app")
+    assert isinstance(built._code_host_for(work, connected), GitHubCodeHost)
+
+
 @pytest.mark.parametrize("name", sorted(AWS_BUILDERS))
 def test_a_collector_is_built_from_its_aws_adapters_and_holds_no_fake(
     name: str, deployed: Settings

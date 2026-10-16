@@ -1567,6 +1567,33 @@ CREATE TABLE plan_estimate_line (
 A plan is written by `finops_ingest/plan_records.py`, whichever route OPEN-44 chooses, and priced
 by the `plan_estimates` collector every ten minutes. None of the four names a person.
 
+```sql
+-- P16, FEAT-096, migration 0066. What happened to an estimate's comment: none while it waits;
+-- WRITTEN with its id, link and time; SUPERSEDED or FAILED with why, FAILED with a typed cause.
+ALTER TABLE plan_estimate
+    ADD COLUMN comment_status         TEXT,   -- WRITTEN, SUPERSEDED or FAILED
+    ADD COLUMN comment_id             TEXT,
+    ADD COLUMN comment_url            TEXT,
+    ADD COLUMN commented_at           TIMESTAMPTZ,
+    ADD COLUMN comment_reason         TEXT,
+    ADD COLUMN comment_failure_cause  TEXT;   -- AccessDenied, Misconfigured or SchemaDrift
+
+-- Each pull request a plan came from, as the code host last reported it. Payer wide.
+CREATE TABLE plan_pull_request (
+    tenant_id       UUID        NOT NULL REFERENCES tenant(tenant_id),
+    repository      TEXT        NOT NULL,
+    pull_request    INTEGER     NOT NULL,
+    state           TEXT        NOT NULL,   -- OPEN, MERGED or CLOSED
+    head_sha        TEXT        NOT NULL,
+    merged_seen_at  TIMESTAMPTZ,            -- the first run that saw it merged; set only then
+    as_of           TIMESTAMPTZ NOT NULL,
+    collected_at    TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_plan_pull_request PRIMARY KEY (tenant_id, repository, pull_request)
+);
+```
+
+Both are written by the `plan_comments` collector every ten minutes.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

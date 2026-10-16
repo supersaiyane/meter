@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 31 of 33 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 43 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 65 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 290 | test_*.py under tests/ |
-| Test functions | 3440 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 44 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 66 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 293 | test_*.py under tests/ |
+| Test functions | 3463 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -677,7 +677,9 @@ meter/
 │   │   └── code_host.py       FEAT-040, FEAT-091 to 094. The four code host ports.
 │   │                          A fix opens as one commit carrying Meter-Reference,
 │   │                          and a branch Meter did not write is never moved; a
-│   │                          merge is GitHub's own, at the head it read. ISS-300
+│   │                          merge is GitHub's own, at the head it read. ISS-300.
+│   │                          write_comment edits Meter's own comment by its marker
+│   │                          and app author, TASK-P16-006
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards
@@ -1328,6 +1330,10 @@ meter/
 │       ├── plan_estimates.py  FEAT-095, TASK-P16-005. Every ten minutes, prices each
 │       │                      plan received through StoredCatalogue and writes its
 │       │                      estimate and a line per change, then marks it PRICED
+│       ├── plan_comments.py   FEAT-096, TASK-P16-006. Every ten minutes, on the
+│       │                      GitHub App, writes the head's estimate as the pull
+│       │                      request's comment, supersedes older commits', and
+│       │                      keeps each pull request's state
 │       ├── fix_pull_requests.py  FEAT-092, TASK-P15-004. Every ten minutes, opens
 │       │                      each fix asked for through propose in the mapped
 │       │                      repository, each in a savepoint; nowhere to go is
@@ -1717,6 +1723,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0066_plan_comments.py  TASK-P16-006. The comment's state on plan_estimate
+│       │                      and plan_pull_request, and the plan_comments cadence
 │       ├── 0065_plan_estimates.py  TASK-P16-005. terraform_plan, planned_change,
 │       │                      plan_estimate and plan_estimate_line, payer wide, and
 │       │                      the plan_estimates cadence
@@ -2051,6 +2059,9 @@ meter/
 │   ├── plan_services.py       FEAT-095, TASK-P16-004. RDS, Aurora, ElastiCache,
 │   │                          Redshift and OpenSearch priced by the attributes AWS's
 │   │                          own lists tell their prices apart by
+│   ├── estimate_comment.py    FEAT-096, TASK-P16-006. An estimate as its pull
+│   │                          request's comment: the unpriced count first, list
+│   │                          prices only, never longer than GitHub accepts
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour
