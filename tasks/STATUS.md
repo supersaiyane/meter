@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 94 total, 11 specified, 12 in build, 68 delivered |
+| Features | 98 total, 15 specified, 12 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 205 recorded |
+| Changes | 206 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
-| Open questions | 43 awaiting a decision |
+| Open questions | 45 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -186,6 +186,13 @@ Meter merge a ready gp3 fix the tenant's merge policy names, behind the pull_req
 TASK-P15-008 put the fix in a recommendation's detail and the settings at /platform/fixes. P15 was
 delivered against fakes on 2026-10-15, TASK-P15-009 proving its exit criteria over the seeded demo;
 no GitHub App is installed yet, ISS-300.
+
+P16, costing before deployment, was chosen on 2026-10-16 as proposal 6 of `next-in-scope.txt` and
+specified the same day with OPEN-45 answered: the estimate is one comment per pull request and folder,
+edited in place. A plan from the organization's own pipeline is reduced to what sets a price and never
+stored whole, priced at list from the catalogue's five services with every resource not priced named
+and given no figure, and each created resource compared with thirty billed days once applied. How a
+plan reaches Meter, OPEN-44, is held by the owner and blocks TASK-P16-010 alone. Ten tasks.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -365,6 +372,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
+| P16 | 1 | 0 | 0 | 0 | 9 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -682,6 +690,12 @@ ISS-003.
 | `TASK-P15-007` | Done 2026-10-15 | the merge policy and Meter's merge |
 | `TASK-P15-008` | Done 2026-10-15 | the screens |
 | `TASK-P15-009` | Done 2026-10-15 | the local stack, first contact, proof and documents |
+
+**P16, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P16-001` | Done 2026-10-16 | the spec, the plan and the register |
 
 <!-- generated:task-status end -->
 
