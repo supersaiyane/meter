@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 31 of 33 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 64 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 287 | test_*.py under tests/ |
-| Test functions | 3427 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 43 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 65 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 290 | test_*.py under tests/ |
+| Test functions | 3440 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1271,6 +1271,9 @@ meter/
 │   │                          if it did not take, and records nothing when it
 │   │                          does, because a change row claims the estate
 │   │                          changed and stayed changed
+│   ├── plan_records.py        FEAT-095, TASK-P16-005. The one writer of a plan, for
+│   │                          every arrival route: reduced as RECEIVED, unreadable
+│   │                          as REFUSED, one plan per commit and folder
 │   ├── fix_merge.py           FEAT-094, TASK-P15-001, ADR-0038. The one place
 │   │                          Meter merges: asks may_merge first, merges at the
 │   │                          head the host reported, records a refusal as one
@@ -1322,6 +1325,9 @@ meter/
 │       │                      last days that have data, so a quiet Sunday does not
 │       │                      starve it. Refuses without settings: severity comes
 │       │                      from the money and a default would invent one
+│       ├── plan_estimates.py  FEAT-095, TASK-P16-005. Every ten minutes, prices each
+│       │                      plan received through StoredCatalogue and writes its
+│       │                      estimate and a line per change, then marks it PRICED
 │       ├── fix_pull_requests.py  FEAT-092, TASK-P15-004. Every ten minutes, opens
 │       │                      each fix asked for through propose in the mapped
 │       │                      repository, each in a savepoint; nowhere to go is
@@ -1711,6 +1717,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0065_plan_estimates.py  TASK-P16-005. terraform_plan, planned_change,
+│       │                      plan_estimate and plan_estimate_line, payer wide, and
+│       │                      the plan_estimates cadence
 │       ├── 0064_fixes_screen.py  TASK-P15-008. /platform/fixes admitted as a saved
 │       │                      view's screen
 │       ├── 0063_merge_policy.py  TASK-P15-007. Which reversible fixes Meter may

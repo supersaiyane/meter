@@ -30,6 +30,7 @@ from finops_ingest.codehost_bindings import CODEHOST_BUILDERS
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.collectors.plan_estimates import PlanEstimatesCollector
 from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
 from finops_ingest.collectors.realized_savings import RealizedSavingsCollector
 from finops_ingest.collectors.retention import RETENTION_COLLECTORS, register_retention
@@ -128,6 +129,7 @@ _FROM_METER: Final[dict[str, Callable[[], CollectorRunner]]] = {
     "commitment_actions": CommitmentActionsCollector,
     "cost_anomaly": CostAnomalyCollector,
     "finops_score": ScoreCollector,
+    "plan_estimates": PlanEstimatesCollector,
     "purchase_plan": PurchasePlanCollector,
     "realized_savings": RealizedSavingsCollector,
     "savings_ledger": SavingsLedgerCollector,

@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 98 total, 15 specified, 12 in build, 68 delivered |
+| Features | 98 total, 14 specified, 13 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 209 recorded |
+| Changes | 210 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
@@ -199,7 +199,8 @@ is named and never kept, and spec section 5.2 is corrected. TASK-P16-003 prices 
 volumes from the catalog, each line resting on its principal part, a reason and no figure where it
 cannot, and a note for a part left out. TASK-P16-004 prices RDS, Aurora, ElastiCache, Redshift and
 OpenSearch, shaped by AWS's own eu-west-1 lists the owner approved downloading: the catalog now
-keeps RDS and OpenSearch storage, and Aurora is priced as Standard with a note.
+keeps RDS and OpenSearch storage, and Aurora is priced as Standard with a note. TASK-P16-005
+stores plans and their estimates, migration 0065, and prices each plan received every ten minutes.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -379,7 +380,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
-| P16 | 4 | 0 | 0 | 0 | 6 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
+| P16 | 5 | 0 | 0 | 0 | 5 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -706,6 +707,7 @@ ISS-003.
 | `TASK-P16-002` | Done 2026-10-16 | reading a plan |
 | `TASK-P16-003` | Done 2026-10-16 | pricing compute and storage |
 | `TASK-P16-004` | Done 2026-10-16 | pricing the managed services |
+| `TASK-P16-005` | Done 2026-10-16 | storing estimates, the `plan_estimates` collector |
 
 <!-- generated:task-status end -->
 

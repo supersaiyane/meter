@@ -199,6 +199,11 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "volume_observation": ByAccount("sub_account_id"),
     # TASK-P15-007. Which reversible fixes Meter may merge, the organization's, ADR-0025.
     "merge_policy": PayerWide(),
+    # P16, TASK-P16-005. A plan names no account until it is applied, spec section 5.8, ADR-0025.
+    "terraform_plan": PayerWide(),
+    "planned_change": PayerWide(),
+    "plan_estimate": PayerWide(),
+    "plan_estimate_line": PayerWide(),
     # TASK-P14-006. AWS's recommendations for the whole organization, read as the payer.
     "purchase_recommendation": PayerWide(),
     "purchase_plan": PayerWide(),

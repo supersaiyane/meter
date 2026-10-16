@@ -715,7 +715,7 @@ features:
 - id: FEAT-095
   name: A Terraform plan reduced and priced from the catalogue
   subproject: P16
-  status: Specified
+  status: In build
   detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) sections 5.2 to 5.4, 5.7 and 5.8, [P16 plan](docs/plans/P16-implementation-plan.md)'
   doc: docs/features/FEAT-095-plan-pricing.md
 - id: FEAT-096
@@ -2816,6 +2816,12 @@ changes:
   what: TASK-P16-004, RDS, Aurora, ElastiCache, Redshift and OpenSearch in a plan priced from the catalog
   commit: pending
   detail: 'finops_query/plan_services.py prices the managed services through Catalogue.service_price, the one on demand row holding every attribute asked, by its unit, never an Extended Support surcharge, two rows refused. Shaped by AWS''s own eu-west-1 lists for RDS, Redshift and OpenSearch, downloaded with the owner''s approval and pruned into tests/providers/aws/extracts: the price list adapter now keeps RDS storage, provisioned IOPS and throughput and OpenSearch EBS storage, per service, and SkuPriceDetails keeps groupDescription and storage, which tell RDS IOPS rows and Aurora''s two hourly prices apart. Aurora is priced as Standard with a note; RDS gp3 is priced only above the 12,000 IOPS and 500 MiB/s it includes once more may be provisioned. The shared types moved to finops_query/plan_quotes.py'
+- id: CHG-0210
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-005, plans and their estimates stored, the plan_estimates collector
+  commit: pending
+  detail: 'Migration 0065 adds terraform_plan, planned_change, plan_estimate and plan_estimate_line, payer wide, with checks that a line with a reason carries no figure and no components, a priced line carries a figure, a refusal says why and a change is the after less the before; and the plan_estimates cadence. finops_ingest/plan_records.py is the one writer every arrival route will use, one plan per commit and folder, the folder''s state from the repository mapping. The plan_estimates collector prices every plan received through StoredCatalogue and writes the estimate and a line per change. It reads only Meter''s tables; the comment will be its own collector, TASK-P16-006, and retention moved to TASK-P16-007 so no plan is pruned before its comparison'
 issues:
 - id: ISS-301
   severity: MEDIUM

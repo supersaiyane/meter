@@ -1485,6 +1485,88 @@ CREATE TABLE merge_policy (
 Set whole through `PUT /v1/remediation/merge-policy` by a person whose scope is the organization,
 with a reason, audited. An erasure keeps it and replaces `set_by`.
 
+### Plans and their estimates, P16
+
+```sql
+-- P16, FEAT-095, migration 0065. A Terraform plan received for a pull request, a folder and a
+-- commit. Never stored whole: what the reduction kept is in planned_change, spec section 5.2.
+-- Payer wide, ADR-0025: a plan names no account until it is applied.
+CREATE TABLE terraform_plan (
+    plan_id            UUID        NOT NULL,
+    tenant_id          UUID        NOT NULL REFERENCES tenant(tenant_id),
+    repository         TEXT        NOT NULL,   -- owner/name
+    pull_request       INTEGER     NOT NULL,
+    head_sha           TEXT        NOT NULL,   -- the commit the plan was made from
+    folder             TEXT        NOT NULL DEFAULT '',
+    state_reference    TEXT,                   -- from repository_mapping, where one state is mapped
+    route              TEXT        NOT NULL,   -- how it arrived, OPEN-44
+    status             TEXT        NOT NULL,   -- RECEIVED, PRICED or REFUSED
+    reason             TEXT,                   -- a refusal's, which a check requires
+    format_version     TEXT,
+    terraform_version  TEXT,
+    received_at        TIMESTAMPTZ NOT NULL,
+    as_of              TIMESTAMPTZ NOT NULL,   -- the plan's own timestamp, never after arrival
+    collected_at       TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_terraform_plan PRIMARY KEY (plan_id),
+    CONSTRAINT uq_terraform_plan__commit
+        UNIQUE (tenant_id, repository, pull_request, folder, head_sha)
+);
+
+-- One resource change as the reduction kept it: its priced attributes alone, and the names of
+-- those unknown until apply and of those withheld as sensitive.
+CREATE TABLE planned_change (
+    plan_id        UUID   NOT NULL REFERENCES terraform_plan(plan_id),
+    tenant_id      UUID   NOT NULL REFERENCES tenant(tenant_id),
+    address        TEXT   NOT NULL,
+    resource_type  TEXT   NOT NULL,   -- an aws_ type
+    actions        TEXT[] NOT NULL,   -- create, update or delete, never no-op or read
+    region         TEXT,              -- none where the plan gives none Meter can read
+    before         JSONB  NOT NULL DEFAULT '{}'::jsonb,
+    after          JSONB  NOT NULL DEFAULT '{}'::jsonb,
+    unknown        TEXT[] NOT NULL DEFAULT '{}',
+    withheld       TEXT[] NOT NULL DEFAULT '{}',
+    CONSTRAINT pk_planned_change PRIMARY KEY (plan_id, address)
+);
+
+-- A plan priced: its monthly figures, modelled, and how many lines were priced and not. A check
+-- holds the change to the after less the before.
+CREATE TABLE plan_estimate (
+    plan_id         UUID           NOT NULL REFERENCES terraform_plan(plan_id),
+    tenant_id       UUID           NOT NULL REFERENCES tenant(tenant_id),
+    monthly_before  NUMERIC(20, 6) NOT NULL,
+    monthly_after   NUMERIC(20, 6) NOT NULL,
+    monthly_change  NUMERIC(20, 6) NOT NULL,
+    currency        TEXT           NOT NULL,   -- USD
+    priced_lines    INTEGER        NOT NULL,
+    unpriced_lines  INTEGER        NOT NULL,
+    priced_at       TIMESTAMPTZ    NOT NULL,
+    as_of           TIMESTAMPTZ    NOT NULL,
+    collected_at    TIMESTAMPTZ    NOT NULL,
+    CONSTRAINT pk_plan_estimate PRIMARY KEY (plan_id)
+);
+
+-- One change priced, or the reason it is not. A check holds that a line with a reason carries no
+-- figure and no parts, and a line without one carries a figure, constraint 5.
+CREATE TABLE plan_estimate_line (
+    plan_id         UUID           NOT NULL REFERENCES plan_estimate(plan_id),
+    tenant_id       UUID           NOT NULL REFERENCES tenant(tenant_id),
+    address         TEXT           NOT NULL,
+    resource_type   TEXT           NOT NULL,
+    actions         TEXT[]         NOT NULL,
+    region          TEXT,
+    monthly_before  NUMERIC(20, 6),
+    monthly_after   NUMERIC(20, 6),
+    reason          TEXT,
+    notes           TEXT[]         NOT NULL DEFAULT '{}',   -- assumptions, and parts left out
+    components      JSONB          NOT NULL DEFAULT '[]'::jsonb,   -- each with its unit price,
+                                                                   -- price id and version
+    CONSTRAINT pk_plan_estimate_line PRIMARY KEY (plan_id, address)
+);
+```
+
+A plan is written by `finops_ingest/plan_records.py`, whichever route OPEN-44 chooses, and priced
+by the `plan_estimates` collector every ten minutes. None of the four names a person.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

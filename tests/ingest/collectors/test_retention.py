@@ -743,6 +743,9 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # FEAT-092, added with the collector in TASK-P15-004. Every ten minutes, and never run,
         # so due at `AT`; declared here because the list is exhaustive.
         "fix_pull_requests",
+        # FEAT-095, added with the collector in TASK-P16-005. Every ten minutes, and never run,
+        # so due at `AT`; declared here because the list is exhaustive.
+        "plan_estimates",
     }
 
 

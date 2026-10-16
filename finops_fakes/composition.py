@@ -73,6 +73,7 @@ from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
+from finops_ingest.collectors.plan_estimates import PlanEstimatesCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
 from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
@@ -236,6 +237,7 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
             services=context.settings.recommendation_services,
             clock=clock,
         ),
+        "plan_estimates": lambda _c: PlanEstimatesCollector(clock=clock),
         "query_audit": _query_audit,
         "quotas": lambda _c: QuotaCollector(FakeQuotaSource(at=clock()), clock=clock),
         "realized_savings": lambda _c: RealizedSavingsCollector(clock=clock),
