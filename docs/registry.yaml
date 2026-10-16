@@ -727,7 +727,7 @@ features:
 - id: FEAT-097
   name: The estimate compared with the bill, and its accuracy published
   subproject: P16
-  status: Specified
+  status: In build
   detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.6, [P16 plan](docs/plans/P16-implementation-plan.md)'
   doc: docs/features/FEAT-097-estimate-accuracy.md
 - id: FEAT-098
@@ -2828,6 +2828,12 @@ changes:
   what: TASK-P16-006, the estimate as its pull request's one comment, the plan_comments collector
   commit: pending
   detail: 'finops_query/estimate_comment.py renders the comment, the unpriced count first, list prices only. PullRequestCommenter joins the code host ports, and GitHubCodeHost.write_comment edits the comment an app wrote that opens with the folder''s marker, or writes one, asking for Pull requests write alone, so a person quoting the marker is never edited. The plan_comments collector, on the GitHub App beside fix_pull_requests, writes the head''s estimate, supersedes an older commit''s or one whose pull request merged first, fails a refusal for good with its cause and leaves a throttled one waiting. Migration 0066 adds the comment''s state to plan_estimate and plan_pull_request, each pull request''s state with when it was first seen merged'
+- id: CHG-0212
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-007, the estimate against the bill, the estimate_comparison collector and plan retention
+  commit: pending
+  detail: 'finops_query/estimate_accuracy.py judges a created resource''s thirty billed days at list cost against its estimate, effective cost beside it, WITHIN inside 10 percent, and accuracy by type from the judged alone. The daily estimate_comparison collector reads the latest priced plan of each merged pull request and folder, waits until FEAT-057 sees each created address in the mapped state after the merge, writes PENDING, then the verdict, restated for sixty days after the window; an unmapped folder or a resource unseen sixty days is NOT_COMPARED with why. Creations only, spec section 5.6 corrected: a replacement keeps its address. Migration 0067 adds estimate_comparison with checks refusing a verdict without its figures, and the cadences of the collector and retention_plans, which removes plans past METER_RETENTION_PLAN_DAYS, 400 by default, with everything from them.'
 issues:
 - id: ISS-301
   severity: MEDIUM

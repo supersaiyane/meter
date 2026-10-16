@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 31 of 33 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 44 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 66 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 293 | test_*.py under tests/ |
-| Test functions | 3463 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 45 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 67 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 295 | test_*.py under tests/ |
+| Test functions | 3477 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1314,7 +1314,8 @@ meter/
 │       │                      A half read removes nothing: the transaction rolls
 │       │                      it back, and the removal sits downstream of
 │       │                      finishing the read. Creates no partitions on purpose
-│       ├── retention.py       six jobs. Anonymises, never removes a principal row.
+│       ├── retention.py       the retention jobs, plans among them since P16.
+│       │                      Anonymises, never removes a principal row.
 │       │                      Its cost job also writes cost_focus_monthly, but only
 │       │                      for months past the cutoff as it drops them
 │       ├── cost_rollup.py    cost_focus_monthly, one body and two predicates,
@@ -1334,6 +1335,10 @@ meter/
 │       │                      GitHub App, writes the head's estimate as the pull
 │       │                      request's comment, supersedes older commits', and
 │       │                      keeps each pull request's state
+│       ├── estimate_comparison.py  FEAT-097, TASK-P16-007. Daily, sets each resource
+│       │                      a merged plan created against thirty billed days once
+│       │                      FEAT-057 sees it, PENDING until billed, restated for
+│       │                      sixty days; creations only
 │       ├── fix_pull_requests.py  FEAT-092, TASK-P15-004. Every ten minutes, opens
 │       │                      each fix asked for through propose in the mapped
 │       │                      repository, each in a savepoint; nowhere to go is
@@ -1723,6 +1728,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0067_estimate_comparison.py  TASK-P16-007. estimate_comparison, payer
+│       │                      wide, and the estimate_comparison and retention_plans
+│       │                      cadences
 │       ├── 0066_plan_comments.py  TASK-P16-006. The comment's state on plan_estimate
 │       │                      and plan_pull_request, and the plan_comments cadence
 │       ├── 0065_plan_estimates.py  TASK-P16-005. terraform_plan, planned_change,
@@ -2062,6 +2070,9 @@ meter/
 │   ├── estimate_comment.py    FEAT-096, TASK-P16-006. An estimate as its pull
 │   │                          request's comment: the unpriced count first, list
 │   │                          prices only, never longer than GitHub accepts
+│   ├── estimate_accuracy.py   FEAT-097, TASK-P16-007. The thirty day window, the
+│   │                          verdict at list cost within 10 percent, and accuracy
+│   │                          by type from the judged alone
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour

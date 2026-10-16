@@ -2632,3 +2632,37 @@ plan_estimate_line = Table(
         name="ck_plan_estimate_line__figure_or_reason",
     ),
 )
+
+#: P16, 0067. Each resource a merged plan created, set against its thirty billed days: pending,
+#: within, above or below at list, or not compared with the reason, FEAT-097.
+estimate_comparison = Table(
+    "estimate_comparison",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), primary_key=True),
+    Column("address", Text, primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("resource_type", Text, nullable=False),
+    Column("provider_id", Text),
+    Column("seen_at", DateTime(timezone=True)),
+    Column("window_start", Date),
+    Column("window_end", Date),
+    Column("estimate_monthly", Numeric(20, 6), nullable=False),
+    Column("list_monthly", Numeric(20, 6)),
+    Column("effective_monthly", Numeric(20, 6)),
+    Column("variance_percent", Numeric(14, 4)),
+    Column("verdict", Text, nullable=False),
+    Column("reason", Text),
+    Column("judged_at", DateTime(timezone=True), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    ForeignKeyConstraint(
+        ["plan_id", "address"],
+        ["plan_estimate_line.plan_id", "plan_estimate_line.address"],
+        name="fk_estimate_comparison__line",
+    ),
+    CheckConstraint(
+        "verdict IN ('PENDING', 'WITHIN', 'ABOVE', 'BELOW', 'NOT_COMPARED')",
+        name="ck_estimate_comparison__verdict",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_estimate_comparison__collected_after_true"),
+)

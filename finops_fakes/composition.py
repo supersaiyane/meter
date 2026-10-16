@@ -64,6 +64,7 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.collectors.estimate_comparison import EstimateComparisonCollector
 from finops_ingest.collectors.fix_pull_requests import FixPullRequestsCollector
 from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
@@ -242,6 +243,7 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
             clock=clock,
         ),
         "plan_estimates": lambda _c: PlanEstimatesCollector(clock=clock),
+        "estimate_comparison": lambda _c: EstimateComparisonCollector(clock=clock),
         "query_audit": _query_audit,
         "quotas": lambda _c: QuotaCollector(FakeQuotaSource(at=clock()), clock=clock),
         "realized_savings": lambda _c: RealizedSavingsCollector(clock=clock),

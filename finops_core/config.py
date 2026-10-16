@@ -290,6 +290,11 @@ class Settings(BaseSettings):
     retention_ai_usage_days: int = Field(ge=1)
     retention_audit_days: int = Field(ge=1)
     retention_cost_days: int = Field(ge=1)
+    #: How long a Terraform plan, its estimate, comment and comparison are kept, P16 spec section
+    #: 6: the comparison needs sixty days after a merge, and a year of accuracy is published. A
+    #: default, so an environment from before P16 keeps starting; .env.example and both tfvars
+    #: set it all the same.
+    retention_plan_days: int = Field(default=400, ge=1)
 
     # Feature flags. The only fields that carry a declared default, because a
     # flag has to resolve to something when nothing else answers. Every one is
