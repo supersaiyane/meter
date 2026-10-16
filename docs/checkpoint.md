@@ -126,6 +126,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-15 | TASK-P15-008, the fix screens, CHG-0204 | Done | The fix in a recommendation's detail and /platform/fixes for the connection, the mapping and the merge policy; the client's put; unit tests and a journey | finops-web/src/screens/RecommendationFix.tsx:1, finops-web/src/screens/FixSettingsScreen.tsx:1, finops-web/src/api/remediation.ts:1, finops-web/e2e/fixes.spec.ts:1 |
 | 2026-10-15 | TASK-P15-009, the local stack, proof and documents, CHG-0205 | Done | The demo seeds the connection, the mapping, the policy and a fix in every status; LocalCodeHost; the exit criteria proven over the seeded demo; the runbook's owner steps; P15 delivered against fakes, ISS-300 open | scripts/demo/seed_demo.py:438, tests/scripts/test_p15_exit_criteria.py:1, docs/runbooks/code-host.md:1, finops_fakes/pull_requests.py:1 |
 | 2026-10-16 | P16 specified and planned, CHG-0206 | Done | The spec, the plan of ten tasks and FEAT-095 to 098; OPEN-45 answered by the owner, one comment edited in place; OPEN-44, how a plan reaches Meter, held by the owner | docs/specs/2026-10-16-p16-costing-before-deployment-design.md:1, docs/plans/P16-implementation-plan.md:1, finops_ingest/collectors/catalog_reads.py:30 |
+| 2026-10-16 | TASK-P16-002, reading a plan, CHG-0207 | Done | reduce_plan keeps each AWS change's address, type, actions, Region and priced attributes; sensitive priced values named and never kept; spec 5.2 corrected, the JSON carries sensitive values in plain text | finops_query/plan_reading.py:1, tests/query/test_plan_reading.py:1, finops_ingest/collectors/catalog_reads.py:30 |
 
 ## Next action
 
@@ -135,7 +136,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 `docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
 merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P16-002**, reading a plan. TASK-P16-001 is done.
+1. **TASK-P16-003**, pricing compute and storage. TASK-P16-001 and 002 are done.
 2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
 3. Meter never runs Terraform and stores no plan.
 

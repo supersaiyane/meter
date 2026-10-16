@@ -620,6 +620,7 @@
     "finops_query/ownership.py",
     "finops_query/parking.py",
     "finops_query/parser.py",
+    "finops_query/plan_reading.py",
     "finops_query/policy.py",
     "finops_query/purchase_plan.py",
     "finops_query/quota.py",
@@ -1028,6 +1029,7 @@
     "tests/query/test_narration.py",
     "tests/query/test_ownership.py",
     "tests/query/test_parking.py",
+    "tests/query/test_plan_reading.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
     "tests/query/test_purchase_plan.py",
@@ -18192,6 +18194,11 @@
     {
       "s": "tests/query/test_parking.py",
       "t": "finops_query/parking.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_reading.py",
+      "t": "finops_query/plan_reading.py",
       "k": "python"
     },
     {

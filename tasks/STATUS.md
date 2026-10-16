@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 98 total, 15 specified, 12 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 206 recorded |
+| Changes | 207 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
@@ -193,6 +193,9 @@ edited in place. A plan from the organization's own pipeline is reduced to what 
 stored whole, priced at list from the catalogue's five services with every resource not priced named
 and given no figure, and each created resource compared with thirty billed days once applied. How a
 plan reaches Meter, OPEN-44, is held by the owner and blocks TASK-P16-010 alone. Ten tasks.
+TASK-P16-002 reads a plan, keeping only what sets its price; checking the format found that
+`terraform show -json` writes sensitive values in plain text, so a priced attribute marked sensitive
+is named and never kept, and spec section 5.2 is corrected.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -372,7 +375,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
-| P16 | 1 | 0 | 0 | 0 | 9 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
+| P16 | 2 | 0 | 0 | 0 | 8 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -696,6 +699,7 @@ ISS-003.
 | Task | Status | Title |
 | --- | --- | --- |
 | `TASK-P16-001` | Done 2026-10-16 | the spec, the plan and the register |
+| `TASK-P16-002` | Done 2026-10-16 | reading a plan |
 
 <!-- generated:task-status end -->
 

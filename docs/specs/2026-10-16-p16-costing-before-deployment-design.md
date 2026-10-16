@@ -89,14 +89,17 @@ is built and proven with plans the tests and the demo lay down directly.
 
 ### 5.2 A plan is reduced on arrival and never stored whole
 
-`terraform show -json` writes every value Terraform knows that is not marked sensitive: user data,
-connection strings, policy documents, tags, and the prior state. Meter keeps, per managed resource
-change from the `hashicorp/aws` provider, the address, the type, the actions, the Region, and the
-attributes its pricing reads, before and after, with the names of those Terraform knows only after
-apply. The reduction is a pure function in `finops_query`. It refuses with the reason a document
-that is not a plan, a `format_version` whose major version is not 1, and a plan over 50 MiB,
-modelled as ten times the largest plan Meter's own Terraform writes. Data sources, `no-op` and
-`read` changes are dropped.
+`terraform show -json` writes every value Terraform knows, the ones marked sensitive included, in
+plain text: user data, passwords, connection strings, policy documents, tags, and the prior state.
+Corrected on 2026-10-16 by TASK-P16-002 from Terraform's own documentation; this section first said
+sensitive values were left out. Meter keeps, per managed resource change from the `hashicorp/aws`
+provider, the address, the type, the actions, the Region, and the attributes its pricing reads,
+before and after, with the names of those Terraform knows only after apply. A priced attribute its
+author marked sensitive is named and not kept, and its line goes unpriced. The reduction is a pure
+function in `finops_query`. It refuses with the reason a document that is not a plan, a
+`format_version` whose major version is not 1, and a plan over 50 MiB, modelled as ten times the
+largest plan Meter's own Terraform writes. Data sources, other providers, and `no-op`, `read` and
+`forget` changes are dropped.
 
 The Region of a resource is read, in order, from its own `region` argument, which version 6 of the
 AWS provider added, from its availability zone, and from the provider configuration that the

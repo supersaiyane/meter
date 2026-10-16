@@ -20,7 +20,7 @@ Proposal 6 asks for the cost of a change before it is applied. The engineer and 
 
 ## How it works
 
-Not built yet. The reduction keeps the address, type, actions, Region and priced attributes of each managed `hashicorp/aws` resource change, and drops the rest of the plan in memory. The `plan_estimates` collector prices each plan received at the newest catalogue version for the service and Region: on demand, list price, 730 hours a month. Each line keeps its unit prices, price identifiers and version as figures.
+Built so far, TASK-P16-002: `reduce_plan` in `finops_query/plan_reading.py` keeps the address, type, actions, Region and priced attributes of each managed `hashicorp/aws` resource change, the names of priced attributes Terraform knows only after apply, and the names of those marked sensitive, which are never kept; the rest of the plan is dropped in memory. `PRICED` lists the attributes per type. The Region comes from the resource's own `region`, its availability zone, or the provider configuration it names, a constant or a root variable, and is None otherwise. A document that is not a 1.x plan, or is over 50 MiB, is refused with the reason. Still to come: the `plan_estimates` collector prices each plan received at the newest catalogue version for the service and Region: on demand, list price, 730 hours a month. Each line keeps its unit prices, price identifiers and version as figures.
 
 ## Data sources and freshness
 
@@ -39,7 +39,7 @@ A resource of a type not priced, in a Region the catalogue lacks, or with a pric
 
 ## Security considerations
 
-A plan carries every value Terraform knows that is not marked sensitive. Meter keeps only the priced attributes and stores no plan; a test plants a value in every dropped field and finds it in no table. Meter never runs Terraform and holds no credential for a member account. Plans and estimates are payer wide, ADR-0025.
+A plan carries every value Terraform knows, the ones marked sensitive in plain text. Meter keeps only the priced attributes, never one marked sensitive, and stores no plan; a test plants a value in every dropped field and finds it in no table. Meter never runs Terraform and holds no credential for a member account. Plans and estimates are payer wide, ADR-0025.
 
 ## Interface
 

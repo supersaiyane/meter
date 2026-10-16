@@ -2798,6 +2798,12 @@ changes:
   what: P16 Costing before deployment specified and planned, OPEN-45 answered, OPEN-44 held
   commit: pending
   detail: 'The owner chose proposal 6 of next-in-scope.txt as the next build and answered where the estimate shows: one comment per pull request and folder, edited in place, blocking nothing. How a plan reaches Meter, OPEN-44, is held by the owner; it blocks TASK-P16-010 alone, since every other task reads only what the reduction keeps. A plan is reduced on arrival to the priced attributes and never stored whole, priced at list from the catalogue''s five services with every resource not priced named and given no figure, and each created resource compared with thirty billed days once applied. Ten tasks; FEAT-095 to FEAT-098'
+- id: CHG-0207
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-002, a Terraform plan reduced to what sets its price
+  commit: pending
+  detail: 'finops_query/plan_reading.py reduces terraform show -json output to each managed hashicorp/aws resource change: address, type, actions, Region and the attributes PRICED names, before and after, with the names known only after apply. The Region comes from the resource''s own region, its availability zone, or the provider configuration it names. Checked against Terraform''s documentation, the JSON carries sensitive values in plain text, so spec section 5.2''s claim otherwise is corrected and a priced attribute marked sensitive is named and never kept. A value planted in every dropped field is found nowhere in the result'
 issues:
 - id: ISS-301
   severity: MEDIUM
