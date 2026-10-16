@@ -518,6 +518,7 @@
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/ownership.py",
     "finops_ingest/collectors/partitions.py",
+    "finops_ingest/collectors/plan_estimates.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/price_catalog.py",
     "finops_ingest/collectors/purchase_plan.py",
@@ -543,6 +544,7 @@
     "finops_ingest/fix_merge.py",
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
+    "finops_ingest/plan_records.py",
     "finops_ingest/processes.py",
     "finops_ingest/registry.py",
     "finops_ingest/remediation.py",
@@ -739,6 +741,7 @@
     "migrations/versions/0062_fix_followed.py",
     "migrations/versions/0063_merge_policy.py",
     "migrations/versions/0064_fixes_screen.py",
+    "migrations/versions/0065_plan_estimates.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -874,6 +877,7 @@
     "tests/db/test_p4_constraints.py",
     "tests/db/test_p5_constraints.py",
     "tests/db/test_p7_constraints.py",
+    "tests/db/test_plan_estimate_constraints.py",
     "tests/db/test_price_catalog_constraints.py",
     "tests/db/test_recommendation_option_constraints.py",
     "tests/db/test_resource_owner_constraints.py",
@@ -907,6 +911,7 @@
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_ownership.py",
     "tests/ingest/collectors/test_partitions.py",
+    "tests/ingest/collectors/test_plan_estimates.py",
     "tests/ingest/collectors/test_platform_cost.py",
     "tests/ingest/collectors/test_price_catalog.py",
     "tests/ingest/collectors/test_purchase_plan.py",
@@ -936,6 +941,7 @@
     "tests/ingest/test_fix_merge.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
+    "tests/ingest/test_plan_records.py",
     "tests/ingest/test_process_mains.py",
     "tests/ingest/test_processes.py",
     "tests/ingest/test_query_audit.py",
@@ -10341,6 +10347,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/platform_cost.py",
       "k": "python"
     },
@@ -11590,6 +11601,31 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/plan_estimates.py",
+      "t": "finops_ingest/collectors/catalog_reads.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_estimates.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_estimates.py",
+      "t": "finops_query/plan_pricing.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_estimates.py",
+      "t": "finops_query/plan_quotes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_estimates.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/platform_cost.py",
       "t": "finops_core/domain/platform.py",
       "k": "python"
@@ -12091,6 +12127,11 @@
     },
     {
       "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
       "t": "finops_ingest/collectors/purchase_plan.py",
       "k": "python"
     },
@@ -12172,6 +12213,11 @@
     {
       "s": "finops_ingest/metrics.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/plan_records.py",
+      "t": "finops_query/plan_reading.py",
       "k": "python"
     },
     {
@@ -16115,6 +16161,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_query/plan_pricing.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_estimates.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_platform_cost.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -16802,6 +16878,16 @@
     {
       "s": "tests/ingest/test_metrics.py",
       "t": "finops_ingest/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_plan_records.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_plan_records.py",
+      "t": "finops_query/plan_reading.py",
       "k": "python"
     },
     {

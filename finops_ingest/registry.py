@@ -701,6 +701,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.00",
     ),
+    # FEAT-095, TASK-P16-005. Migration 0065 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="plan_estimates",
+        cadence_seconds=TEN_MINUTES,
+        reason=(
+            "Prices each Terraform plan received from the catalog Meter already holds and writes "
+            "its estimate, P16 spec section 7. Every ten minutes, so an estimate is written within "
+            "ten minutes of its plan arriving. It reads only Meter's own tables: modelled at 0.00 "
+            "USD a run. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.00",
+    ),
 )
 
 

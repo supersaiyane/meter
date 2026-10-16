@@ -2505,3 +2505,99 @@ merge_policy = Table(
     CheckConstraint("waste_class IN ('EBS_GP2_TO_GP3')", name="ck_merge_policy__reversible"),
     CheckConstraint("length(trim(reason)) > 0", name="ck_merge_policy__reason"),
 )
+
+
+#: P16, 0065. A Terraform plan received for a pull request, a folder and a commit, FEAT-095. Never
+#: stored whole: what the reduction kept is in `planned_change`, spec section 5.2.
+terraform_plan = Table(
+    "terraform_plan",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("repository", Text, nullable=False),
+    Column("pull_request", Integer, nullable=False),
+    Column("head_sha", Text, nullable=False),
+    Column("folder", Text, nullable=False, server_default=text("''")),
+    Column("state_reference", Text),
+    Column("route", Text, nullable=False),
+    Column("status", Text, nullable=False),
+    Column("reason", Text),
+    Column("format_version", Text),
+    Column("terraform_version", Text),
+    Column("received_at", DateTime(timezone=True), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint(
+        "tenant_id",
+        "repository",
+        "pull_request",
+        "folder",
+        "head_sha",
+        name="uq_terraform_plan__commit",
+    ),
+    CheckConstraint(
+        "status IN ('RECEIVED', 'PRICED', 'REFUSED')", name="ck_terraform_plan__status"
+    ),
+    CheckConstraint(
+        "status <> 'REFUSED' OR length(trim(coalesce(reason, ''))) > 0",
+        name="ck_terraform_plan__refusal_says_why",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_terraform_plan__collected_after_true"),
+)
+
+#: P16, 0065. One resource change as the reduction kept it: its priced attributes alone.
+planned_change = Table(
+    "planned_change",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), ForeignKey("terraform_plan.plan_id"), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("address", Text, primary_key=True),
+    Column("resource_type", Text, nullable=False),
+    Column("actions", ARRAY(Text), nullable=False),
+    Column("region", Text),
+    Column("before", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("after", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    Column("unknown", ARRAY(Text), nullable=False, server_default=text("'{}'")),
+    Column("withheld", ARRAY(Text), nullable=False, server_default=text("'{}'")),
+)
+
+#: P16, 0065. A plan priced: its monthly figures and how many lines were priced and not.
+plan_estimate = Table(
+    "plan_estimate",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), ForeignKey("terraform_plan.plan_id"), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("monthly_before", Numeric(20, 6), nullable=False),
+    Column("monthly_after", Numeric(20, 6), nullable=False),
+    Column("monthly_change", Numeric(20, 6), nullable=False),
+    Column("currency", Text, nullable=False),
+    Column("priced_lines", Integer, nullable=False),
+    Column("unpriced_lines", Integer, nullable=False),
+    Column("priced_at", DateTime(timezone=True), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "monthly_change = monthly_after - monthly_before", name="ck_plan_estimate__change"
+    ),
+)
+
+#: P16, 0065. One change priced, or the reason it is not: a line with a reason has no figure.
+plan_estimate_line = Table(
+    "plan_estimate_line",
+    metadata,
+    Column("plan_id", UUID(as_uuid=True), ForeignKey("plan_estimate.plan_id"), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("address", Text, primary_key=True),
+    Column("resource_type", Text, nullable=False),
+    Column("actions", ARRAY(Text), nullable=False),
+    Column("region", Text),
+    Column("monthly_before", Numeric(20, 6)),
+    Column("monthly_after", Numeric(20, 6)),
+    Column("reason", Text),
+    Column("notes", ARRAY(Text), nullable=False, server_default=text("'{}'")),
+    Column("components", JSONB, nullable=False, server_default=text("'[]'::jsonb")),
+    CheckConstraint(
+        "(reason IS NULL) = (monthly_before IS NOT NULL OR monthly_after IS NOT NULL)",
+        name="ck_plan_estimate_line__figure_or_reason",
+    ),
+)

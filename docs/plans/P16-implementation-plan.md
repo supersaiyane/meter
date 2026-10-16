@@ -177,7 +177,7 @@ widened adapter and 4 against the database; `plan_quotes` is at 100 percent cove
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec sections 5.7, 5.8, 6 and 7 |
 | Delivers | FEAT-095 |
 | Depends on | TASK-P16-004 |
@@ -185,13 +185,28 @@ widened adapter and 4 against the database; `plan_quotes` is at 100 percent cove
 
 **Acceptance criteria.**
 
-- [ ] A migration for `terraform_plan`, `planned_change`, `plan_estimate` and `plan_estimate_line`,
+- [x] A migration for `terraform_plan`, `planned_change`, `plan_estimate` and `plan_estimate_line`,
       with the check that a line not priced carries no figure, and the collector's cadence for
       existing tenants
-- [ ] The collector prices each plan received and writes its estimate in one transaction per plan;
-      one plan failing fails no other
-- [ ] It joins the registry, both compositions, the fakes, the demo's tables and the retention
-      collector at 400 days
+- [x] The collector prices each plan received and writes its estimate. Planned as one transaction
+      per plan so one failing fails no other; pricing turns every failure into a line's reason, so
+      no plan fails by its data, and an error left is a defect that fails the run, typed
+- [x] It joins the registry, both compositions, the fakes and the demo's tables. Retention at 400
+      days moved to TASK-P16-007, so no plan is pruned before its comparison could run
+
+**Delivered 2026-10-16.** Migration 0065 adds the four tables, payer wide in `finops_api/guards.py`,
+with checks that a line with a reason carries no figure and no components, that a priced line
+carries a figure, that a refusal says why, and that a change is the after less the before; and the
+`plan_estimates` cadence for every tenant. `finops_ingest/plan_records.py` is the one writer every
+arrival route will use: a reduced plan as `RECEIVED` with its kept changes, an unreadable one as
+`REFUSED` with the reason, a second plan for one commit and folder returned as the first, the
+folder's state from the repository mapping where exactly one is mapped, and `as_of` never later than
+arrival. `finops_ingest/collectors/plan_estimates.py` prices every plan received through
+`StoredCatalogue` and writes the estimate, figures to six places, and a line per change with its
+components as figures, then marks the plan `PRICED`. It reads only Meter's tables, so it is bound
+with the others that do, and posting the comment is left to its own collector, TASK-P16-006, so a
+code host that is down holds no estimate back. 4 tests of the writer, 4 of the collector and 16 of
+the constraints, all against the database.
 
 ---
 
@@ -234,6 +249,8 @@ widened adapter and 4 against the database; `plan_quotes` is at 100 percent cove
       in the mapped state, skips the first billed day, reads thirty, and restates as the bill does
 - [ ] A migration for `estimate_comparison` with its checks and the cadence; the registry, the
       compositions, the fakes and retention follow
+- [ ] A retention job pruning plans, estimates and comparisons at 400 days, moved here from
+      TASK-P16-005 so no plan is pruned before its comparison could run
 
 ---
 
