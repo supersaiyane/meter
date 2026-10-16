@@ -16,6 +16,7 @@ from finops_core.errors import Misconfigured
 from finops_core.ports.merges import MergeAnswer
 from finops_core.ports.pull_requests import (
     OpenedPullRequest,
+    PostedComment,
     PullRequestDraft,
     RepositoryFile,
     RepositoryTarget,
@@ -41,6 +42,8 @@ class RecordingPullRequests:
         self._targets: list[RepositoryTarget] = []
         self._files = dict(files or {})
         self._states: dict[tuple[str, int], PullRequestState] = {}
+        #: Each pull request's comments, by identifier, in the order they were written. P16.
+        self._comments: dict[tuple[str, int], dict[str, str]] = {}
 
     @property
     def drafts(self) -> tuple[PullRequestDraft, ...]:
@@ -110,6 +113,21 @@ class RecordingPullRequests:
             repository, replace(state, open=False, merged=True, merged_by="meter-app[bot]")
         )
         return MergeAnswer(merged=True, reason="Merged.", sha=f"merge-{number}")
+
+    def comments_on(self, repository: str, number: int) -> tuple[str, ...]:
+        """Every comment on a pull request, in the order they were first written. P16."""
+        return tuple(self._comments.get((repository, number), {}).values())
+
+    def write_comment(self, repository: str, number: int, marker: str, body: str) -> PostedComment:
+        """Edit the comment opening with `marker`, or write one, on a pull request the host holds.
+        TASK-P16-006, FEAT-096."""
+        self.pull_request_state(repository, number)
+        held = self._comments.setdefault((repository, number), {})
+        mine = next((key for key, text in held.items() if text.startswith(marker)), None)
+        comment_id = mine or str(1 + sum(len(one) for one in self._comments.values()))
+        held[comment_id] = body
+        url = f"https://code.example/{repository}/pull/{number}#issuecomment-{comment_id}"
+        return PostedComment(comment_id=comment_id, url=url)
 
 
 class LocalCodeHost(RecordingPullRequests):

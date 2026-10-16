@@ -2576,8 +2576,39 @@ plan_estimate = Table(
     Column("priced_at", DateTime(timezone=True), nullable=False),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
+    # P16, 0066. What happened to the estimate's comment, FEAT-096: none yet while it waits.
+    Column("comment_status", Text),
+    Column("comment_id", Text),
+    Column("comment_url", Text),
+    Column("commented_at", DateTime(timezone=True)),
+    Column("comment_reason", Text),
+    Column("comment_failure_cause", Text),
     CheckConstraint(
         "monthly_change = monthly_after - monthly_before", name="ck_plan_estimate__change"
+    ),
+    CheckConstraint(
+        "comment_status IS NULL OR comment_status IN ('WRITTEN', 'SUPERSEDED', 'FAILED')",
+        name="ck_plan_estimate__comment_status",
+    ),
+)
+
+#: P16, 0066. Each pull request a plan came from, as the code host last reported it, and when
+#: Meter first saw it merged, which the comparison with the bill reads.
+plan_pull_request = Table(
+    "plan_pull_request",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("repository", Text, primary_key=True),
+    Column("pull_request", Integer, primary_key=True),
+    Column("state", Text, nullable=False),
+    Column("head_sha", Text, nullable=False),
+    Column("merged_seen_at", DateTime(timezone=True)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("state IN ('OPEN', 'MERGED', 'CLOSED')", name="ck_plan_pull_request__state"),
+    CheckConstraint(
+        "(state = 'MERGED') = (merged_seen_at IS NOT NULL)",
+        name="ck_plan_pull_request__merged_seen",
     ),
 )
 

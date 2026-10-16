@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P16 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P16 spec](../specs/2026-10-16-p16-costing-before-deployment-design.md), section 5.5 |
 | Tasks | TASK-P16-006 |
 | Decisions | OPEN-45 |
@@ -20,7 +20,7 @@ The estimate is read where the change is reviewed. The owner chose one comment, 
 
 ## How it works
 
-Not built yet. The comment carries a marker hidden in its text, so the `plan_estimates` collector finds it again among the pull request's comments and edits it. A plan whose commit is no longer the pull request's head is priced and kept and does not touch the comment. The collector follows the pull request's state through P15's tracker.
+Built, TASK-P16-006. `finops_query/estimate_comment.py` renders the comment, opening with a marker hidden in its text that names the folder. The `plan_comments` collector, every ten minutes on the GitHub App, asks each pull request's state through P15's tracker and keeps it in `plan_pull_request`, with when it was first seen merged; it writes the head's estimate as the comment, or edits the one it wrote before, found by its marker and its app author; an older commit's estimate, or one whose pull request merged or closed first, is `SUPERSEDED` and says why. Pricing is a collector apart, so a code host that is down holds back only the comment.
 
 ## Data sources and freshness
 

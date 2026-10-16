@@ -252,6 +252,7 @@ DEMO_TABLES = (
     "plan_estimate",
     "planned_change",
     "terraform_plan",
+    "plan_pull_request",
     # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
     "recommendation_option",
     "recommendation",

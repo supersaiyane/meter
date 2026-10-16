@@ -214,7 +214,7 @@ the constraints, all against the database.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec section 5.5, OPEN-45 |
 | Delivers | FEAT-096 |
 | Depends on | TASK-P16-005 |
@@ -222,12 +222,27 @@ the constraints, all against the database.
 
 **Acceptance criteria.**
 
-- [ ] A pure renderer: the unpriced count first, then the monthly change, a line per resource, the
+- [x] A pure renderer: the unpriced count first, then the monthly change, a line per resource, the
       reasons, the assumptions and the catalogue version, and a hidden marker per folder
-- [ ] The code host port and the GitHub adapter write or edit a comment found by its marker, the
+- [x] The code host port and the GitHub adapter write or edit a comment found by its marker, the
       comments read a page at a time, each failure typed; the fakes follow
-- [ ] The collector writes or edits the comment for a plan whose commit is the pull request's head,
+- [x] The collector writes or edits the comment for a plan whose commit is the pull request's head,
       leaves it alone for an older commit, and records the pull request's state
+
+**Delivered 2026-10-16.** `finops_query/estimate_comment.py` renders the comment: the folder's
+marker first, then how many resources are not priced, the monthly figures, a row per priced
+resource, every one not priced with its reason, the notes, and what every figure rests on; list
+prices only, never a figure from the bill, never longer than GitHub accepts. `PullRequestCommenter`
+joins the code host ports; `GitHubCodeHost.write_comment` edits the comment an app wrote that opens
+with the marker, or writes one, reading comments a page at a time and asking for Pull requests
+write alone, so a person quoting the marker is never edited; the fakes follow. The comment is its
+own collector, `plan_comments`, built on the GitHub App beside `fix_pull_requests`, so a code host
+that is down never holds an estimate back: the head's estimate is written or edited, an older
+commit's or one whose pull request merged first is `SUPERSEDED` with why, a refusal for good is
+`FAILED` with its cause, and a throttled host leaves it waiting. Migration 0066 adds the comment's
+columns to `plan_estimate`, each state held by a check, and `plan_pull_request`, each pull request's
+state with when Meter first saw it merged, which TASK-P16-007 reads. 6 renderer tests, at 100
+percent coverage, measured; 7 for the adapter; 9 for the collector against the database.
 
 ---
 

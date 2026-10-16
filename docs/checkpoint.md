@@ -130,6 +130,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-16 | TASK-P16-003, pricing compute and storage, CHG-0208 | Done | price_plan prices instances and EBS volumes through the Catalogue protocol; StoredCatalogue reads the newest version per service and Region; the adapter keeps only instance and EBS rows, so 004 widens it | finops_query/plan_pricing.py:1, finops_ingest/collectors/catalog_reads.py:160, finops_providers/aws/price_list.py:252 |
 | 2026-10-16 | TASK-P16-004, pricing the managed services, CHG-0209 | Done | plan_services prices RDS, Aurora, ElastiCache, Redshift and OpenSearch through service_price; the adapter keeps RDS and OpenSearch storage and two more details; three real extracts; shared types in plan_quotes | finops_query/plan_services.py:1, finops_query/plan_quotes.py:1, finops_providers/aws/price_list.py:112, tests/providers/aws/extracts/README.md:1 |
 | 2026-10-16 | TASK-P16-005, storing estimates, CHG-0210 | Done | Migration 0065's four tables, payer wide, with the figure-or-reason check; plan_records writes a plan; plan_estimates prices each plan received; comment split to its own collector, retention moved to 007 | migrations/versions/0065_plan_estimates.py:1, finops_ingest/plan_records.py:1, finops_ingest/collectors/plan_estimates.py:1 |
+| 2026-10-16 | TASK-P16-006, the comment, CHG-0211 | Done | estimate_comment renders it; write_comment on the GitHub adapter and the fakes; plan_comments writes the head's, supersedes older, keeps each pull request's state; migration 0066 | finops_query/estimate_comment.py:1, finops_ingest/collectors/plan_comments.py:1, migrations/versions/0066_plan_comments.py:1, finops_providers/github/code_host.py:1 |
 
 ## Next action
 
@@ -139,8 +140,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 `docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
 merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P16-006**, the comment, as its own `plan_comments` collector on the code host.
-   TASK-P16-001 to 005 are done.
+1. **TASK-P16-007**, the estimate against the bill, with the 400 day retention moved there.
+   TASK-P16-001 to 006 are done.
 2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
 3. Meter never runs Terraform and stores no plan.
 

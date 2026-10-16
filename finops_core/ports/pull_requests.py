@@ -122,3 +122,27 @@ class PullRequestTracker(Protocol):
             Unreachable: The host did not answer.
         """
         ...
+
+
+@dataclass(frozen=True)
+class PostedComment:
+    """A comment the host holds on a pull request: its identifier, and its link."""
+
+    comment_id: str
+    url: str
+
+
+@runtime_checkable
+class PullRequestCommenter(Protocol):
+    """One comment on a pull request, kept current. FEAT-096, TASK-P16-006, OPEN-45."""
+
+    def write_comment(self, repository: str, number: int, marker: str, body: str) -> PostedComment:
+        """Edit the comment whose text carries `marker` to `body`, or write one if there is none.
+
+        Raises:
+            AccessDenied: The credential may not comment on the pull request.
+            Misconfigured: The pull request does not exist.
+            Throttled: The host's rate limit is spent.
+            Unreachable: The host did not answer.
+        """
+        ...

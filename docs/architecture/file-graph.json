@@ -518,6 +518,7 @@
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/ownership.py",
     "finops_ingest/collectors/partitions.py",
+    "finops_ingest/collectors/plan_comments.py",
     "finops_ingest/collectors/plan_estimates.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/price_catalog.py",
@@ -612,6 +613,7 @@
     "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/digest.py",
+    "finops_query/estimate_comment.py",
     "finops_query/forecast.py",
     "finops_query/gate.py",
     "finops_query/gp3_edit.py",
@@ -742,6 +744,7 @@
     "migrations/versions/0063_merge_policy.py",
     "migrations/versions/0064_fixes_screen.py",
     "migrations/versions/0065_plan_estimates.py",
+    "migrations/versions/0066_plan_comments.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -911,6 +914,7 @@
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_ownership.py",
     "tests/ingest/collectors/test_partitions.py",
+    "tests/ingest/collectors/test_plan_comments.py",
     "tests/ingest/collectors/test_plan_estimates.py",
     "tests/ingest/collectors/test_platform_cost.py",
     "tests/ingest/collectors/test_price_catalog.py",
@@ -1006,6 +1010,7 @@
     "tests/providers/github/fake.py",
     "tests/providers/github/test_github_app.py",
     "tests/providers/github/test_github_code_host.py",
+    "tests/providers/github/test_github_comments.py",
     "tests/providers/test_ai_reports.py",
     "tests/providers/test_amg_surface.py",
     "tests/providers/test_anthropic_reports.py",
@@ -1031,6 +1036,7 @@
     "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_digest.py",
+    "tests/query/test_estimate_comment.py",
     "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
     "tests/query/test_gp3_edit.py",
@@ -10347,6 +10353,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/plan_estimates.py",
       "k": "python"
     },
@@ -11122,7 +11133,17 @@
     },
     {
       "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/collectors/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
       "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/codehost_bindings.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
       "k": "python"
     },
     {
@@ -11598,6 +11619,36 @@
     {
       "s": "finops_ingest/collectors/partitions.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/plan_comments.py",
+      "t": "finops_query/estimate_comment.py",
       "k": "python"
     },
     {
@@ -16161,6 +16212,51 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_query/estimate_comment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_plan_comments.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_plan_estimates.py",
       "t": "finops_ingest/collectors/plan_estimates.py",
       "k": "python"
@@ -16753,6 +16849,11 @@
     {
       "s": "tests/ingest/test_aws_bindings.py",
       "t": "finops_ingest/collectors/fix_pull_requests.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
       "k": "python"
     },
     {
@@ -17956,6 +18057,16 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/github/test_github_comments.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/github/test_github_comments.py",
+      "t": "finops_core/ports/pull_requests.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/test_ai_reports.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -18243,6 +18354,11 @@
     {
       "s": "tests/query/test_digest.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_estimate_comment.py",
+      "t": "finops_query/estimate_comment.py",
       "k": "python"
     },
     {
