@@ -1,4 +1,4 @@
-"""A reduced plan priced from the catalog. TASK-P16-003, FEAT-095, spec sections 5.3 and 5.4.
+"""A reduced plan priced from the catalog. TASK-P16-003 and 004, FEAT-095, spec 5.3 and 5.4.
 
 Each change is priced at list, on demand, 730 hours a month, in USD, at the newest catalog version
 for its service and Region, which the `Catalogue` it is given reads. Every figure is modelled. A
@@ -13,16 +13,25 @@ the catalog pruning a superseded price never changes a past estimate.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Final, Protocol
+from typing import Any, Final
 
+from finops_query.plan_quotes import (
+    HOURS_PER_MONTH,
+    Catalogue,
+    Component,
+    Priced,
+    Pricer,
+    Side,
+    Values,
+    decimal_of,
+    positive,
+)
 from finops_query.plan_reading import PlannedChange, ReducedPlan
+from finops_query.plan_services import SERVICE_PRICERS
 
-#: The month a figure is for: 730 hours, the convention AWS's own calculator uses.
-HOURS_PER_MONTH: Final = Decimal(730)
-CURRENCY: Final = "USD"
 #: What gp3 includes in its storage price, above which IOPS and throughput are priced.
 GP3_IOPS: Final = 3000
 GP3_MIBPS: Final = 125
@@ -55,52 +64,6 @@ USAGE_BASED: Final = frozenset(
         "aws_kinesis_stream",
     }
 )
-
-
-@dataclass(frozen=True)
-class Quote:
-    """One price as the catalog holds it."""
-
-    sku_price_id: str
-    unit_price: Decimal
-    unit: str
-    version: str
-
-
-class Catalogue(Protocol):
-    """The catalog as a plan is priced from it. Each answer is a quote, or why there is none."""
-
-    def instance_hour(self, region: str, instance_type: str) -> Quote | str:
-        """EC2's comparable hourly price for a type: Linux, shared tenancy, on demand."""
-        ...
-
-    def volume_month(self, region: str, volume_type: str, term: str) -> Quote | str:
-        """An EBS volume type's monthly price for one term: storage, iops or throughput."""
-        ...
-
-
-@dataclass(frozen=True)
-class Component:
-    """One priced part of a resource: what it is, how much a month, at what price."""
-
-    what: str
-    quantity: Decimal
-    quote: Quote
-
-    @property
-    def monthly(self) -> Decimal:
-        return self.quantity * self.quote.unit_price
-
-
-@dataclass(frozen=True)
-class Side:
-    """A resource's monthly cost on one side of a change."""
-
-    components: tuple[Component, ...]
-
-    @property
-    def monthly(self) -> Decimal:
-        return sum((one.monthly for one in self.components), Decimal(0))
 
 
 @dataclass(frozen=True)
@@ -158,27 +121,6 @@ class Estimate:
     @property
     def monthly_change(self) -> Decimal:
         return self.monthly_after - self.monthly_before
-
-
-@dataclass(frozen=True)
-class Values:
-    """One side of a change as a pricer reads it: the values kept, and the names it lacks."""
-
-    values: Mapping[str, Any]
-    unknown: frozenset[str] = frozenset()
-    withheld: frozenset[str] = frozenset()
-
-    def absent(self, name: str) -> str | None:
-        """Why a named value is missing, where it is unknown or withheld."""
-        if name in self.withheld:
-            return f"{name} is marked sensitive, so Meter does not keep it"
-        if name in self.unknown:
-            return f"{name} is known only after apply"
-        return None
-
-
-Priced = tuple[tuple["Component", ...], tuple[str, ...]]
-Pricer = Callable[[Values, str, Catalogue], "Priced | str"]
 
 
 def price_plan(plan: ReducedPlan, catalogue: Catalogue) -> Estimate:
@@ -343,12 +285,12 @@ def _price_volume(volume: _Volume, region: str, catalogue: Catalogue) -> Priced 
             return volume.absent[term]
     if volume.kind not in VOLUME_TYPES:
         return f"its volume type {volume.kind!r} is not one the catalog prices"
-    if not _positive(volume.size):
+    if not positive(volume.size):
         return "it gives no size"
     storage = catalogue.volume_month(region, volume.kind, "storage")
     if isinstance(storage, str):
         return storage
-    size = _decimal(volume.size)
+    size = decimal_of(volume.size)
     components = [Component(f"{volume.kind} storage, {size} GiB", size, storage)]
     notes: list[str] = []
     if volume.kind == "gp3":
@@ -359,12 +301,12 @@ def _price_volume(volume: _Volume, region: str, catalogue: Catalogue) -> Priced 
         for term, given, included, unit in extra:
             if term in volume.absent:
                 notes.append(f"{volume.label} {term} not priced: {volume.absent[term]}")
-            elif _positive(given) and given > included:
+            elif positive(given) and given > included:
                 _add(components, notes, volume, (region, catalogue), term, given - included, unit)
     elif volume.kind == "io1":
         if "iops" in volume.absent:
             notes.append(f"{volume.label} iops not priced: {volume.absent['iops']}")
-        elif not _positive(volume.iops):
+        elif not positive(volume.iops):
             notes.append(f"{volume.label} iops not priced: an io1 volume gives none")
         else:
             _add(components, notes, volume, (region, catalogue), "iops", volume.iops, "IOPS")
@@ -393,21 +335,13 @@ def _add(
     if isinstance(quote, str):
         notes.append(f"{volume.label} {term} not priced: {quote}")
         return
-    amount = _decimal(quantity)
+    amount = decimal_of(quantity)
     components.append(Component(f"{volume.kind} {term}, {amount} {unit}", amount, quote))
-
-
-def _positive(value: Any) -> bool:
-    return isinstance(value, int | float) and not isinstance(value, bool) and value > 0
-
-
-def _decimal(value: int | float) -> Decimal:
-    """A quantity as a Decimal from its text, so a float carries no binary remainder."""
-    return Decimal(str(value))
 
 
 #: The pricer for each type Meter prices. A type not here is listed with the reason.
 PRICERS: Final[Mapping[str, Pricer]] = {
     "aws_instance": _instance,
     "aws_ebs_volume": _ebs_volume,
+    **SERVICE_PRICERS,
 }

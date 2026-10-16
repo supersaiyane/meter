@@ -79,6 +79,10 @@ DETAILS: Final = (
     "volumeApiName",
     "volumeType",
     "storageMedia",
+    # RDS's provisioned IOPS rows name their volume type only here: RDS Provisioned GP3 IOPS.
+    "groupDescription",
+    # Aurora prices an instance per hour two ways, told apart only by this: I/O-Optimized or not.
+    "storage",
 )
 #: The usage type marker of an Extended Support surcharge, `EU-ExtendedSupportYr3-NodeUsage:...`.
 EXTENDED_SUPPORT: Final = "ExtendedSupport"
@@ -102,6 +106,26 @@ QUERIES: Final[Mapping[str, tuple[tuple[tuple[str, str], ...], ...]]] = {
 #: Queries a Region may answer with nothing: without them only the gp2 to gp3 comparison is lost,
 #: and it says so, where an instance price missing would lose every rightsizing in the Region.
 OPTIONAL: Final = frozenset((("productFamily", family),) for family in VOLUME_FAMILIES[1:])
+#: Storage kept beside the instances, per service, so a Terraform plan's databases and search
+#: domains can be priced whole, TASK-P16-004: RDS's storage, provisioned IOPS and throughput, and
+#: OpenSearch's EBS storage. Read from the real eu-west-1 lists of 2026-10-06 and 2026-10-15.
+PRICED_STORAGE: Final[Mapping[str, frozenset[str]]] = {
+    "AmazonRDS": frozenset({"Database Storage", "Provisioned IOPS", "Provisioned Throughput"}),
+    "AmazonES": frozenset({"Amazon OpenSearch Service Volume"}),
+}
+#: OpenSearch's EBS storage by its storage medium. Its vector and managed storage share the family
+#: and are billed by use, so they are left out.
+SEARCH_STORAGE: Final = frozenset(
+    {
+        "GP2",
+        "GP3",
+        "GP3-PIOPS-Storage",
+        "GP3-ThroughPut-Storage",
+        "PIOPS-Storage",
+        "PIOPS",
+        "Magnetic",
+    }
+)
 _WHOLE_REGION: Final[tuple[tuple[tuple[str, str], ...], ...]] = ((),)
 
 
@@ -250,16 +274,24 @@ class _Product:
         return found
 
     def _compared(self) -> bool:
-        """An instance or an EBS volume's storage, IOPS or throughput, at the comparable price."""
+        """An instance, an EBS volume's storage, IOPS or throughput, or the storage a database or a
+        search domain is priced from, at the comparable price."""
         family = self._product.get("productFamily")
         kept = (
             bool(self._attributes.get("instanceType"))
             or family == STORAGE
             or (family in VOLUME_FAMILIES and bool(self._attributes.get("volumeApiName")))
+            or self._priced_storage(family)
         )
         return kept and all(
             self._attributes.get(name, wanted) == wanted for name, wanted in COMPARABLE.items()
         )
+
+    def _priced_storage(self, family: Any) -> bool:
+        service = self._version.service_code
+        if family not in PRICED_STORAGE.get(service, frozenset()):
+            return False
+        return service != "AmazonES" or self._attributes.get("storageMedia") in SEARCH_STORAGE
 
     def _details(self, meter: str) -> dict[str, str]:
         attributes = self._attributes

@@ -1,0 +1,573 @@
+{
+  "formatVersion": "v1.0",
+  "offerCode": "AmazonRDS",
+  "products": {
+    "3RJ2QZU3S9BTETUC": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "group": "RDS-Throughput",
+        "groupDescription": "RDS Provisioned Throughput",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "usagetype": "EU-RDS:GP3-Throughput"
+      },
+      "productFamily": "Provisioned Throughput",
+      "sku": "3RJ2QZU3S9BTETUC"
+    },
+    "CDJD9T62N8GKES69": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "group": "RDS-PIOPS",
+        "groupDescription": "RDS Provisioned IO2 IOPS",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "usagetype": "EU-RDS:IO2-PIOPS",
+        "volumeType": "Provisioned IOPS-IO2"
+      },
+      "productFamily": "Provisioned IOPS",
+      "sku": "CDJD9T62N8GKES69"
+    },
+    "D5Y98VF5R9USR7EB": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "group": "RDS-PIOPS",
+        "groupDescription": "RDS Provisioned GP3 IOPS",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "usagetype": "EU-RDS:GP3-PIOPS"
+      },
+      "productFamily": "Provisioned IOPS",
+      "sku": "D5Y98VF5R9USR7EB"
+    },
+    "E4WZ2S9A9AVWRJNM": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "databaseEngine": "Aurora PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "21",
+        "instanceFamily": "Memory optimized",
+        "instanceType": "db.r6g.large",
+        "instanceTypeFamily": "R6G",
+        "licenseModel": "No license required",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memory": "16 GiB",
+        "networkPerformance": "Up to 10 Gigabit",
+        "normalizationSizeFactor": "5.2",
+        "operation": "CreateDBInstance:0021",
+        "physicalProcessor": "AWS Graviton2",
+        "processorArchitecture": "64-bit",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storage": "Aurora IO Optimization Mode",
+        "usagetype": "EU-InstanceUsageIOOptimized:db.r6g.large",
+        "vcpu": "2"
+      },
+      "productFamily": "Database Instance",
+      "sku": "E4WZ2S9A9AVWRJNM"
+    },
+    "EQQGP475ZHNCR63P": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "databaseEngine": "Aurora PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "21",
+        "instanceFamily": "Memory optimized",
+        "instanceType": "db.r6g.large",
+        "instanceTypeFamily": "R6G",
+        "licenseModel": "No license required",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memory": "16 GiB",
+        "networkPerformance": "Up to 10 Gigabit",
+        "normalizationSizeFactor": "4",
+        "operation": "CreateDBInstance:0021",
+        "physicalProcessor": "AWS Graviton2",
+        "processorArchitecture": "64-bit",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storage": "EBS Only",
+        "unbundledLicensing": "FALSE",
+        "usagetype": "EU-InstanceUsage:db.r6g.large",
+        "vcpu": "2"
+      },
+      "productFamily": "Database Instance",
+      "sku": "EQQGP475ZHNCR63P"
+    },
+    "H35JZY6XTTK5S9ZT": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "maxVolumeSize": "16 TB",
+        "minVolumeSize": "5 GB",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storageMedia": "SSD",
+        "usagetype": "EU-RDS:GP2-Storage",
+        "volumeType": "General Purpose"
+      },
+      "productFamily": "Database Storage",
+      "sku": "H35JZY6XTTK5S9ZT"
+    },
+    "N29UYJAAPD396K72": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "maxVolumeSize": "3 TB",
+        "minVolumeSize": "5 GB",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storageMedia": "Magnetic",
+        "usagetype": "EU-RDS:StorageUsage",
+        "volumeType": "Magnetic"
+      },
+      "productFamily": "Database Storage",
+      "sku": "N29UYJAAPD396K72"
+    },
+    "PUGZSVMJGUNPKAB8": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Multi-AZ",
+        "engineCode": "14",
+        "instanceFamily": "General purpose",
+        "instanceType": "db.m6g.large",
+        "instanceTypeFamily": "M6G",
+        "licenseModel": "No license required",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memory": "8 GiB",
+        "networkPerformance": "Up to 10 Gigabit",
+        "normalizationSizeFactor": "8",
+        "operation": "CreateDBInstance:0014",
+        "physicalProcessor": "AWS Graviton2",
+        "processorArchitecture": "64-bit",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storage": "EBS Only",
+        "unbundledLicensing": "FALSE",
+        "usagetype": "EU-Multi-AZUsage:db.m6g.large",
+        "vcpu": "2"
+      },
+      "productFamily": "Database Instance",
+      "sku": "PUGZSVMJGUNPKAB8"
+    },
+    "Q7A8QYSUD8GGN6W4": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "maxVolumeSize": "16 TB",
+        "minVolumeSize": "100 GB",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storageMedia": "SSD",
+        "usagetype": "EU-RDS:PIOPS-Storage",
+        "volumeType": "Provisioned IOPS"
+      },
+      "productFamily": "Database Storage",
+      "sku": "Q7A8QYSUD8GGN6W4"
+    },
+    "R4J36KT7UAC4HEEK": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "instanceFamily": "General purpose",
+        "instanceType": "db.m6g.large",
+        "instanceTypeFamily": "M6G",
+        "licenseModel": "No license required",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memory": "8 GiB",
+        "networkPerformance": "Up to 10 Gigabit",
+        "normalizationSizeFactor": "4",
+        "operation": "CreateDBInstance:0014",
+        "physicalProcessor": "AWS Graviton2",
+        "processorArchitecture": "64-bit",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storage": "EBS Only",
+        "unbundledLicensing": "FALSE",
+        "usagetype": "EU-InstanceUsage:db.m6g.large",
+        "vcpu": "2"
+      },
+      "productFamily": "Database Instance",
+      "sku": "R4J36KT7UAC4HEEK"
+    },
+    "S32D6FQC3879C222": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "maxVolumeSize": "16 TB",
+        "minVolumeSize": "5 GB",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storageMedia": "SSD",
+        "usagetype": "EU-RDS:GP3-Storage",
+        "volumeType": "General Purpose-GP3"
+      },
+      "productFamily": "Database Storage",
+      "sku": "S32D6FQC3879C222"
+    },
+    "SE5GS5TGXS5R9SYP": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "maxVolumeSize": "64 TB",
+        "minVolumeSize": "100 GB",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "storageMedia": "SSD",
+        "usagetype": "EU-RDS:PIOPS-Storage-IO2",
+        "volumeType": "Provisioned IOPS-IO2"
+      },
+      "productFamily": "Database Storage",
+      "sku": "SE5GS5TGXS5R9SYP"
+    },
+    "V4N9K7GFJC4BVRHM": {
+      "attributes": {
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "engineCode": "14",
+        "group": "RDS-PIOPS",
+        "groupDescription": "RDS Provisioned IOPS",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRDS",
+        "servicename": "Amazon Relational Database Service",
+        "usagetype": "EU-RDS:PIOPS"
+      },
+      "productFamily": "Provisioned IOPS",
+      "sku": "V4N9K7GFJC4BVRHM"
+    }
+  },
+  "publicationDate": "2026-10-06T22:40:50Z",
+  "terms": {
+    "OnDemand": {
+      "3RJ2QZU3S9BTETUC": {
+        "3RJ2QZU3S9BTETUC.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "3RJ2QZU3S9BTETUC.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.088 per  MiBps-month of provisioned GP3 Storage throughput running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0880000000"
+              },
+              "rateCode": "3RJ2QZU3S9BTETUC.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "MBPS-Mo"
+            }
+          },
+          "sku": "3RJ2QZU3S9BTETUC",
+          "termAttributes": {}
+        }
+      },
+      "CDJD9T62N8GKES69": {
+        "CDJD9T62N8GKES69.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "CDJD9T62N8GKES69.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.11 per IOPS-Month of provisioned io2 IOPS for Single-AZ deployments running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1100000000"
+              },
+              "rateCode": "CDJD9T62N8GKES69.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "IOPS-Mo"
+            }
+          },
+          "sku": "CDJD9T62N8GKES69",
+          "termAttributes": {}
+        }
+      },
+      "D5Y98VF5R9USR7EB": {
+        "D5Y98VF5R9USR7EB.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "D5Y98VF5R9USR7EB.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.022 per IOPS-month of provisioned GP3 IOPS running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0220000000"
+              },
+              "rateCode": "D5Y98VF5R9USR7EB.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "IOPS-Mo"
+            }
+          },
+          "sku": "D5Y98VF5R9USR7EB",
+          "termAttributes": {}
+        }
+      },
+      "E4WZ2S9A9AVWRJNM": {
+        "E4WZ2S9A9AVWRJNM.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "E4WZ2S9A9AVWRJNM.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "USD 0.372 per RDS db.r6g.large IO-optimized Single-AZ instance hour (or partial hour) running Aurora PostgreSQL.",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.3720000000"
+              },
+              "rateCode": "E4WZ2S9A9AVWRJNM.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "E4WZ2S9A9AVWRJNM",
+          "termAttributes": {}
+        }
+      },
+      "EQQGP475ZHNCR63P": {
+        "EQQGP475ZHNCR63P.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "EQQGP475ZHNCR63P.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$ 0.286 per RDS db.r6g.large Single-AZ instance hour (or partial hour) running Aurora PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.2860000000"
+              },
+              "rateCode": "EQQGP475ZHNCR63P.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "EQQGP475ZHNCR63P",
+          "termAttributes": {}
+        }
+      },
+      "H35JZY6XTTK5S9ZT": {
+        "H35JZY6XTTK5S9ZT.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "H35JZY6XTTK5S9ZT.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.127 per GB-month of provisioned gp2 storage running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1270000000"
+              },
+              "rateCode": "H35JZY6XTTK5S9ZT.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "H35JZY6XTTK5S9ZT",
+          "termAttributes": {}
+        }
+      },
+      "N29UYJAAPD396K72": {
+        "N29UYJAAPD396K72.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "N29UYJAAPD396K72.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.11 per GB-month of provisioned magnetic storage running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1100000000"
+              },
+              "rateCode": "N29UYJAAPD396K72.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "N29UYJAAPD396K72",
+          "termAttributes": {}
+        }
+      },
+      "PUGZSVMJGUNPKAB8": {
+        "PUGZSVMJGUNPKAB8.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "PUGZSVMJGUNPKAB8.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$ 0.352 per RDS db.m6g.large Multi-AZ instance hour (or partial hour) running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.3520000000"
+              },
+              "rateCode": "PUGZSVMJGUNPKAB8.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "PUGZSVMJGUNPKAB8",
+          "termAttributes": {}
+        }
+      },
+      "Q7A8QYSUD8GGN6W4": {
+        "Q7A8QYSUD8GGN6W4.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "Q7A8QYSUD8GGN6W4.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.138 per GB-month of provisioned io1 storage running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1380000000"
+              },
+              "rateCode": "Q7A8QYSUD8GGN6W4.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "Q7A8QYSUD8GGN6W4",
+          "termAttributes": {}
+        }
+      },
+      "R4J36KT7UAC4HEEK": {
+        "R4J36KT7UAC4HEEK.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "R4J36KT7UAC4HEEK.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$ 0.176 per RDS db.m6g.large Single-AZ instance hour (or partial hour) running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1760000000"
+              },
+              "rateCode": "R4J36KT7UAC4HEEK.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "R4J36KT7UAC4HEEK",
+          "termAttributes": {}
+        }
+      },
+      "S32D6FQC3879C222": {
+        "S32D6FQC3879C222.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "S32D6FQC3879C222.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.127 per GB-month of provisioned GP3 storage running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1270000000"
+              },
+              "rateCode": "S32D6FQC3879C222.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "S32D6FQC3879C222",
+          "termAttributes": {}
+        }
+      },
+      "SE5GS5TGXS5R9SYP": {
+        "SE5GS5TGXS5R9SYP.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "SE5GS5TGXS5R9SYP.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.138 per GB-Month of provisioned io2 storage for Single-AZ deployments running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1380000000"
+              },
+              "rateCode": "SE5GS5TGXS5R9SYP.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "SE5GS5TGXS5R9SYP",
+          "termAttributes": {}
+        }
+      },
+      "V4N9K7GFJC4BVRHM": {
+        "V4N9K7GFJC4BVRHM.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "V4N9K7GFJC4BVRHM.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.11 per IOPS-month of provisioned io1 IOPS running PostgreSQL",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1100000000"
+              },
+              "rateCode": "V4N9K7GFJC4BVRHM.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "IOPS-Mo"
+            }
+          },
+          "sku": "V4N9K7GFJC4BVRHM",
+          "termAttributes": {}
+        }
+      }
+    }
+  },
+  "version": "20261006224050"
+}

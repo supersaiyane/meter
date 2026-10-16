@@ -1,8 +1,8 @@
-"""The catalog as a plan is priced from it. TASK-P16-003, FEAT-095, spec section 5.4.
+"""The catalog as a plan is priced from it. TASK-P16-003 and 004, FEAT-095, spec section 5.4.
 
 `StoredCatalogue` reads the newest version held for a service and Region, the comparable instance
-price every other collector reads, and each term of an EBS volume type, refusing two prices for
-one term rather than choosing between tiers.
+price every other collector reads, each term of an EBS volume type, and a managed service's one
+row holding every attribute asked, refusing two prices rather than choosing between them.
 """
 
 from __future__ import annotations
@@ -17,8 +17,13 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_ingest.collectors.catalog_reads import StoredCatalogue
-from finops_query.plan_pricing import Quote, price_change
+from finops_ingest.collectors.price_catalog import store
+from finops_ingest.dispatcher import WorkUnit
+from finops_ingest.registry import CollectorContext
+from finops_query.plan_pricing import price_change
+from finops_query.plan_quotes import Quote
 from finops_query.plan_reading import PlannedChange
+from tests.providers.aws.real_prices import real_prices
 
 pytestmark = pytest.mark.integration
 
@@ -168,3 +173,58 @@ def test_a_planned_instance_is_priced_from_what_is_stored(engine: Engine, tenant
     with connection:
         line = price_change(change, shelf)
     assert line.monthly_after == Decimal("82.51")
+
+
+def stored(engine: Engine, tenant: UUID, service: str, name: str) -> None:
+    """AWS's own rows for a service, written as the price catalog collector writes them."""
+    version, prices = real_prices(service, name)
+    work = WorkUnit(tenant_id=tenant, collector="price_catalog", window_start=AT, window_end=AT)
+    with engine.begin() as connection:
+        store(CollectorContext(unit=work, connection=connection, run_id=uuid4()), version, prices)
+
+
+RDS_ROWS = "rds-eu-west-1-postgresql-and-aurora.json"
+POSTGRES = {"databaseEngine": "PostgreSQL", "deploymentOption": "Single-AZ"}
+
+
+def test_a_managed_service_price_is_the_one_row_holding_every_attribute(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    stored(engine, tenant_id, "AmazonRDS", RDS_ROWS)
+    stored(engine, tenant_id, "AmazonElastiCache", "elasticache-eu-west-1-extended-support.json")
+    instance = {**POSTGRES, "instanceType": "db.m6g.large", "licenseModel": "No license required"}
+    connection, shelf = catalogue(engine, tenant_id)
+    with connection:
+        hours = shelf.service_price("AmazonRDS", REGION, instance, "hours")
+        gp3 = {**POSTGRES, "groupDescription": "RDS Provisioned GP3 IOPS"}
+        iops = shelf.service_price("AmazonRDS", REGION, gp3, "iops")
+        mbps = {**POSTGRES, "groupDescription": "RDS Provisioned Throughput"}
+        throughput = shelf.service_price("AmazonRDS", REGION, mbps, "throughput")
+        aurora = {"instanceType": "db.r6g.large", "databaseEngine": "Aurora PostgreSQL"}
+        both = shelf.service_price("AmazonRDS", REGION, aurora, "hours")
+        surcharge = shelf.service_price(
+            "AmazonElastiCache", REGION, {"instanceType": "cache.m5.xlarge"}, "hours"
+        )
+        unheld = shelf.service_price(
+            "AmazonRedshift", REGION, {"instanceType": "ra3.xlplus"}, "hours"
+        )
+    assert isinstance(hours, Quote) and isinstance(iops, Quote) and isinstance(throughput, Quote)
+    assert (hours.unit_price, hours.unit, hours.version) == (
+        Decimal("0.176"),
+        "Hrs",
+        "20261006224050",
+    )
+    assert (iops.unit_price, throughput.unit_price, throughput.unit) == (
+        Decimal("0.022"),
+        Decimal("0.088"),
+        "MBPS-Mo",
+    )
+    assert both == (
+        "the catalog holds 2 AmazonRDS hours prices for databaseEngine Aurora PostgreSQL, "
+        f"instanceType db.r6g.large in {REGION}, which it does not tell apart"
+    )
+    assert surcharge == (
+        "the catalog holds no AmazonElastiCache hours price for instanceType cache.m5.xlarge in "
+        f"{REGION}, version 20260914063714"
+    )
+    assert unheld == f"the catalog holds no AmazonRedshift prices for {REGION}"

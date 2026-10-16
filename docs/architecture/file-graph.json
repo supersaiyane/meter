@@ -621,7 +621,9 @@
     "finops_query/parking.py",
     "finops_query/parser.py",
     "finops_query/plan_pricing.py",
+    "finops_query/plan_quotes.py",
     "finops_query/plan_reading.py",
+    "finops_query/plan_services.py",
     "finops_query/policy.py",
     "finops_query/purchase_plan.py",
     "finops_query/quota.py",
@@ -951,6 +953,7 @@
     "tests/providers/aws/converse.py",
     "tests/providers/aws/ec2_types.py",
     "tests/providers/aws/pricing.py",
+    "tests/providers/aws/real_prices.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_appregistry.py",
     "tests/providers/aws/test_aws_topology.py",
@@ -972,6 +975,7 @@
     "tests/providers/aws/test_instance_types.py",
     "tests/providers/aws/test_invoices.py",
     "tests/providers/aws/test_price_list.py",
+    "tests/providers/aws/test_price_list_plan_storage.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_reach.py",
@@ -1033,6 +1037,7 @@
     "tests/query/test_parking.py",
     "tests/query/test_plan_pricing.py",
     "tests/query/test_plan_reading.py",
+    "tests/query/test_plan_services.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
     "tests/query/test_purchase_plan.py",
@@ -11226,7 +11231,7 @@
     },
     {
       "s": "finops_ingest/collectors/catalog_reads.py",
-      "t": "finops_query/plan_pricing.py",
+      "t": "finops_query/plan_quotes.py",
       "k": "python"
     },
     {
@@ -13211,7 +13216,22 @@
     },
     {
       "s": "finops_query/plan_pricing.py",
+      "t": "finops_query/plan_quotes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/plan_pricing.py",
       "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/plan_pricing.py",
+      "t": "finops_query/plan_services.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/plan_services.py",
+      "t": "finops_query/plan_quotes.py",
       "k": "python"
     },
     {
@@ -15556,7 +15576,27 @@
     },
     {
       "s": "tests/ingest/collectors/test_catalog_reads_for_plans.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_catalog_reads_for_plans.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_catalog_reads_for_plans.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_catalog_reads_for_plans.py",
       "t": "finops_query/plan_pricing.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_catalog_reads_for_plans.py",
+      "t": "finops_query/plan_quotes.py",
       "k": "python"
     },
     {
@@ -17085,6 +17125,16 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/real_prices.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/real_prices.py",
+      "t": "finops_providers/aws/price_list.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_accounts.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -17487,6 +17537,11 @@
     {
       "s": "tests/providers/aws/test_price_list.py",
       "t": "finops_providers/aws/price_list.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_price_list_plan_storage.py",
+      "t": "finops_core/domain/catalog.py",
       "k": "python"
     },
     {
@@ -18231,12 +18286,42 @@
     },
     {
       "s": "tests/query/test_plan_pricing.py",
+      "t": "finops_query/plan_quotes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_pricing.py",
       "t": "finops_query/plan_reading.py",
       "k": "python"
     },
     {
       "s": "tests/query/test_plan_reading.py",
       "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_services.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_services.py",
+      "t": "finops_query/plan_pricing.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_services.py",
+      "t": "finops_query/plan_quotes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_services.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_plan_services.py",
+      "t": "finops_query/plan_services.py",
       "k": "python"
     },
     {
