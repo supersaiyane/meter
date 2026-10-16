@@ -664,6 +664,7 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "retention_operational",
         "retention_assistant",
         "retention_ai_usage",
+        "retention_plans",
         "retention_audit",
         "retention_cost",
         "retention_scope_cache",
@@ -749,6 +750,9 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # FEAT-096, added with the collector in TASK-P16-006. Every ten minutes, and never run,
         # so due at `AT`; declared here because the list is exhaustive.
         "plan_comments",
+        # FEAT-097, added with the collector in TASK-P16-007. Daily, and never run, so due at
+        # `AT`; declared here because the list is exhaustive.
+        "estimate_comparison",
     }
 
 

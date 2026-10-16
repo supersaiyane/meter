@@ -241,11 +241,45 @@ def retention_ai_usage(context: CollectorContext, clock: Clock = _system_clock) 
     return CollectorOutcome(items_written=result.rowcount or 0)
 
 
+#: A plan and everything priced, written and compared from it, the leaves before the root.
+_PLAN_CHILDREN = (
+    "estimate_comparison",
+    "plan_estimate_line",
+    "plan_estimate",
+    "planned_change",
+)
+
+
+def retention_plans(context: CollectorContext, clock: Clock = _system_clock) -> CollectorOutcome:
+    """Remove plans past their window, with their estimates, lines and comparisons, P16 spec
+    section 6, and the pull request states nothing has followed in as long.
+
+    By when the plan was received, because a comparison reads a plan for at most sixty days after
+    its merge and the window is long enough that none still being compared can reach it.
+    """
+    cutoff = _cutoff(clock, context.settings.retention_plan_days)
+    values = {"tenant": context.unit.tenant_id, "cutoff": cutoff}
+    old = "SELECT plan_id FROM terraform_plan WHERE tenant_id = :tenant AND received_at < :cutoff"
+    removed = 0
+    for child in _PLAN_CHILDREN:
+        result = context.connection.execute(
+            text(f"DELETE FROM {child} WHERE tenant_id = :tenant AND plan_id IN ({old})"), values
+        )
+        removed += result.rowcount or 0
+    for statement in (
+        "DELETE FROM terraform_plan WHERE tenant_id = :tenant AND received_at < :cutoff",
+        "DELETE FROM plan_pull_request WHERE tenant_id = :tenant AND collected_at < :cutoff",
+    ):
+        removed += context.connection.execute(text(statement), values).rowcount or 0
+    return CollectorOutcome(items_written=removed)
+
+
 RETENTION_COLLECTORS: tuple[Collector, ...] = (
     Collector("retention_principal", CollectorScope.ORGANIZATION, retention_principal),
     Collector("retention_operational", CollectorScope.ORGANIZATION, retention_operational),
     Collector("retention_assistant", CollectorScope.ORGANIZATION, retention_assistant),
     Collector("retention_ai_usage", CollectorScope.ORGANIZATION, retention_ai_usage),
+    Collector("retention_plans", CollectorScope.ORGANIZATION, retention_plans),
     Collector("retention_audit", CollectorScope.ORGANIZATION, retention_audit),
     Collector("retention_cost", CollectorScope.ORGANIZATION, retention_cost),
     Collector("partition_maintenance", CollectorScope.ORGANIZATION, partition_maintenance),

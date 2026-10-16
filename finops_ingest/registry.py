@@ -211,6 +211,17 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0",
     ),
+    # TASK-P16-007. Migration 0067 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="retention_plans",
+        cadence_seconds=DAILY,
+        reason=(
+            "Plans, their estimates, comments and comparisons are kept 400 days, P16 spec section "
+            "6: the comparison needs sixty days after a merge, and a year of accuracy is what is "
+            "published. Daily, so a plan leaves within a day of its window."
+        ),
+        est_cost_per_run="0",
+    ),
     ScheduleEntry(
         collector="retention_audit",
         cadence_seconds=DAILY,
@@ -722,6 +733,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "request until it merges or closes, P16 spec section 7. Every ten minutes, so the "
             "comment follows its estimate within the next run. GitHub's API is free within its "
             "rate limit: modelled at 0.00 USD a run. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.00",
+    ),
+    # FEAT-097, TASK-P16-007. Migration 0067 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="estimate_comparison",
+        cadence_seconds=DAILY,
+        reason=(
+            "Sets each resource a merged plan created against thirty billed days once the bill "
+            "reaches them, and restates the verdict as the bill is restated, P16 spec section 7. "
+            "Daily, as the bill is read. It reads only Meter's own tables: modelled at 0.00 USD a "
+            "run. ADR-0012 and constraint 9."
         ),
         est_cost_per_run="0.00",
     ),

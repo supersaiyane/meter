@@ -1594,6 +1594,39 @@ CREATE TABLE plan_pull_request (
 
 Both are written by the `plan_comments` collector every ten minutes.
 
+Migration 0067, TASK-P16-007, FEAT-097, sets each created resource against its bill:
+
+```sql
+-- One per priced line a merged plan created, from when Meter first sees it. Payer wide.
+CREATE TABLE estimate_comparison (
+    plan_id            UUID           NOT NULL,
+    address            TEXT           NOT NULL,
+    tenant_id          UUID           NOT NULL REFERENCES tenant(tenant_id),
+    resource_type      TEXT           NOT NULL,
+    provider_id        TEXT,                    -- joins cost_focus_daily.resource_id
+    seen_at            TIMESTAMPTZ,             -- the first reading after the merge
+    window_start       DATE,                    -- the second full day after it was seen
+    window_end         DATE,                    -- thirty days on, exclusive
+    estimate_monthly   NUMERIC(20, 6) NOT NULL,
+    list_monthly       NUMERIC(20, 6),          -- the window's list cost scaled to 730 hours
+    effective_monthly  NUMERIC(20, 6),
+    variance_percent   NUMERIC(14, 4),
+    verdict            TEXT           NOT NULL, -- PENDING, WITHIN, ABOVE, BELOW or NOT_COMPARED
+    reason             TEXT,
+    judged_at          TIMESTAMPTZ    NOT NULL,
+    as_of              TIMESTAMPTZ    NOT NULL, -- the bill's, once judged
+    collected_at       TIMESTAMPTZ    NOT NULL,
+    CONSTRAINT pk_estimate_comparison PRIMARY KEY (plan_id, address),
+    CONSTRAINT fk_estimate_comparison__line FOREIGN KEY (plan_id, address)
+        REFERENCES plan_estimate_line (plan_id, address)
+    -- checks: a verdict from the bill carries its figures, identifier and window; any other
+    -- carries no figure; NOT_COMPARED says why; PENDING has been seen; the window runs forward
+);
+```
+
+Written daily by the `estimate_comparison` collector. Every plan table is kept 400 days by
+`retention_plans`, by when the plan was received.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

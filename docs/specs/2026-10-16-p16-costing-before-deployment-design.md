@@ -151,18 +151,22 @@ app with Pull requests write. Answered by the owner on 2026-10-16: one comment, 
 ### 5.6 The estimate compared with the bill
 
 For a merged pull request, the last plan priced for each folder is the one compared. When FEAT-057
-first sees, after the merge, an address that plan created or replaced in the state the folder is
-mapped to, the resource's identifier joins the bill as FEAT-029 joins it, `cost_focus_daily`'s
-`resource_id`. The first full billed day after it was seen is skipped, as a resource's first day
-is partial, and the next thirty days are the window. The window's list cost, scaled to 730 hours,
+first sees, after the merge, an address that plan created in the state the folder is mapped to,
+the resource's identifier joins the bill as FEAT-029 joins it, `cost_focus_daily`'s `resource_id`.
+The day it was seen and the first full day after are skipped, as a resource's first day is partial
+and it may have been applied before it was seen, and the next thirty days are the window.
+
+Creations only, in v1, corrected on 2026-10-16 while building TASK-P16-007: a replacement keeps its
+address, and FEAT-057 holds one row per resource, so after the merge Meter cannot tell the new
+resource from the one it replaced. A replacement, a change and a destroy are not compared. The window's list cost, scaled to 730 hours,
 is set against the line's monthly estimate; effective cost is shown beside it, since commitments
 lower it and the estimate does not know of them.
 
 The verdict is `WITHIN` when list cost is within 10 percent of the estimate, `ABOVE` or `BELOW`
 otherwise, and `NOT_COMPARED` with its reason for a folder with no mapped state, a resource not
 seen within sixty days of the merge, or a window with no billed row, typed `NoData`. A line is
-judged once the bill covers its window, and again on each later run, so a restated bill restates
-the verdict. Accuracy is published by resource type: lines compared, lines within, and the median
+judged once the bill covers its window, and again on each run for sixty days after it, so a
+restated bill restates the verdict; until then it is `PENDING`. Accuracy is published by resource type: lines compared, lines within, and the median
 absolute percentage error.
 
 ### 5.7 The worker prices and posts; the API reads
@@ -198,9 +202,11 @@ New tables, each with `as_of` and `collected_at`, constraint 10, payer wide:
 - `plan_estimate_line`: one per resource change: monthly before and after, the components with
   their unit prices, price identifiers and version, or the reason it is not priced. A check holds
   that a line not priced carries no figure, and that a priced one carries at least one.
-- `estimate_comparison`: one per line compared: the resource's identifier, the window, the
-  estimate, list and effective cost scaled to a month, the variance, the verdict or the reason, and
-  the bill's `as_of`. A check holds that `NOT_COMPARED` carries a reason and no variance.
+- `estimate_comparison`: one per line compared: the resource's identifier, when it was first seen,
+  the window, the estimate, list and effective cost scaled to a month, the variance, the verdict or
+  the reason, and the bill's `as_of`. Checks hold that a verdict read from the bill carries its
+  figures and window, that `PENDING` has been seen, and that `NOT_COMPARED` carries a reason and no
+  figure.
 
 Kept for 400 days, then pruned by the retention collector: the comparison needs sixty days after a
 merge, and a year of accuracy is what is published.

@@ -247,7 +247,9 @@ DEMO_TABLES = (
     # P15, FEAT-092. A step references its fix and a fix its recommendation, so both go first.
     "fix_pull_request_event",
     "fix_pull_request",
-    # P16, FEAT-095. A line references its estimate, an estimate and a change their plan.
+    # P16, FEAT-095. A comparison references its line, a line its estimate, an estimate and a
+    # change their plan.
+    "estimate_comparison",
     "plan_estimate_line",
     "plan_estimate",
     "planned_change",

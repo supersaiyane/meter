@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 98 total, 13 specified, 14 in build, 68 delivered |
+| Features | 98 total, 12 specified, 15 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 211 recorded |
+| Changes | 212 recorded |
 | Issues | 190 fixed, 108 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
@@ -202,7 +202,9 @@ OpenSearch, shaped by AWS's own eu-west-1 lists the owner approved downloading: 
 keeps RDS and OpenSearch storage, and Aurora is priced as Standard with a note. TASK-P16-005
 stores plans and their estimates, migration 0065, and prices each plan received every ten minutes.
 TASK-P16-006 writes the head's estimate as its pull request's one comment, edited in place, as its
-own collector on the GitHub App, and keeps each pull request's state.
+own collector on the GitHub App, and keeps each pull request's state. TASK-P16-007 sets each
+resource a merged plan created against its thirty billed days, daily, at list cost within 10
+percent, restated for sixty days, creations only; plans and everything from them are kept 400 days.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -382,7 +384,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
-| P16 | 6 | 0 | 0 | 0 | 4 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
+| P16 | 7 | 0 | 0 | 0 | 3 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -711,6 +713,7 @@ ISS-003.
 | `TASK-P16-004` | Done 2026-10-16 | pricing the managed services |
 | `TASK-P16-005` | Done 2026-10-16 | storing estimates, the `plan_estimates` collector |
 | `TASK-P16-006` | Done 2026-10-16 | the comment |
+| `TASK-P16-007` | Done 2026-10-16 | the estimate against the bill |
 
 <!-- generated:task-status end -->
 

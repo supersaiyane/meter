@@ -508,6 +508,7 @@
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/digests.py",
+    "finops_ingest/collectors/estimate_comparison.py",
     "finops_ingest/collectors/fix_pull_requests.py",
     "finops_ingest/collectors/gpu_utilization.py",
     "finops_ingest/collectors/iac_state.py",
@@ -613,6 +614,7 @@
     "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/digest.py",
+    "finops_query/estimate_accuracy.py",
     "finops_query/estimate_comment.py",
     "finops_query/forecast.py",
     "finops_query/gate.py",
@@ -745,6 +747,7 @@
     "migrations/versions/0064_fixes_screen.py",
     "migrations/versions/0065_plan_estimates.py",
     "migrations/versions/0066_plan_comments.py",
+    "migrations/versions/0067_estimate_comparison.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -905,6 +908,7 @@
     "tests/ingest/collectors/test_cost_focus_sources.py",
     "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_digests.py",
+    "tests/ingest/collectors/test_estimate_comparison.py",
     "tests/ingest/collectors/test_fix_pull_requests.py",
     "tests/ingest/collectors/test_gpu_utilization.py",
     "tests/ingest/collectors/test_iac_state.py",
@@ -1036,6 +1040,7 @@
     "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_digest.py",
+    "tests/query/test_estimate_accuracy.py",
     "tests/query/test_estimate_comment.py",
     "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
@@ -10308,6 +10313,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/estimate_comparison.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/fix_pull_requests.py",
       "k": "python"
     },
@@ -11422,6 +11432,16 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/estimate_comparison.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/estimate_comparison.py",
+      "t": "finops_query/estimate_accuracy.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/fix_pull_requests.py",
       "t": "finops_core/domain/fixes.py",
       "k": "python"
@@ -12174,6 +12194,11 @@
     {
       "s": "finops_ingest/composition.py",
       "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/estimate_comparison.py",
       "k": "python"
     },
     {
@@ -15952,6 +15977,46 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/collectors/estimate_comparison.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_estimate_comparison.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_fix_pull_requests.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -18354,6 +18419,11 @@
     {
       "s": "tests/query/test_digest.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_estimate_accuracy.py",
+      "t": "finops_query/estimate_accuracy.py",
       "k": "python"
     },
     {

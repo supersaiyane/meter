@@ -250,7 +250,7 @@ percent coverage, measured; 7 for the adapter; 9 for the collector against the d
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec section 5.6 |
 | Delivers | FEAT-097 |
 | Depends on | TASK-P16-006 |
@@ -258,14 +258,32 @@ percent coverage, measured; 7 for the adapter; 9 for the collector against the d
 
 **Acceptance criteria.**
 
-- [ ] A pure verdict: `WITHIN` inside 10 percent at list cost, `ABOVE`, `BELOW`, or `NOT_COMPARED`
+- [x] A pure verdict: `WITHIN` inside 10 percent at list cost, `ABOVE`, `BELOW`, or `NOT_COMPARED`
       with its reason, and the median absolute percentage error by type
-- [ ] The `estimate_comparison` collector, daily, finds a merged pull request's created resources
+- [x] The `estimate_comparison` collector, daily, finds a merged pull request's created resources
       in the mapped state, skips the first billed day, reads thirty, and restates as the bill does
-- [ ] A migration for `estimate_comparison` with its checks and the cadence; the registry, the
+- [x] A migration for `estimate_comparison` with its checks and the cadence; the registry, the
       compositions, the fakes and retention follow
-- [ ] A retention job pruning plans, estimates and comparisons at 400 days, moved here from
+- [x] A retention job pruning plans, estimates and comparisons at 400 days, moved here from
       TASK-P16-005 so no plan is pruned before its comparison could run
+
+**Delivered 2026-10-16.** `finops_query/estimate_accuracy.py` holds the judgement: the window skips
+the day the resource was seen and its first full day, then runs thirty; it is judged once the bill
+reaches its last day; list cost scaled to 730 hours within 10 percent of the estimate, the boundary
+included, is `WITHIN`, effective cost kept beside it; a window with no row, rows without a list
+cost, or a nought estimate is `NOT_COMPARED` with the reason; accuracy by type counts only what was
+judged. The daily `estimate_comparison` collector reads the latest priced plan of each merged pull
+request and folder, waits until FEAT-057 sees each created address in the mapped state after the
+merge, keeps when, and writes `PENDING`, then the verdict, restated each run until sixty days after
+the window. A folder mapped to no state, and a resource unseen sixty days after the merge, are
+`NOT_COMPARED`. Corrected while building it: creations only, since a replacement keeps its address
+and Meter holds one row per resource, so spec section 5.6 says so. Migration 0067 adds
+`estimate_comparison`, payer wide, its checks refusing a verdict without its figures, and the
+cadences of the collector and of `retention_plans`, which removes a plan received more than
+`METER_RETENTION_PLAN_DAYS` ago, 400 by default, with its change, estimate, lines and comparisons,
+and a pull request state not followed in as long. 15 judgement tests, at 100 percent coverage,
+measured; 12 for the collector, the checks and retention against the database, the collector at
+100 percent, measured.
 
 ---
 
