@@ -9,12 +9,14 @@ surcharge, FEAT-071. Two copies of that filter are how two screens quote two pri
 
 from __future__ import annotations
 
+import json
+from collections.abc import Mapping
 from decimal import Decimal
 from typing import Any, Final
 
 from sqlalchemy import text
 
-from finops_query.plan_pricing import Quote
+from finops_query.plan_quotes import Quote
 from finops_query.targets import TypeOffer
 from finops_query.volumes import VolumePrices
 
@@ -88,6 +90,25 @@ VOLUME_TERM_PRICES = text(
     "AND p.pricing_category = 'Standard' AND p.sku_price_details ->> 'volumeApiName' = :name "
     "ORDER BY p.sku_price_id"
 )
+#: A managed service's on demand prices in one version holding every attribute asked, never an
+#: Extended Support surcharge, TASK-P16-004.
+SERVICE_PRICES = text(
+    "SELECT p.sku_price_id, p.pricing_unit, p.recurring_unit_price FROM price p "
+    "WHERE p.tenant_id = :t AND p.service_code = :s AND p.region = :r AND p.version = :v "
+    "AND p.pricing_category = 'Standard' AND p.sku_price_details @> CAST(:asked AS jsonb) "
+    "AND (p.sku_price_details ->> 'extendedSupport') IS NULL ORDER BY p.sku_price_id"
+)
+#: Which term a managed service's price is, by its unit, as AWS's RDS, ElastiCache, Redshift and
+#: OpenSearch lists spell them: RDS sells throughput per MBPS-Mo, OpenSearch gp3 IOPS per PIOPS-Mo.
+_SERVICE_TERMS: Final = {
+    "hrs": "hours",
+    "gb-mo": "storage",
+    "iops-mo": "iops",
+    "piops-mo": "iops",
+    "mbps-mo": "throughput",
+    "mibps-mo": "throughput",
+    "gibps-mo": "throughput",
+}
 
 
 def latest_version(connection: Any, tenant: object, region: str, service: str = EC2) -> str | None:
@@ -203,6 +224,42 @@ class StoredCatalogue:
             return (
                 f"the catalog holds {len(prices)} {volume_type} {term} prices in {region}, "
                 "tiers it does not tell apart"
+            )
+        first = matching[0]
+        return Quote(
+            sku_price_id=str(first.sku_price_id),
+            unit_price=Decimal(first.recurring_unit_price),
+            unit=str(first.pricing_unit),
+            version=version,
+        )
+
+    def service_price(
+        self, service: str, region: str, attributes: Mapping[str, str], term: str
+    ) -> Quote | str:
+        """The one on demand price holding every attribute asked, for a term. Two prices are
+        refused rather than one chosen: they differ by something the plan does not say."""
+        version = self._version(service, region)
+        if version is None:
+            return f"the catalog holds no {service} prices for {region}"
+        asked = json.dumps(dict(attributes), sort_keys=True)
+        rows = self._connection.execute(
+            SERVICE_PRICES,
+            {"t": self._tenant, "s": service, "r": region, "v": version, "asked": asked},
+        )
+        matching = [
+            row for row in rows if _SERVICE_TERMS.get(str(row.pricing_unit).lower()) == term
+        ]
+        named = ", ".join(f"{key} {value}" for key, value in sorted(attributes.items()))
+        if not matching:
+            return (
+                f"the catalog holds no {service} {term} price for {named} in {region}, "
+                f"version {version}"
+            )
+        prices = {Decimal(row.recurring_unit_price) for row in matching}
+        if len(prices) > 1:
+            return (
+                f"the catalog holds {len(prices)} {service} {term} prices for {named} in "
+                f"{region}, which it does not tell apart"
             )
         first = matching[0]
         return Quote(

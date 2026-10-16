@@ -1,0 +1,92 @@
+{
+  "formatVersion": "v1.0",
+  "offerCode": "AmazonRedshift",
+  "products": {
+    "KWKY3TB2FN5GW9K5": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "ecu": "12.375",
+        "instanceType": "ra3.xlplus",
+        "io": "0.65 GB/s",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memory": "32 GiB",
+        "operation": "RunComputeNode:0001",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRedshift",
+        "servicename": "Amazon Redshift",
+        "storage": "32TB RMS",
+        "usageFamily": "RA3",
+        "usagetype": "EU-Node:ra3.xlplus",
+        "vcpu": "4"
+      },
+      "productFamily": "Compute Instance",
+      "sku": "KWKY3TB2FN5GW9K5"
+    },
+    "SGTJP7TQ9WH5KRDD": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "description": "Storage charges with Redshift managed storage",
+        "instanceType": "ra3.xlplus",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonRedshift",
+        "servicename": "Amazon Redshift",
+        "usageFamily": "RA3",
+        "usagetype": "EU-RMS:ra3.xlplus"
+      },
+      "productFamily": "Redshift Managed Storage",
+      "sku": "SGTJP7TQ9WH5KRDD"
+    }
+  },
+  "publicationDate": "2026-09-11T12:45:05Z",
+  "terms": {
+    "OnDemand": {
+      "KWKY3TB2FN5GW9K5": {
+        "KWKY3TB2FN5GW9K5.JRTCKXETXF": {
+          "effectiveDate": "2026-06-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "KWKY3TB2FN5GW9K5.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$1.202 per Redshift RA3 ra3.xlplus Compute Node-hour (or partial hour) ",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "1.2020000000"
+              },
+              "rateCode": "KWKY3TB2FN5GW9K5.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "KWKY3TB2FN5GW9K5",
+          "termAttributes": {}
+        }
+      },
+      "SGTJP7TQ9WH5KRDD": {
+        "SGTJP7TQ9WH5KRDD.JRTCKXETXF": {
+          "effectiveDate": "2026-06-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "SGTJP7TQ9WH5KRDD.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.024 per GB-Mo for ra3.xlplus Redshift Managed Storage in EU (Ireland)",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0240000000"
+              },
+              "rateCode": "SGTJP7TQ9WH5KRDD.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "SGTJP7TQ9WH5KRDD",
+          "termAttributes": {}
+        }
+      }
+    }
+  },
+  "version": "20260911124505"
+}

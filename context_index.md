@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1332 public symbols across 5 packages.
+1333 public symbols across 5 packages.
 
 ## finops_core
 
@@ -449,11 +449,11 @@ a duplicate.
 | `ModuleCharge` | class | `finops_providers/aws/platform_cost.py:38` | One day, one module tag value, one service, as the provider reported it. | nothing in this tree |
 | `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | `finops_ingest/aws_bindings.py` |
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
-| `commercial` | function | `finops_providers/aws/price_list.py:112` | Whether a price list's Region code is a commercial Region's. | nothing in this tree |
-| `published` | function | `finops_providers/aws/price_list.py:117` | The publication time a version names. ValueError for a version not in that form. | nothing in this tree |
-| `AwsPriceCatalog` | class | `finops_providers/aws/price_list.py:126` | AWS's on demand and reserved prices for one service in one Region at a time. | `finops_ingest/aws_bindings.py` |
-| `AwsPriceCatalog.versions` | method | `finops_providers/aws/price_list.py:134` |  | `finops_ingest/collectors/price_catalog.py` |
-| `AwsPriceCatalog.prices` | method | `finops_providers/aws/price_list.py:151` |  | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py` |
+| `commercial` | function | `finops_providers/aws/price_list.py:136` | Whether a price list's Region code is a commercial Region's. | nothing in this tree |
+| `published` | function | `finops_providers/aws/price_list.py:141` | The publication time a version names. ValueError for a version not in that form. | nothing in this tree |
+| `AwsPriceCatalog` | class | `finops_providers/aws/price_list.py:150` | AWS's on demand and reserved prices for one service in one Region at a time. | `finops_ingest/aws_bindings.py` |
+| `AwsPriceCatalog.versions` | method | `finops_providers/aws/price_list.py:158` |  | `finops_ingest/collectors/price_catalog.py` |
+| `AwsPriceCatalog.prices` | method | `finops_providers/aws/price_list.py:175` |  | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py` |
 | `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
 | `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
 | `normalise` | function | `finops_providers/aws/quotas.py:131` | A display name reduced to something two providers might agree on. | `finops_ingest/collectors/query_audit.py`, `finops_providers/aws/query_evidence.py` |
@@ -562,13 +562,14 @@ a duplicate.
 | `BedrockInvocationsCollector` | class | `finops_ingest/collectors/ai_usage.py:139` | One account and Region's invocation logs for the unit's window, as daily aggregates. | `finops_ingest/aws_bindings.py` |
 | `anthropic_collector` | function | `finops_ingest/collectors/anthropic_usage.py:24` | The provider collector for Anthropic's organizations. | `finops_ingest/ai_bindings.py` |
 | `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | `finops_ingest/aws_bindings.py` |
-| `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:93` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_volumes.py` |
-| `price_of` | function | `finops_ingest/collectors/catalog_reads.py:98` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
-| `volume_prices` | function | `finops_ingest/collectors/catalog_reads.py:121` | The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks. | `finops_ingest/collectors/waste_volumes.py` |
-| `offers` | function | `finops_ingest/collectors/catalog_reads.py:135` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
-| `StoredCatalogue` | class | `finops_ingest/collectors/catalog_reads.py:160` | The catalog as a plan is priced from it, TASK-P16-003, FEAT-095: for each service and | nothing in this tree |
-| `StoredCatalogue.instance_hour` | method | `finops_ingest/collectors/catalog_reads.py:176` |  | nothing in this tree |
-| `StoredCatalogue.volume_month` | method | `finops_ingest/collectors/catalog_reads.py:188` | One term of a volume type. Two prices for one term are tiers this cannot tell apart, | nothing in this tree |
+| `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:114` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_volumes.py` |
+| `price_of` | function | `finops_ingest/collectors/catalog_reads.py:119` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
+| `volume_prices` | function | `finops_ingest/collectors/catalog_reads.py:142` | The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks. | `finops_ingest/collectors/waste_volumes.py` |
+| `offers` | function | `finops_ingest/collectors/catalog_reads.py:156` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
+| `StoredCatalogue` | class | `finops_ingest/collectors/catalog_reads.py:181` | The catalog as a plan is priced from it, TASK-P16-003, FEAT-095: for each service and | nothing in this tree |
+| `StoredCatalogue.instance_hour` | method | `finops_ingest/collectors/catalog_reads.py:197` |  | nothing in this tree |
+| `StoredCatalogue.volume_month` | method | `finops_ingest/collectors/catalog_reads.py:209` | One term of a volume type. Two prices for one term are tiers this cannot tell apart, | nothing in this tree |
+| `StoredCatalogue.service_price` | method | `finops_ingest/collectors/catalog_reads.py:236` | The one on demand price holding every attribute asked, for a term. Two prices are | nothing in this tree |
 | `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:103` | Reads a month of commitment utilization and coverage, and writes both. | `finops_ingest/aws_bindings.py` |
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
 | `CommitmentInventoryCollector` | class | `finops_ingest/collectors/commitment_inventory.py:57` | One account and Region's reservations, and its Savings Plans in the first Region's unit. | `finops_ingest/aws_bindings.py` |

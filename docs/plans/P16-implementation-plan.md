@@ -135,7 +135,7 @@ coverage, measured.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec section 5.3 |
 | Delivers | FEAT-095 |
 | Depends on | TASK-P16-003 |
@@ -143,14 +143,33 @@ coverage, measured.
 
 **Acceptance criteria.**
 
-- [ ] `aws_db_instance` for MySQL, PostgreSQL and MariaDB, single or Multi-AZ, with storage and
+- [x] `aws_db_instance` for MySQL, PostgreSQL and MariaDB, single or Multi-AZ, with storage and
       provisioned IOPS; `aws_rds_cluster_instance` for its class
-- [ ] `aws_elasticache_cluster` and `aws_elasticache_replication_group` by node type and count;
+- [x] `aws_elasticache_cluster` and `aws_elasticache_replication_group` by node type and count;
       `aws_redshift_cluster` by node type and count; `aws_opensearch_domain` and
       `aws_elasticsearch_domain` for data, master and warm instances and EBS per data node
-- [ ] Oracle, SQL Server, Aurora storage, RA3 managed storage and every other type named with its
+- [x] Oracle, SQL Server, Aurora storage, RA3 managed storage and every other type named with its
       reason
-- [ ] Tested against the real price list rows P9's tests hold, for every line and every reason
+- [x] Tested against real price list rows, for every line and every reason: P9 held ElastiCache
+      alone, so RDS, Redshift and OpenSearch rows were read from AWS's own lists, approved by the
+      owner on 2026-10-16
+
+**Delivered 2026-10-16.** `finops_query/plan_services.py` prices the managed services through
+`Catalogue.service_price`, which `StoredCatalogue` answers with the one on demand row holding every
+attribute asked, by its unit, never an Extended Support surcharge, and two rows refused. The shared
+types moved to `finops_query/plan_quotes.py` so the two pricing modules depend on it and not on each
+other; `positive` is a `TypeIs`, so a count it admits is a number to the type checker too. AWS's
+eu-west-1 lists for RDS, Redshift and OpenSearch showed four things the spec had not said: the
+catalog kept only instance and EBS rows, so `finops_providers/aws/price_list.py` now keeps RDS's
+storage, provisioned IOPS and throughput and OpenSearch's EBS storage, per service; RDS names a
+provisioned IOPS row's volume type only in `groupDescription`, and Aurora prices an instance two
+ways told apart only by `storage`, so both are kept; Aurora is priced as Standard with a note, since
+the instance does not say which; and RDS includes 12,000 IOPS and 500 MiB/s with gp3 from the size
+at which more may be provisioned, so only what is above is priced, whatever the threshold. RDS sells
+throughput per MBPS-Mo and OpenSearch gp3 IOPS per PIOPS-Mo, both read. 24 tests in
+`tests/query/test_plan_services.py` against the real rows through the real adapter, 4 for the
+widened adapter and 4 against the database; `plan_quotes` is at 100 percent coverage,
+`plan_pricing` 99 and `plan_services` 90, measured.
 
 ---
 

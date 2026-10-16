@@ -18,7 +18,10 @@ offer term, `RPVSXBK67RKQZAHJ.NQ3QZPMQV9`), `SkuMeter` (the usage type), `Pricin
 `PricingCategory` (Standard for on demand, Committed for a reservation), the currency, the recurring
 price, any upfront fee, and `SkuPriceDetails`, which holds the instance type, operating system,
 tenancy, capacity status, preinstalled software, licence, engine and volume type a product carries.
-A version is one publication of one service's list in one Region, its publication time is the
+Beside instances and EBS volumes it keeps, since TASK-P16-004, RDS's storage, provisioned IOPS and
+throughput and OpenSearch's EBS storage, which a planned database or search domain is priced from,
+FEAT-095; `SkuPriceDetails` then also keeps `groupDescription` and `storage`, the two attributes
+that tell those rows apart. A version is one publication of one service's list in one Region, its publication time is the
 row's `as_of`, and every row carries `collected_at` beside it, constraint 10.
 
 Built in TASK-P9-004: the adapter, the collector, its schedule, and the reserved terms. Built in

@@ -112,16 +112,23 @@ gives is not priced, and says so.
 | --- | --- | --- |
 | `aws_instance` | The type's hourly price, Linux, shared tenancy; its root and EBS block devices as volumes | A Windows or licensed image costs more; the line says it is priced as Linux |
 | `aws_ebs_volume` | Storage for every volume type; IOPS for io1 and gp3 above 3,000; throughput for gp3 above 125 MiB/s | io2 IOPS, which are priced in tiers |
-| `aws_db_instance` | The class's hourly price for MySQL, PostgreSQL and MariaDB, single or Multi-AZ; storage and provisioned IOPS | Oracle and SQL Server, whose price depends on the licence; backup storage |
-| `aws_rds_cluster_instance` | The class's hourly price | Aurora storage and I/O, which are usage based |
-| `aws_elasticache_cluster`, `aws_elasticache_replication_group` | The node type's hourly price times the nodes | Data tiering and backups |
+| `aws_db_instance` | The class's hourly price for MySQL, PostgreSQL and MariaDB, single or Multi-AZ; storage for every type; io1 and io2 IOPS; gp3 IOPS above 12,000 and throughput above 500 MiB/s | Oracle, SQL Server and Db2, whose price depends on the licence; backup storage |
+| `aws_rds_cluster_instance` | The class's hourly price as Aurora Standard | I/O-Optimized, whose instance costs more an hour, which the instance does not say; Aurora storage and I/O, which are usage based; Serverless v2 |
+| `aws_elasticache_cluster`, `aws_elasticache_replication_group` | The node type's hourly price times the nodes; a cluster in a replication group is priced with the group | Data tiering and backups |
 | `aws_redshift_cluster` | The node type's hourly price times the nodes | RA3 managed storage, usage based |
-| `aws_opensearch_domain`, `aws_elasticsearch_domain` | Data, dedicated master and warm instances; EBS storage per data node | UltraWarm and cold storage beyond the instances |
+| `aws_opensearch_domain`, `aws_elasticsearch_domain` | Data, dedicated master and warm instances; EBS storage per data node; io1 IOPS | gp3 IOPS and throughput, whose included share grows with the volume; UltraWarm and cold storage |
 | Every other type | Nothing | Named with its type and the reason: usage based, or not in the catalogue's five services |
 
 A line for a change is its monthly figure before and after; a creation has no before, a destroy no
 after, and a change the difference. The comment and the screen show the unpriced count before the
 total, so a partial figure is never read as the whole.
+
+Updated on 2026-10-16 by TASK-P16-004 from AWS's own eu-west-1 price lists. The catalogue kept only
+instance and EBS rows, so it now also keeps RDS's storage, provisioned IOPS and throughput and
+OpenSearch's EBS storage, with the two attributes that tell those rows apart: RDS names a provisioned
+IOPS row's volume type only in its group description, and Aurora prices an instance two ways, told
+apart only by its storage mode. RDS includes 12,000 IOPS and 500 MiB/s with gp3 from the storage
+size at which more may be provisioned, so only what is provisioned above those is priced.
 
 ### 5.4 The figures a line rests on
 

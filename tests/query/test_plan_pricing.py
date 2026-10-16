@@ -9,21 +9,14 @@ and a part left out is a note.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from decimal import Decimal
 from typing import Any
 
 import pytest
 
-from finops_query.plan_pricing import (
-    LINUX,
-    NO_REGION,
-    Catalogue,
-    Component,
-    EstimateLine,
-    Quote,
-    price_change,
-    price_plan,
-)
+from finops_query.plan_pricing import LINUX, NO_REGION, EstimateLine, price_change, price_plan
+from finops_query.plan_quotes import Catalogue, Component, Quote
 from finops_query.plan_reading import PlannedChange, ReducedPlan, reduce_plan
 
 REGION = "eu-west-1"
@@ -66,6 +59,11 @@ class Shelf:
         if price is None:
             return f"the catalog holds no {volume_type} {term} price in {region}"
         return Quote(f"{volume_type}.{term}", price, UNITS[term], VERSION)
+
+    def service_price(
+        self, service: str, region: str, attributes: Mapping[str, str], term: str
+    ) -> Quote | str:
+        return f"the catalog holds no {service} {term} price for {dict(attributes)} in {region}"
 
 
 SHELF: Catalogue = Shelf()

@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 64 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 285 | test_*.py under tests/ |
-| Test functions | 3409 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 287 | test_*.py under tests/ |
+| Test functions | 3427 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -637,7 +637,8 @@ meter/
 │   │   ├── price_list.py      FEAT-071, TASK-P9-004. ListPriceLists for the versions,
 │   │   │                      GetProducts a page at a time for the prices, EC2
 │   │   │                      narrowed at the source; a nought or unreadable term
-│   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261. Keeps
+│   │   │                      RDS and OpenSearch storage too, TASK-P16-004
 │   │   ├── gpu_metrics.py     FEAT-084, TASK-P13-006. Each instance's NVIDIA metrics
 │   │   │                      listed, then read: the mean of its accelerators'
 │   │   │                      averages and the highest peak, per day
@@ -2036,6 +2037,11 @@ meter/
 │   │                          the Catalogue protocol: each line its components with
 │   │                          their unit prices, ids and version, or the reason and
 │   │                          no figure; a secondary part left out is a note
+│   ├── plan_quotes.py         FEAT-095, TASK-P16-004. Quote, Component, Side, Values
+│   │                          and the Catalogue protocol both pricing modules share
+│   ├── plan_services.py       FEAT-095, TASK-P16-004. RDS, Aurora, ElastiCache,
+│   │                          Redshift and OpenSearch priced by the attributes AWS's
+│   │                          own lists tell their prices apart by
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour

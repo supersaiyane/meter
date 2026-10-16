@@ -1,0 +1,298 @@
+{
+  "formatVersion": "v1.0",
+  "offerCode": "AmazonES",
+  "products": {
+    "47XRMKCWC7TSB7R9": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "GP3",
+        "usagetype": "EU-ES:GP3-Storage"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "47XRMKCWC7TSB7R9"
+    },
+    "66XXBSBF9TXCNAPC": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "Magnetic",
+        "usagetype": "EU-ES:Magnetic-Storage"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "66XXBSBF9TXCNAPC"
+    },
+    "87RMRM8TXMEJH9CW": {
+      "attributes": {
+        "currentGeneration": "Yes",
+        "ecu": "variable",
+        "instanceFamily": "Memory optimized",
+        "instanceType": "r6g.large.search",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "memoryGib": "16",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storage": "EBS Only",
+        "usagetype": "EU-ESInstance:r6g.large",
+        "vcpu": "2"
+      },
+      "productFamily": "Amazon OpenSearch Service Instance",
+      "sku": "87RMRM8TXMEJH9CW"
+    },
+    "9XF8S67NE7FV3AAP": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "GP3-PIOPS-Storage",
+        "usagetype": "EU-ES:GP3-PIOPS"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "9XF8S67NE7FV3AAP"
+    },
+    "C2EPNMPUS5KBDGVN": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "GP3-ThroughPut-Storage",
+        "usagetype": "EU-ES:GP3-Provisioned-ThroughPut"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "C2EPNMPUS5KBDGVN"
+    },
+    "NJY836PECHS3UMN7": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "PIOPS-Storage",
+        "usagetype": "EU-ES:PIOPS-Storage"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "NJY836PECHS3UMN7"
+    },
+    "XKEF2ERSCDF4VNSB": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "GP2",
+        "usagetype": "EU-ES:GP2-Storage"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "XKEF2ERSCDF4VNSB"
+    },
+    "ZK6MSXCHMCVP8DW4": {
+      "attributes": {
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "operation": "ESDomain",
+        "regionCode": "eu-west-1",
+        "servicecode": "AmazonES",
+        "servicename": "Amazon OpenSearch Service",
+        "storageMedia": "PIOPS",
+        "usagetype": "EU-ES:PIOPS"
+      },
+      "productFamily": "Amazon OpenSearch Service Volume",
+      "sku": "ZK6MSXCHMCVP8DW4"
+    }
+  },
+  "publicationDate": "2026-10-15T06:42:39Z",
+  "terms": {
+    "OnDemand": {
+      "47XRMKCWC7TSB7R9": {
+        "47XRMKCWC7TSB7R9.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "47XRMKCWC7TSB7R9.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "USD 0.1342/GB-month provisioned gp3 storage - EU-E",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1342000000"
+              },
+              "rateCode": "47XRMKCWC7TSB7R9.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "47XRMKCWC7TSB7R9",
+          "termAttributes": {}
+        }
+      },
+      "66XXBSBF9TXCNAPC": {
+        "66XXBSBF9TXCNAPC.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "66XXBSBF9TXCNAPC.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.074 per GB-month of magnetic storage - EU",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0740000000"
+              },
+              "rateCode": "66XXBSBF9TXCNAPC.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "66XXBSBF9TXCNAPC",
+          "termAttributes": {}
+        }
+      },
+      "87RMRM8TXMEJH9CW": {
+        "87RMRM8TXMEJH9CW.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "87RMRM8TXMEJH9CW.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.187 per r6g.large.search instance hour (or partial hour) - EU",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1870000000"
+              },
+              "rateCode": "87RMRM8TXMEJH9CW.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "Hrs"
+            }
+          },
+          "sku": "87RMRM8TXMEJH9CW",
+          "termAttributes": {}
+        }
+      },
+      "9XF8S67NE7FV3AAP": {
+        "9XF8S67NE7FV3AAP.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "9XF8S67NE7FV3AAP.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "USD 0.0088/provisioned IOPS-month for gp3  - EU-E",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0088000000"
+              },
+              "rateCode": "9XF8S67NE7FV3AAP.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "PIOPS-Mo"
+            }
+          },
+          "sku": "9XF8S67NE7FV3AAP",
+          "termAttributes": {}
+        }
+      },
+      "C2EPNMPUS5KBDGVN": {
+        "C2EPNMPUS5KBDGVN.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "C2EPNMPUS5KBDGVN.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "USD 0.0704/provisioned MB/s-month for gp3  - EU-E",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0704000000"
+              },
+              "rateCode": "C2EPNMPUS5KBDGVN.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "MiBps-Mo"
+            }
+          },
+          "sku": "C2EPNMPUS5KBDGVN",
+          "termAttributes": {}
+        }
+      },
+      "NJY836PECHS3UMN7": {
+        "NJY836PECHS3UMN7.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "NJY836PECHS3UMN7.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.186 per GB-month of PIOPS provisioned storage - EU",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1860000000"
+              },
+              "rateCode": "NJY836PECHS3UMN7.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "NJY836PECHS3UMN7",
+          "termAttributes": {}
+        }
+      },
+      "XKEF2ERSCDF4VNSB": {
+        "XKEF2ERSCDF4VNSB.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "XKEF2ERSCDF4VNSB.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.149 per GB-month of general purpose provisioned storage - EU",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.1490000000"
+              },
+              "rateCode": "XKEF2ERSCDF4VNSB.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "GB-Mo"
+            }
+          },
+          "sku": "XKEF2ERSCDF4VNSB",
+          "termAttributes": {}
+        }
+      },
+      "ZK6MSXCHMCVP8DW4": {
+        "ZK6MSXCHMCVP8DW4.JRTCKXETXF": {
+          "effectiveDate": "2026-10-01T00:00:00Z",
+          "offerTermCode": "JRTCKXETXF",
+          "priceDimensions": {
+            "ZK6MSXCHMCVP8DW4.JRTCKXETXF.6YS6EN2CT7": {
+              "appliesTo": [],
+              "beginRange": "0",
+              "description": "$0.097 per IOPS-month provisioned - EU",
+              "endRange": "Inf",
+              "pricePerUnit": {
+                "USD": "0.0970000000"
+              },
+              "rateCode": "ZK6MSXCHMCVP8DW4.JRTCKXETXF.6YS6EN2CT7",
+              "unit": "IOPS-Mo"
+            }
+          },
+          "sku": "ZK6MSXCHMCVP8DW4",
+          "termAttributes": {}
+        }
+      }
+    }
+  },
+  "version": "20261015064239"
+}

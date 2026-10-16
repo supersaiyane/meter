@@ -128,6 +128,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-16 | P16 specified and planned, CHG-0206 | Done | The spec, the plan of ten tasks and FEAT-095 to 098; OPEN-45 answered by the owner, one comment edited in place; OPEN-44, how a plan reaches Meter, held by the owner | docs/specs/2026-10-16-p16-costing-before-deployment-design.md:1, docs/plans/P16-implementation-plan.md:1, finops_ingest/collectors/catalog_reads.py:30 |
 | 2026-10-16 | TASK-P16-002, reading a plan, CHG-0207 | Done | reduce_plan keeps each AWS change's address, type, actions, Region and priced attributes; sensitive priced values named and never kept; spec 5.2 corrected, the JSON carries sensitive values in plain text | finops_query/plan_reading.py:1, tests/query/test_plan_reading.py:1, finops_ingest/collectors/catalog_reads.py:30 |
 | 2026-10-16 | TASK-P16-003, pricing compute and storage, CHG-0208 | Done | price_plan prices instances and EBS volumes through the Catalogue protocol; StoredCatalogue reads the newest version per service and Region; the adapter keeps only instance and EBS rows, so 004 widens it | finops_query/plan_pricing.py:1, finops_ingest/collectors/catalog_reads.py:160, finops_providers/aws/price_list.py:252 |
+| 2026-10-16 | TASK-P16-004, pricing the managed services, CHG-0209 | Done | plan_services prices RDS, Aurora, ElastiCache, Redshift and OpenSearch through service_price; the adapter keeps RDS and OpenSearch storage and two more details; three real extracts; shared types in plan_quotes | finops_query/plan_services.py:1, finops_query/plan_quotes.py:1, finops_providers/aws/price_list.py:112, tests/providers/aws/extracts/README.md:1 |
 
 ## Next action
 
@@ -137,8 +138,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 `docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
 merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P16-004**, pricing the managed services, from the real price rows the owner approved
-   downloading on 2026-10-16. TASK-P16-001 to 003 are done.
+1. **TASK-P16-005**, storing estimates and the `plan_estimates` collector. TASK-P16-001 to 004
+   are done.
 2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
 3. Meter never runs Terraform and stores no plan.
 
