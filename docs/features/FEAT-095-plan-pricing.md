@@ -1,0 +1,50 @@
+# FEAT-095: A Terraform plan reduced and priced from the catalogue
+
+| Field | Value |
+| --- | --- |
+| Sub project | P16 |
+| Status | Specified |
+| Specification | [P16 spec](../specs/2026-10-16-p16-costing-before-deployment-design.md), sections 5.2 to 5.4, 5.7 and 5.8 |
+| Tasks | TASK-P16-002 to TASK-P16-005 |
+| Decisions | OPEN-44 |
+| Issues addressed | None yet |
+| Refresh cadence | Every 10 minutes |
+
+## What it does
+
+Reduces a plan, as `terraform show -json` writes it, to each AWS resource change and the attributes that set its price, and prices every change of a type the catalogue sells: instances and their volumes, EBS volumes, RDS, ElastiCache, Redshift and OpenSearch. Each line is a monthly figure before and after, or the reason it has none.
+
+## Why it exists
+
+Proposal 6 asks for the cost of a change before it is applied. The engineer and the reviewer see what a change adds to the bill while it is still a pull request, and FinOps stops learning of it from the invoice.
+
+## How it works
+
+Not built yet. The reduction keeps the address, type, actions, Region and priced attributes of each managed `hashicorp/aws` resource change, and drops the rest of the plan in memory. The `plan_estimates` collector prices each plan received at the newest catalogue version for the service and Region: on demand, list price, 730 hours a month. Each line keeps its unit prices, price identifiers and version as figures.
+
+## Data sources and freshness
+
+| Source | Cadence | Best possible freshness |
+| --- | --- | --- |
+| A plan from the pull request's pipeline | Each plan, by the route OPEN-44 chooses | Ten minutes after it arrives |
+| P9's price catalogue | Every 8 hours | Eight hours |
+
+## Measured or modelled
+
+Modelled: every figure is a list price times a modelled quantity, 730 hours a month where hourly.
+
+## Failure behaviour
+
+A resource of a type not priced, in a Region the catalogue lacks, or with a priced attribute known only after apply is listed with its reason and no figure, never as zero; a database check holds it. A plan that cannot be read is refused with the reason. One plan failing fails no other.
+
+## Security considerations
+
+A plan carries every value Terraform knows that is not marked sensitive. Meter keeps only the priced attributes and stores no plan; a test plants a value in every dropped field and finds it in no table. Meter never runs Terraform and holds no credential for a member account. Plans and estimates are payer wide, ADR-0025.
+
+## Interface
+
+`GET /v1/estimates` and `GET /v1/estimates/{plan_id}`, and the Estimates screen at `/cost/estimates`.
+
+## Not doing
+
+Running Terraform, usage based charges, commitment discounts, or an autoscaling group's instances.

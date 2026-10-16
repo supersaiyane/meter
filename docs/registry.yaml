@@ -135,6 +135,12 @@ subprojects:
   spec: specs/2026-10-15-p15-pull-request-fixes-design.md
   plan: plans/P15-implementation-plan.md
   depends_on: P14
+- id: P16
+  name: Costing before deployment
+  status: 'In build. Chosen by the owner on 2026-10-16 as the next build, proposal 6 of next-in-scope.txt, with OPEN-45 answered the same day: one comment on the pull request, edited in place. OPEN-44, how a plan reaches Meter, is held by the owner and blocks TASK-P16-010 alone. A Terraform plan from the organization''s own pipeline reduced to what sets a price and priced from P9''s catalogue, the estimate written on the pull request, and a month after the change is applied each created resource compared with the bill and the accuracy published. Meter never runs Terraform and stores no plan'
+  spec: specs/2026-10-16-p16-costing-before-deployment-design.md
+  plan: plans/P16-implementation-plan.md
+  depends_on: P15
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -706,6 +712,30 @@ features:
   status: Delivered
   detail: '[P15 spec](docs/specs/2026-10-15-p15-pull-request-fixes-design.md) section 5.2, [P15 plan](docs/plans/P15-implementation-plan.md)'
   doc: docs/features/FEAT-094-merge-policy.md
+- id: FEAT-095
+  name: A Terraform plan reduced and priced from the catalogue
+  subproject: P16
+  status: Specified
+  detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) sections 5.2 to 5.4, 5.7 and 5.8, [P16 plan](docs/plans/P16-implementation-plan.md)'
+  doc: docs/features/FEAT-095-plan-pricing.md
+- id: FEAT-096
+  name: The estimate as one comment on the pull request, edited in place
+  subproject: P16
+  status: Specified
+  detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.5, [P16 plan](docs/plans/P16-implementation-plan.md)'
+  doc: docs/features/FEAT-096-estimate-comment.md
+- id: FEAT-097
+  name: The estimate compared with the bill, and its accuracy published
+  subproject: P16
+  status: Specified
+  detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.6, [P16 plan](docs/plans/P16-implementation-plan.md)'
+  doc: docs/features/FEAT-097-estimate-accuracy.md
+- id: FEAT-098
+  name: A plan reaching Meter from the pull request's pipeline
+  subproject: P16
+  status: Specified
+  detail: '[P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.1, [P16 plan](docs/plans/P16-implementation-plan.md). Blocked by OPEN-44'
+  doc: docs/features/FEAT-098-plan-arrival.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2762,6 +2792,12 @@ changes:
   what: TASK-P15-009, the local stack, proof and documents, P15 delivered against fakes
   commit: pending
   detail: 'The demo seed connects the GitHub App by its secret''s name, maps the two fake Terraform states that read, names gp2 to gp3 in the merge policy, and lays down a fix in every status on the demo''s largest open recommendations, each recommendation where its fix leaves it. The local stack''s worker follows them against LocalCodeHost, which reports a pull request it was not told of as open and waiting. tests/scripts/test_p15_exit_criteria.py proves exit criteria 1 to 4 and 6 over the seeded demo through the API and the real collector against the strict fake, and criterion 5 by the tables and the routes, citing the suites that hold the key''s path and the token. docs/runbooks/code-host.md names the owner''s steps after first contact. P15 and FEAT-040 and FEAT-091 to FEAT-094 are delivered against fakes; ISS-300 remains open until a real installation answers'
+- id: CHG-0206
+  date: '2026-10-16'
+  type: Docs
+  what: P16 Costing before deployment specified and planned, OPEN-45 answered, OPEN-44 held
+  commit: pending
+  detail: 'The owner chose proposal 6 of next-in-scope.txt as the next build and answered where the estimate shows: one comment per pull request and folder, edited in place, blocking nothing. How a plan reaches Meter, OPEN-44, is held by the owner; it blocks TASK-P16-010 alone, since every other task reads only what the reduction keeps. A plan is reduced on arrival to the priced attributes and never stored whole, priced at list from the catalogue''s five services with every resource not priced named and given no figure, and each created resource compared with thirty billed days once applied. Ten tasks; FEAT-095 to FEAT-098'
 issues:
 - id: ISS-301
   severity: MEDIUM
@@ -5874,3 +5910,13 @@ open_questions:
   status: ANSWERED
   blocks: TASK-P15-005
   detail: 'Raised 2026-10-15 by the P15 spec, section 5.4. gp2 to gp3 needs the file that declares the volume, which Meter reads through the app. Instance resizing touches running workloads and is left to a later sub project.'
+- id: OPEN-44
+  question: 'How does a Terraform plan reach Meter from a pull request''s pipeline: the worker reads a workflow artifact through the GitHub App, the pipeline sends it signed by GitHub''s OpenID Connect token, or the pipeline sends it with a token Meter issues? HELD by the owner 2026-10-16'
+  status: OPEN
+  blocks: TASK-P16-010 and P16 exit criterion 6
+  detail: 'Raised 2026-10-16 by the P16 spec, section 5.1. Recommended: the worker reads the artifact, which adds actions read to the app and no new caller of the API, and serves GitHub Actions only. The OpenID Connect route adds a second kind of caller and GitHub''s signing keys kept by the worker; the token route works from any pipeline and leaves a long lived secret in each. Every other P16 task reads only what the reduction keeps, so it is built without the answer.'
+- id: OPEN-45
+  question: 'Where does the estimate show in the pull request? ANSWERED 2026-10-16 as recommended: one comment per pull request and folder, edited in place, blocking nothing'
+  status: ANSWERED
+  blocks: TASK-P16-006
+  detail: 'Raised 2026-10-16 by the P16 spec, section 5.5. A check run that fails above a threshold would add checks write to the app and was not chosen. The comment needs nothing beyond the pull requests write P15 granted.'

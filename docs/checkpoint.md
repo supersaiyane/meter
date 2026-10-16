@@ -125,17 +125,19 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-15 | TASK-P15-007, the merge policy and Meter's merge, CHG-0203 | Done | Migration 0063 held to the reversible set; the policy routes, the organization's only and audited; the collector merges ready gp3 fixes the policy names through the one merge function and records a refusal once; the pull_request_merge flag | migrations/versions/0063_merge_policy.py:1, finops_ingest/collectors/fix_pull_requests.py:1, finops_api/routes/remediation.py:1, docs/feature-flags.yaml:1 |
 | 2026-10-15 | TASK-P15-008, the fix screens, CHG-0204 | Done | The fix in a recommendation's detail and /platform/fixes for the connection, the mapping and the merge policy; the client's put; unit tests and a journey | finops-web/src/screens/RecommendationFix.tsx:1, finops-web/src/screens/FixSettingsScreen.tsx:1, finops-web/src/api/remediation.ts:1, finops-web/e2e/fixes.spec.ts:1 |
 | 2026-10-15 | TASK-P15-009, the local stack, proof and documents, CHG-0205 | Done | The demo seeds the connection, the mapping, the policy and a fix in every status; LocalCodeHost; the exit criteria proven over the seeded demo; the runbook's owner steps; P15 delivered against fakes, ISS-300 open | scripts/demo/seed_demo.py:438, tests/scripts/test_p15_exit_criteria.py:1, docs/runbooks/code-host.md:1, finops_fakes/pull_requests.py:1 |
+| 2026-10-16 | P16 specified and planned, CHG-0206 | Done | The spec, the plan of ten tasks and FEAT-095 to 098; OPEN-45 answered by the owner, one comment edited in place; OPEN-44, how a plan reaches Meter, held by the owner | docs/specs/2026-10-16-p16-costing-before-deployment-design.md:1, docs/plans/P16-implementation-plan.md:1, finops_ingest/collectors/catalog_reads.py:30 |
 
 ## Next action
 
-**P14, Commitments, is in build**, chosen by the owner on 2026-10-13, proposal 5 of
-`next-in-scope.txt`, and specified and planned the same day with OPEN-35 to OPEN-39 answered:
-`docs/specs/2026-10-13-p14-commitments-design.md` and `docs/plans/P14-implementation-plan.md`, ten
-tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green, one
-after another without stopping except for an owner decision.
+**P16, Costing before deployment, is in build**, chosen by the owner on 2026-10-16, proposal 6 of
+`next-in-scope.txt`, and specified and planned the same day with OPEN-45 answered:
+`docs/specs/2026-10-16-p16-costing-before-deployment-design.md` and
+`docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
+merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P14-006**, AWS's purchase recommendations. TASK-P14-001 to 005 are done.
-2. Meter never buys: no purchase, exchange or sale call is made, allow listed or granted.
+1. **TASK-P16-002**, reading a plan. TASK-P16-001 is done.
+2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
+3. Meter never runs Terraform and stores no plan.
 
 P13, FinOps for AI, is delivered against fakes; ISS-285 closes with `make first-contact` against one
 organization of each provider, `docs/runbooks/ai-providers.md`.
