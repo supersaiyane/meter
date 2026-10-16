@@ -14,6 +14,7 @@ from typing import Any, Final
 
 from sqlalchemy import text
 
+from finops_query.plan_pricing import Quote
 from finops_query.targets import TypeOffer
 from finops_query.volumes import VolumePrices
 
@@ -80,9 +81,17 @@ _TERMS: Final = {
 #: In the order `VolumePrices` takes them.
 _WANTED: Final = (("gp2", "storage"), ("gp3", "storage"), ("gp3", "iops"), ("gp3", "throughput"))
 
+#: One EBS volume type's on demand prices in one version, every term, TASK-P16-003.
+VOLUME_TERM_PRICES = text(
+    "SELECT p.sku_price_id, p.pricing_unit, p.recurring_unit_price FROM price p "
+    "WHERE p.tenant_id = :t AND p.service_code = :s AND p.region = :r AND p.version = :v "
+    "AND p.pricing_category = 'Standard' AND p.sku_price_details ->> 'volumeApiName' = :name "
+    "ORDER BY p.sku_price_id"
+)
 
-def latest_version(connection: Any, tenant: object, region: str) -> str | None:
-    found = connection.execute(LATEST_VERSION, {"t": tenant, "s": EC2, "r": region}).scalar()
+
+def latest_version(connection: Any, tenant: object, region: str, service: str = EC2) -> str | None:
+    found = connection.execute(LATEST_VERSION, {"t": tenant, "s": service, "r": region}).scalar()
     return None if found is None else str(found)
 
 
@@ -146,3 +155,59 @@ def offers(
         )
         for row in rows
     }
+
+
+class StoredCatalogue:
+    """The catalog as a plan is priced from it, TASK-P16-003, FEAT-095: for each service and
+    Region the newest version held, and from it the comparable price that every other collector
+    reads, so an estimate and a recommendation quote one price for one type."""
+
+    def __init__(self, connection: Any, tenant: object) -> None:
+        self._connection = connection
+        self._tenant = tenant
+        self._versions: dict[tuple[str, str], str | None] = {}
+
+    def _version(self, service: str, region: str) -> str | None:
+        if (service, region) not in self._versions:
+            found = latest_version(self._connection, self._tenant, region, service)
+            self._versions[(service, region)] = found
+        return self._versions[(service, region)]
+
+    def instance_hour(self, region: str, instance_type: str) -> Quote | str:
+        version = self._version(EC2, region)
+        if version is None:
+            return f"the catalog holds no {EC2} prices for {region}"
+        found = price_of(self._connection, self._tenant, region, version, instance_type)
+        if found is None:
+            return (
+                f"the catalog holds no on demand Linux price for {instance_type} in {region}, "
+                f"version {version}"
+            )
+        return Quote(sku_price_id=found[0], unit_price=found[1], unit="Hrs", version=version)
+
+    def volume_month(self, region: str, volume_type: str, term: str) -> Quote | str:
+        """One term of a volume type. Two prices for one term are tiers this cannot tell apart,
+        such as io2's IOPS, and are refused rather than one of them chosen."""
+        version = self._version(EC2, region)
+        if version is None:
+            return f"the catalog holds no {EC2} prices for {region}"
+        rows = self._connection.execute(
+            VOLUME_TERM_PRICES,
+            {"t": self._tenant, "s": EC2, "r": region, "v": version, "name": volume_type},
+        )
+        matching = [row for row in rows if _TERMS.get(str(row.pricing_unit).lower()) == term]
+        if not matching:
+            return f"the catalog holds no {volume_type} {term} price in {region}, version {version}"
+        prices = {Decimal(row.recurring_unit_price) for row in matching}
+        if len(prices) > 1:
+            return (
+                f"the catalog holds {len(prices)} {volume_type} {term} prices in {region}, "
+                "tiers it does not tell apart"
+            )
+        first = matching[0]
+        return Quote(
+            sku_price_id=str(first.sku_price_id),
+            unit_price=Decimal(first.recurring_unit_price),
+            unit=str(first.pricing_unit),
+            version=version,
+        )

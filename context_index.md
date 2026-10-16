@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1329 public symbols across 5 packages.
+1332 public symbols across 5 packages.
 
 ## finops_core
 
@@ -562,10 +562,13 @@ a duplicate.
 | `BedrockInvocationsCollector` | class | `finops_ingest/collectors/ai_usage.py:139` | One account and Region's invocation logs for the unit's window, as daily aggregates. | `finops_ingest/aws_bindings.py` |
 | `anthropic_collector` | function | `finops_ingest/collectors/anthropic_usage.py:24` | The provider collector for Anthropic's organizations. | `finops_ingest/ai_bindings.py` |
 | `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | `finops_ingest/aws_bindings.py` |
-| `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:84` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_volumes.py` |
-| `price_of` | function | `finops_ingest/collectors/catalog_reads.py:89` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
-| `volume_prices` | function | `finops_ingest/collectors/catalog_reads.py:112` | The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks. | `finops_ingest/collectors/waste_volumes.py` |
-| `offers` | function | `finops_ingest/collectors/catalog_reads.py:126` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
+| `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:93` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_volumes.py` |
+| `price_of` | function | `finops_ingest/collectors/catalog_reads.py:98` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
+| `volume_prices` | function | `finops_ingest/collectors/catalog_reads.py:121` | The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks. | `finops_ingest/collectors/waste_volumes.py` |
+| `offers` | function | `finops_ingest/collectors/catalog_reads.py:135` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
+| `StoredCatalogue` | class | `finops_ingest/collectors/catalog_reads.py:160` | The catalog as a plan is priced from it, TASK-P16-003, FEAT-095: for each service and | nothing in this tree |
+| `StoredCatalogue.instance_hour` | method | `finops_ingest/collectors/catalog_reads.py:176` |  | nothing in this tree |
+| `StoredCatalogue.volume_month` | method | `finops_ingest/collectors/catalog_reads.py:188` | One term of a volume type. Two prices for one term are tiers this cannot tell apart, | nothing in this tree |
 | `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:103` | Reads a month of commitment utilization and coverage, and writes both. | `finops_ingest/aws_bindings.py` |
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
 | `CommitmentInventoryCollector` | class | `finops_ingest/collectors/commitment_inventory.py:57` | One account and Region's reservations, and its Savings Plans in the first Region's unit. | `finops_ingest/aws_bindings.py` |
@@ -640,7 +643,7 @@ a duplicate.
 | `CompositeTopologySource.read_slice` | method | `finops_ingest/collectors/topology.py:120` | Every source's answer for one slice, merged. | `finops_ingest/collectors/inventory.py` |
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
 | `Candidate` | class | `finops_ingest/collectors/waste_compute.py:119` | One thing the collector was asked to look at. | nothing in this tree |
-| `Quote` | class | `finops_ingest/collectors/waste_compute.py:138` | The prices a named target is quoted from, and every type judged to fit beside it. | nothing in this tree |
+| `Quote` | class | `finops_ingest/collectors/waste_compute.py:138` | The prices a named target is quoted from, and every type judged to fit beside it. | `finops_ingest/collectors/catalog_reads.py` |
 | `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:215` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `Parkable` | class | `finops_ingest/collectors/waste_parking.py:77` | A resource worth asking the parking question about. | nothing in this tree |
 | `WasteParkingCollector` | class | `finops_ingest/collectors/waste_parking.py:93` | Findings that say keep this and stop paying for the nights. | nothing in this tree |

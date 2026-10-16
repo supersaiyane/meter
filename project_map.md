@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 64 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 283 | test_*.py under tests/ |
-| Test functions | 3396 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 285 | test_*.py under tests/ |
+| Test functions | 3409 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1392,7 +1392,9 @@ meter/
 │       │                       on sync_error rather than dropping them
 │       ├── catalog_reads.py   TASK-P9-007. The comparable price and a Region's
 │       │                      offers, read one way by every collector that prices;
-│       │                      gp2's and gp3's four EBS prices, TASK-P9-009
+│       │                      gp2's and gp3's four EBS prices, TASK-P9-009;
+│       │                      StoredCatalogue, the newest version per service and
+│       │                      Region as a plan is priced from it, TASK-P16-003
 │       ├── spot_prices.py     FEAT-071, TASK-P9-013. Every 8 hours; the latest per
 │       │                      pool and each day's low and high, 90 days kept
 │       ├── savings_plan_rates.py  FEAT-071, TASK-P9-012. Every 8 hours; every Region
@@ -2030,6 +2032,10 @@ meter/
 │   │                          actions, Region and priced attributes, the names known
 │   │                          only after apply, and those marked sensitive named and
 │   │                          never kept. The rest is dropped in memory
+│   ├── plan_pricing.py        FEAT-095, TASK-P16-003. A reduced plan priced through
+│   │                          the Catalogue protocol: each line its components with
+│   │                          their unit prices, ids and version, or the reason and
+│   │                          no figure; a secondary part left out is a note
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour
