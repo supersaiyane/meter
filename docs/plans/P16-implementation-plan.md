@@ -64,7 +64,7 @@ Modelled at the pace of P15: six tasks of size M and four of size S, about four 
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-16 |
 | Implements | Spec sections 5.2 and 9 |
 | Delivers | FEAT-095 |
 | Depends on | TASK-P16-001 |
@@ -72,14 +72,25 @@ Modelled at the pace of P15: six tasks of size M and four of size S, about four 
 
 **Acceptance criteria.**
 
-- [ ] A pure function in `finops_query` reduces `terraform show -json` to each managed
+- [x] A pure function in `finops_query` reduces `terraform show -json` to each managed
       `hashicorp/aws` resource change: address, type, actions, Region, the priced attributes before
       and after, and the names unknown until apply
-- [ ] The Region from the resource's own argument, its availability zone, or the provider
+- [x] The Region from the resource's own argument, its availability zone, or the provider
       configuration it names, a constant or a variable; none of these is a reason, not a guess
-- [ ] Refused with the reason: not a plan, a format whose major version is not 1, over 50 MiB
-- [ ] Tested on Terraform 1.x plans with modules, `count`, `for_each` and an aliased provider; a
+- [x] Refused with the reason: not a plan, a format whose major version is not 1, over 50 MiB
+- [x] Tested on Terraform 1.x plans with modules, `count`, `for_each` and an aliased provider; a
       value planted in every dropped field is absent from the result
+
+**Delivered 2026-10-16.** `reduce_plan` in `finops_query/plan_reading.py` returns a `ReducedPlan`
+of `PlannedChange`s, or `Unreadable` with the reason, and keeps per type only what `PRICED` names.
+Checking the plan format against Terraform's documentation found that `terraform show -json` writes
+sensitive values in plain text, which spec section 5.2 had said it did not; the section is
+corrected, and a priced attribute marked sensitive is now named in `withheld` and never kept. A
+module's provider is found from the configuration's `provider_config_key`, and with one AWS provider
+configuration in the plan every AWS resource uses it; a variable is read only for a root provider.
+`no-op`, `read` and `forget` changes, data sources and other providers are dropped, and OpenTofu's
+registry address is read alike. 34 tests in `tests/query/test_plan_reading.py`, one planting a value
+in every field the reduction drops; the module is at 99 percent coverage, measured.
 
 ---
 

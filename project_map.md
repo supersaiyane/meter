@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 42 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 64 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 282 | test_*.py under tests/ |
-| Test functions | 3381 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 283 | test_*.py under tests/ |
+| Test functions | 3396 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -2025,6 +2025,11 @@ meter/
 │   │                          a break even month and that is one on every row for a no
 │   │                          upfront plan, so it would have satisfied the criterion
 │   │                          and told a reader nothing
+│   ├── plan_reading.py        FEAT-095, TASK-P16-002. A Terraform plan reduced to
+│   │                          what sets its price: each AWS change's address, type,
+│   │                          actions, Region and priced attributes, the names known
+│   │                          only after apply, and those marked sensitive named and
+│   │                          never kept. The rest is dropped in memory
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour
