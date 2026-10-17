@@ -284,7 +284,7 @@ pytest tests/core/test_config.py -v && make check-docs
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 6 |
 | Delivers | FEAT-006 |
 | Depends on | TASK-P0-001 |
@@ -302,12 +302,12 @@ that no failure is ever rendered as the number zero.
 
 **Acceptance criteria.**
 
-- [ ] Exactly six error types: `AccessDenied`, `Throttled`, `NotOptedIn`,
+- [x] Exactly six error types: `AccessDenied`, `Throttled`, `NotOptedIn`,
       `NoData`, `Unreachable`, `SchemaDrift`
-- [ ] Every error carries `scope_key`, `collector`, and a human readable
+- [x] Every error carries `scope_key`, `collector`, and a human readable
       remediation string
-- [ ] `NoData` is the only type whose documented rendering is a zero
-- [ ] `--cov-fail-under` is restored to 80 in `pyproject.toml` in this task
+- [x] `NoData` is the only type whose documented rendering is a zero
+- [x] `--cov-fail-under` is restored to 80 in `pyproject.toml` in this task
 
 **Tests.**
 

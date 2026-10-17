@@ -126,8 +126,8 @@ meter/
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log
 │
-├── finops_core/               PLANNED  domain and ports. No boto3, no framework
-│                              Directory exists, __init__.py only
+├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
+│   └── errors.py              the six typed failure causes, closed set, no catch all
 ├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
 │                              Directory exists, __init__.py only
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors

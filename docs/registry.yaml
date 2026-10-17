@@ -94,7 +94,7 @@ features:
 - id: FEAT-006
   name: Typed error taxonomy and data freshness contract
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6'
   doc: docs/features/FEAT-006-typed-errors-and-freshness.md
 - id: FEAT-007
@@ -683,6 +683,13 @@ changes:
     why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project
   commit: 798dda0
   detail: '[scripts/README.md](scripts/README.md)'
+- id: CHG-0036
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-005, the closed error taxonomy. Six causes, no catch all, and the coverage
+    gate raised back to 80 now that there is a module to cover
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

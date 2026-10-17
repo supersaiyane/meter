@@ -60,15 +60,23 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+# N818 wants every exception to end in Error. These six names are not only
+# class names: each one is the value stored in the cause column and returned
+# on the wire, and they are named as they stand in CLAUDE.md constraint 5 and
+# in the P0 specification. Renaming them to satisfy a linter would silently
+# change stored data and break the two documents that define the taxonomy.
+"finops_core/errors.py" = ["N818"]
+
 [tool.pytest.ini_options]
-# cov-fail-under is 0 only while there is no code to cover. TASK-P0-005 lands
-# the first real module and its tests, and restores it to 80 in the same
-# commit. A coverage gate set to 0 and forgotten is a coverage gate that does
-# nothing, so the restoration is an acceptance criterion of that task.
+# Restored to 80 by TASK-P0-005, the task that landed the first real module.
+# A coverage gate parked at 0 and forgotten is a coverage gate that does
+# nothing, so raising it back was an acceptance criterion of that task rather
+# than a tidy up to be done later.
 addopts = """-q --strict-markers \
   --cov=finops_core --cov=finops_providers --cov=finops_ingest \
   --cov=finops_api --cov=finops_mcp \
-  --cov-report=term-missing --cov-fail-under=0"""
+  --cov-report=term-missing --cov-fail-under=80"""
 testpaths = ["tests"]
 markers = [
     "integration: requires a database or LocalStack",

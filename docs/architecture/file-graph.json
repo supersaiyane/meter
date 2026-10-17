@@ -16,6 +16,7 @@
     "docker/pyproject.toml",
     "finops_api/__init__.py",
     "finops_core/__init__.py",
+    "finops_core/errors.py",
     "finops_ingest/__init__.py",
     "finops_mcp/__init__.py",
     "finops_providers/__init__.py",
@@ -34,6 +35,8 @@
     "scripts/docs/sync.py",
     "tests/__init__.py",
     "tests/conftest.py",
+    "tests/core/__init__.py",
+    "tests/core/test_errors.py",
     "tests/test_checkpoint_rotation.py"
   ],
   "edges": [
@@ -121,6 +124,11 @@
       "s": "docker/Dockerfile.worker",
       "t": "docker/pyproject.toml",
       "k": "docker"
+    },
+    {
+      "s": "tests/core/test_errors.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
     }
   ]
 }

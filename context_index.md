@@ -24,20 +24,30 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-No application code exists yet. This file regenerates on the first
-`make doc-sync` after the first module lands.
+8 public symbols across 1 packages.
 
-## Reference: the eight ports, once implemented
+## finops_core
 
-Recorded in advance because every other module depends on their shape.
+| Symbol | Kind | Location | Purpose | Called by |
+| --- | --- | --- | --- | --- |
+| `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
+| `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
+| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | nothing in this tree |
+| `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | nothing in this tree |
+| `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | nothing in this tree |
+| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | nothing in this tree |
+| `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | nothing in this tree |
 
-| Port | Purpose |
-| --- | --- |
-| `AccountDiscovery` | Enumerate accounts and the organization tree |
-| `CredentialBroker` | Produce a scoped session for a target account |
-| `CostExport` | Locate and read billing data |
-| `MetricSource` | Read time series for a resource |
-| `ResourceInventory` | Enumerate resources and their relationships |
-| `QuotaSource` | Read limits and current usage |
-| `IdentityProvider` | Authenticate a request into a principal |
-| `EntitlementResolver` | Resolve a principal into a visibility scope |
+## Called by nothing in this tree
+
+Each is an entry point, part of a public interface, or dead. Check each one, and delete what is dead. Rung zero of ADR-0013.
+
+- `CollectionError` in `finops_core/errors.py:27`
+- `CollectionError.remediation` in `finops_core/errors.py:53`
+- `AccessDenied` in `finops_core/errors.py:62`
+- `Throttled` in `finops_core/errors.py:71`
+- `NotOptedIn` in `finops_core/errors.py:80`
+- `NoData` in `finops_core/errors.py:89`
+- `Unreachable` in `finops_core/errors.py:99`
+- `SchemaDrift` in `finops_core/errors.py:108`

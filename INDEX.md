@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 20 specified, 30 planned, 0 in build, 0 delivered.
+50 features across 8 sub projects. 19 specified, 30 planned, 1 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -88,7 +88,7 @@ block is caught by `make check-docs`. See
 | [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Specified | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | Specified | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
-| [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
+| [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
 | [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
@@ -248,6 +248,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0033 | 2026-08-23 | Correction | TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked, and the dependency admission gate missed by TASK-P0-029 was run | `a699d3c` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0034 | 2026-08-24 | Process | The memory layer given a validity gate. Resume vectors, cited commits and identifiers are checked, the checkpoint archive rule became a script, and recording a lesson became one command | `a7e44b7` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0035 | 2026-08-24 | Process | Every file that forms the reusable base of the project tagged Basic boiler Plate Doc, with why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project | `798dda0` | [scripts/README.md](scripts/README.md) |
+| CHG-0036 | 2026-08-24 | Feature | TASK-P0-005, the closed error taxonomy. Six causes, no catch all, and the coverage gate raised back to 80 now that there is a module to cover | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
