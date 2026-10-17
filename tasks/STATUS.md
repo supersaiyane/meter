@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 98 total, 12 specified, 15 in build, 68 delivered |
+| Features | 98 total, 12 specified, 12 in build, 71 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 214 recorded |
+| Changes | 215 recorded |
 | Issues | 191 fixed, 109 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
@@ -206,7 +206,9 @@ own collector on the GitHub App, and keeps each pull request's state. TASK-P16-0
 resource a merged plan created against its thirty billed days, daily, at list cost within 10
 percent, restated for sixty days, creations only; plans and everything from them are kept 400 days.
 TASK-P16-008 serves the plans, one plan's lines and the accuracy, the organization's only, and the
-Estimates screen at `/plan/estimates`; the MCP tools wait on ISS-302.
+Estimates screen at `/plan/estimates`; the MCP tools wait on ISS-302. TASK-P16-009, on
+2026-10-17, put P16 in the local demo and proved exit criteria 1 to 5; FEAT-095 to FEAT-097 are
+Delivered. Only TASK-P16-010 is left, a plan's arrival, and it waits on OPEN-44.
 On 2026-10-17 the change log in INDEX.md was made to render: its delimiter row had one cell more
 than its header, so GitHub never drew it as a table. A test now holds every generated table to
 its header, ISS-303.
@@ -389,7 +391,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
-| P16 | 7 | 1 | 0 | 0 | 2 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
+| P16 | 8 | 1 | 0 | 0 | 1 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -720,6 +722,7 @@ ISS-003.
 | `TASK-P16-006` | Done 2026-10-16 | the comment |
 | `TASK-P16-007` | Done 2026-10-16 | the estimate against the bill |
 | `TASK-P16-008` | Partly done 2026-10-16: the MCP tools wait on ISS-302 | the routes and the screen |
+| `TASK-P16-009` | Done 2026-10-17 | the local stack, proof and documents |
 
 <!-- generated:task-status end -->
 

@@ -329,7 +329,7 @@ measured; 8 screen unit tests; 2 Playwright journeys.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-17 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria 1 to 5, measured, and the record |
 | Depends on | TASK-P16-002 to TASK-P16-008 |
@@ -337,11 +337,25 @@ measured; 8 screen unit tests; 2 Playwright journeys.
 
 **Acceptance criteria.**
 
-- [ ] The seeded demo carries plans in every status, comments against the fake GitHub, and
+- [x] The seeded demo carries plans in every status, comments against the fake GitHub, and
       comparisons in every verdict
-- [ ] Exit criteria 1 to 5 met, each with its evidence in `tests/scripts/test_p16_exit_criteria.py`
-- [ ] FEAT-095 to FEAT-097 say what was built; the register, `project_map.md` and the checkpoint
+- [x] Exit criteria 1 to 5 met, each with its evidence in `tests/scripts/test_p16_exit_criteria.py`
+- [x] FEAT-095 to FEAT-097 say what was built; the register, `project_map.md` and the checkpoint
       updated, and `make check-docs` clean
+
+**Delivered 2026-10-17.** `finops_fakes/plans.py` holds seven plans in the fake estate's
+repository, and `seed_demo.py` records them as the arrival route will, prices them through the
+`plan_estimates` collector from the demo's catalog, and writes their comments through the
+`plan_comments` collector against a fake GitHub: a plan received, priced and refused; a comment
+written, superseded and failed; and five comparisons, within, above, below, pending and not
+compared, laid down as `judge` reads a bill at a stated share of the estimate, since a fresh demo
+holds no thirty billed days after a merge. `tests/scripts/test_p16_exit_criteria.py` meets
+criteria 1 to 5 over that demo: every type in section 5.3 priced in one plan, each figure its unit
+price times its quantity and every hourly quantity a multiple of 730, and the three reasons; the
+planted plan of `tests/query/test_plan_reading.py`, stored and priced, found in no table; one
+comment per folder, edited for a new head and left for an older commit; the verdicts and the
+accuracy by type; and the routes to the organization, a narrowed person refused. 5 exit tests
+against the database. Criterion 6 is TASK-P16-010's and waits on OPEN-44.
 
 ---
 

@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 45 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 68 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 297 | test_*.py under tests/ |
-| Test functions | 3487 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 298 | test_*.py under tests/ |
+| Test functions | 3492 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -365,7 +365,8 @@ meter/
 │   │                          ADR-0022, so what the image contains follows from
 │   │                          where a file lives rather than from a comment.
 │   │                          seed_demo.py bills the Bedrock and GPU lines and
-│   │                          runs every AI collector, TASK-P13-009.
+│   │                          runs every AI collector, TASK-P13-009, and records,
+│   │                          prices and comments the P16 plans, TASK-P16-009.
 │   │                          seed_demo.py fills a local database by running the
 │   │                          real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot
@@ -1206,6 +1207,9 @@ meter/
 │   │                     state a test sets, and merges at the head it reported.
 │   │                     LocalCodeHost, the local stack's, reports a pull
 │   │                     request it was not told of as open. TASK-P15-009
+│   ├── plans.py           P16, TASK-P16-009. The demo's seven plans, the heads its
+│   │                     fake GitHub reports, and a comparison in every verdict,
+│   │                     laid down as judge reads a bill at a stated share
 │   ├── fixtures.py        one root, two units, five accounts, one denied
 │   ├── provider.py        the failure plan. Any of the six, for any scope.
 │   │                     Takes the time it is observed at, because the

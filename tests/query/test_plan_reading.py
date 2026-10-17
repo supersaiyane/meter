@@ -120,7 +120,9 @@ def test_a_created_instance_keeps_its_priced_attributes_and_nothing_else() -> No
     )
 
 
-def test_a_value_planted_in_every_field_the_reduction_drops_is_found_nowhere() -> None:
+def planted() -> bytes:
+    """A plan with `SECRET` planted in every field the reduction drops. Also read by
+    `tests/scripts/test_p16_exit_criteria.py`, which finds it in no table once stored."""
     database = change(
         "aws_db_instance.main",
         "aws_db_instance",
@@ -176,7 +178,11 @@ def test_a_value_planted_in_every_field_the_reduction_drops_is_found_nowhere() -
             ]
         },
     )
-    found = reduced(document)
+    return document
+
+
+def test_a_value_planted_in_every_field_the_reduction_drops_is_found_nowhere() -> None:
+    found = reduced(planted())
     assert SECRET not in repr(found)
     by_address = {one.address: one for one in found.changes}
     assert set(by_address) == {"aws_db_instance.main", "aws_instance.app", "aws_iam_policy.reader"}
