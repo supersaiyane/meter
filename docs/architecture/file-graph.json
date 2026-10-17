@@ -29,6 +29,7 @@
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/estate.ts",
+    "finops-web/e2e/estimates.spec.ts",
     "finops-web/e2e/export.spec.ts",
     "finops-web/e2e/filters.spec.ts",
     "finops-web/e2e/fixes.spec.ts",
@@ -171,6 +172,9 @@
     "finops-web/src/screens/DigestsScreen.tsx",
     "finops-web/src/screens/EnforcementScreen.tsx",
     "finops-web/src/screens/EntityScreen.tsx",
+    "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+    "finops-web/src/screens/EstimateLinesPanel.tsx",
+    "finops-web/src/screens/EstimatesScreen.tsx",
     "finops-web/src/screens/ExploreControls.tsx",
     "finops-web/src/screens/ExploreResult.tsx",
     "finops-web/src/screens/FixSettingsScreen.tsx",
@@ -224,6 +228,7 @@
     "finops-web/src/screens/__tests__/DigestsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+    "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
     "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
@@ -271,6 +276,7 @@
     "finops-web/src/screens/commitmentDays.ts",
     "finops-web/src/screens/commitmentFormat.ts",
     "finops-web/src/screens/enforcementTime.ts",
+    "finops-web/src/screens/estimatesModel.ts",
     "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/exploreSeries.ts",
     "finops-web/src/screens/findingFigure.ts",
@@ -337,6 +343,7 @@
     "finops_api/db/repositories/commitments.py",
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
+    "finops_api/db/repositories/estimates.py",
     "finops_api/db/repositories/explore.py",
     "finops_api/db/repositories/forecast.py",
     "finops_api/db/repositories/freshness.py",
@@ -374,6 +381,7 @@
     "finops_api/routes/catalog.py",
     "finops_api/routes/commitments.py",
     "finops_api/routes/cost.py",
+    "finops_api/routes/estimates.py",
     "finops_api/routes/explore.py",
     "finops_api/routes/forecast.py",
     "finops_api/routes/ingest.py",
@@ -748,6 +756,7 @@
     "migrations/versions/0065_plan_estimates.py",
     "migrations/versions/0066_plan_comments.py",
     "migrations/versions/0067_estimate_comparison.py",
+    "migrations/versions/0068_estimates_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -795,6 +804,7 @@
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
     "tests/api/test_cost_showback.py",
+    "tests/api/test_estimate_routes.py",
     "tests/api/test_export_names.py",
     "tests/api/test_export_parity.py",
     "tests/api/test_export_responder.py",
@@ -1267,6 +1277,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/estimates.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/fixes.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1404,6 +1419,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/EntityScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/EstimatesScreen.tsx",
       "k": "typescript"
     },
     {
@@ -3623,6 +3643,176 @@
     },
     {
       "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/screens/estimatesModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/screens/estimatesModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/screens/EstimateAccuracyPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/screens/EstimateLinesPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/screens/estimatesModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EstimatesScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -6042,6 +6232,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/screens/EstimatesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EstimatesScreen.test.tsx",
+      "t": "finops-web/src/screens/estimatesModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/FixSettingsScreen.test.tsx",
       "t": "finops-web/src/api/remediation.ts",
       "k": "typescript"
@@ -7067,6 +7287,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/estimatesModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/estimatesModel.ts",
+      "t": "finops-web/src/screens/commitmentFormat.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/exploreModel.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -8017,6 +8247,21 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/estimates.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/estimates.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/estimates.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/explore.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -8949,6 +9194,46 @@
     {
       "s": "finops_api/routes/cost.py",
       "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/db/repositories/estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/estimates.py",
+      "t": "finops_query/estimate_accuracy.py",
       "k": "python"
     },
     {
@@ -14334,6 +14619,16 @@
     {
       "s": "tests/api/test_cost_showback.py",
       "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_estimate_routes.py",
+      "t": "finops_api/routes/estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_estimate_routes.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {

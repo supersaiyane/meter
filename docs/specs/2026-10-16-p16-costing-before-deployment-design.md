@@ -233,9 +233,14 @@ and GitHub's API is free within its rate limit, modelled.
   percent, and the median absolute percentage error, each labelled modelled against measured.
   Global scope.
 - The route OPEN-44 chooses for a plan's arrival, TASK-P16-010.
-- A screen, Estimates, at `/cost/estimates`: the plans priced, one's lines, and the accuracy.
+- A screen, Estimates, at `/plan/estimates`: the plans priced, one's lines, and the accuracy.
+  Corrected on 2026-10-16 while building TASK-P16-008 from `/cost/estimates`: the navigation,
+  ADR-0030, has no Cost group, and budgets and forecasts, the other figures about spend not yet
+  made, are under Plan.
 
-Every response carries `as_of` and `collected_at`, constraint 10. The MCP facade gains the read
+Every response carries `as_of` and `collected_at`, constraint 10. ISS-302: the MCP facade does not
+carry them yet, as a tool states each figure in dollars or as a count, and a pull request's number
+and a percentage error are neither. The MCP facade was to gain the read
 routes, ADR-0009.
 
 ## 9. Testing

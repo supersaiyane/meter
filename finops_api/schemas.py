@@ -3063,3 +3063,149 @@ class MergePolicyOut(BaseModel):
     set_at: datetime | None
     #: The `pull_request_merge` flag: off stops every merge whatever the policy names.
     merging_on: bool
+
+
+class PlanEstimateOut(BaseModel):
+    """One plan received for a pull request and folder, and its estimate once priced. FEAT-095.
+
+    Every figure is modelled from list prices; none comes from the bill, P16 spec section 5.5.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    plan_id: UUID
+    repository: str
+    pull_request: int
+    head_sha: str
+    #: The folder within the repository, empty for its root.
+    folder: str
+    #: RECEIVED, PRICED or REFUSED.
+    status: str
+    #: Why a plan was refused; null for one read.
+    reason: str | None
+    received_at: datetime
+    #: Null until the plan is priced.
+    monthly_before: Decimal | None
+    monthly_after: Decimal | None
+    monthly_change: Decimal | None
+    currency: str | None
+    priced_lines: int | None
+    unpriced_lines: int | None
+    #: WRITTEN, SUPERSEDED or FAILED; null while the comment waits, FEAT-096.
+    comment_status: str | None
+    comment_url: str | None
+    comment_reason: str | None
+    #: OPEN, MERGED or CLOSED as the code host last reported it; null before its first report.
+    pull_request_state: str | None
+    as_of: datetime
+    collected_at: datetime
+    basis: Basis = "modelled"
+
+
+class EstimatesOut(BaseModel):
+    """The plans received, the newest first. FEAT-095."""
+
+    model_config = ConfigDict(frozen=True)
+
+    plans: list[PlanEstimateOut]
+    #: True when older plans exist beyond the number asked for.
+    more: bool
+
+
+class EstimateComponentOut(BaseModel):
+    """One priced part of a line: what was priced, at what unit price, from which price row."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: before or after.
+    side: str
+    what: str
+    quantity: Decimal
+    unit: str
+    unit_price: Decimal
+    monthly: Decimal
+    sku_price_id: str
+    version: str
+    basis: Basis = "modelled"
+
+
+class EstimateComparisonOut(BaseModel):
+    """A created resource set against its thirty billed days, measured. FEAT-097."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: PENDING, WITHIN, ABOVE, BELOW or NOT_COMPARED.
+    verdict: str
+    #: Why it was not compared; null otherwise.
+    reason: str | None
+    provider_id: str | None
+    window_start: date | None
+    window_end: date | None
+    #: The window's list and effective cost scaled to 730 hours; null unless judged.
+    list_monthly: Decimal | None
+    effective_monthly: Decimal | None
+    variance_percent: Decimal | None
+    as_of: datetime
+    basis: Basis = "measured"
+
+
+class EstimateLineOut(BaseModel):
+    """One change in a plan, priced or with the reason it is not. FEAT-095."""
+
+    model_config = ConfigDict(frozen=True)
+
+    address: str
+    resource_type: str
+    actions: list[str]
+    region: str | None
+    monthly_before: Decimal | None
+    monthly_after: Decimal | None
+    #: Why the change is not priced; null for one priced.
+    reason: str | None
+    notes: list[str]
+    #: Attributes unknown until apply, and attributes withheld as sensitive, by name only.
+    unknown: list[str]
+    withheld: list[str]
+    components: list[EstimateComponentOut]
+    #: Only for a resource a merged plan created, FEAT-097.
+    comparison: EstimateComparisonOut | None
+    basis: Basis = "modelled"
+
+
+class PlanEstimateDetailOut(BaseModel):
+    """One plan's lines, the unpriced first, and what every figure rests on. FEAT-095."""
+
+    model_config = ConfigDict(frozen=True)
+
+    plan: PlanEstimateOut
+    lines: list[EstimateLineOut]
+    assumptions: str
+
+
+class EstimateAccuracyRowOut(BaseModel):
+    """How close one resource type's estimates came to the bill, or every type's. FEAT-097."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: A Terraform resource type, or `all`.
+    resource_type: str
+    compared: int
+    within: int
+    #: The median absolute percentage error; null where nothing was compared.
+    median_error_percent: Decimal | None
+    #: A modelled estimate set against a measured bill.
+    basis: str = "modelled against measured"
+
+
+class EstimateAccuracyOut(BaseModel):
+    """Accuracy by resource type, then in all, from the judged comparisons alone. FEAT-097."""
+
+    model_config = ConfigDict(frozen=True)
+
+    types: list[EstimateAccuracyRowOut]
+    within_percent: Decimal
+    window_days: int
+    #: Created resources seen and waiting for their window to be billed.
+    pending: int
+    #: Created resources that cannot be compared, each with its reason on its plan.
+    not_compared: int

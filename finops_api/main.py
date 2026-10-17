@@ -277,6 +277,13 @@ def p15_routers() -> tuple[APIRouter, ...]:
     return (remediation.router,)
 
 
+def p16_routers() -> tuple[APIRouter, ...]:
+    """The estimate routes, from the P16 spec's section 8: the plans, one plan, the accuracy."""
+    from finops_api.routes import estimates
+
+    return (estimates.router,)
+
+
 def p7_routers() -> tuple[APIRouter, ...]:
     """The assistant routes, from the P7 spec's section 8 table.
 
@@ -440,6 +447,7 @@ def create_app(
         *(p13_routers() if include_p0_routes else ()),
         *(p14_routers() if include_p0_routes else ()),
         *(p15_routers() if include_p0_routes else ()),
+        *(p16_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

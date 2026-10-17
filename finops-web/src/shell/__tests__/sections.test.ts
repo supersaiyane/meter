@@ -92,7 +92,8 @@ describe('navigation groups', () => {
         // P13, FEAT-085: inside Analyze, which ADR-0030 lets a sub project add to.
         'AI spend',
       ],
-      Plan: ['Budgets', 'Forecasts', 'FinOps Score', 'Unit Economics'],
+      // P16, FEAT-095 to 097: inside Plan, as AI spend is inside Analyze, ADR-0030.
+      Plan: ['Budgets', 'Forecasts', 'Estimates', 'FinOps Score', 'Unit Economics'],
       Optimize: ['Recommendations', 'Commitments', 'Realized Savings', 'Savings ledger'],
       Govern: ['Query Cost', 'Quotas', 'Policies'],
       Inventory: ['Accounts', 'Resources', 'Topology'],

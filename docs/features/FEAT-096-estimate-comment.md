@@ -43,7 +43,7 @@ The comment quotes list prices, which AWS publishes, and never a figure from the
 
 ## Interface
 
-The pull request's comment, and its link on `GET /v1/estimates`.
+The pull request's comment, and its link and state on `GET /v1/estimates` and the Estimates screen, TASK-P16-008.
 
 ## Not doing
 

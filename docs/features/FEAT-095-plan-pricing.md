@@ -43,7 +43,7 @@ A plan carries every value Terraform knows, the ones marked sensitive in plain t
 
 ## Interface
 
-`GET /v1/estimates` and `GET /v1/estimates/{plan_id}`, and the Estimates screen at `/cost/estimates`.
+`GET /v1/estimates` and `GET /v1/estimates/{plan_id}`, TASK-P16-008, and the Estimates screen at `/plan/estimates`. Not yet in the MCP facade, ISS-302.
 
 ## Not doing
 

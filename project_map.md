@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 31 of 33 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 64 in 23 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 32 of 34 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 66 in 24 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 45 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 67 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 295 | test_*.py under tests/ |
-| Test functions | 3477 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 68 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 296 | test_*.py under tests/ |
+| Test functions | 3483 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -878,6 +878,11 @@ meter/
 │   ├── screens/RecommendationFix.tsx  FEAT-092, TASK-P15-008. A recommendation's
 │   │                          fix in its detail: ask for it once accepted, its pull
 │   │                          request and steps, and why where there is none
+│   ├── screens/EstimatesScreen.tsx  FEAT-095 to 097, TASK-P16-008. /plan/estimates:
+│   │                          the plans, the unpriced count first; EstimateLinesPanel
+│   │                          one plan's changes and what the bill said; and
+│   │                          EstimateAccuracyPanel, from the judged alone.
+│   │                          estimatesModel.ts says each in words
 │   ├── screens/FixSettingsScreen.tsx  FEAT-091 and 094, TASK-P15-008.
 │   │                          /platform/fixes: the code host, where each state's
 │   │                          fixes go and what Meter may merge, the organization's
@@ -1545,6 +1550,9 @@ meter/
 │   │   │                      fix, TASK-P15-004; GET /remediation/pull-requests
 │   │   │                      lists each with its steps, TASK-P15-006; GET and
 │   │   │                      PUT /remediation/merge-policy, TASK-P15-007
+│   │   ├── estimates.py       P16, FEAT-095 to 097, TASK-P16-008. GET /estimates,
+│   │   │                      /estimates/{plan_id} and /estimates/accuracy, the
+│   │   │                      organization's only, a narrowed reader told why
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1637,6 +1645,10 @@ meter/
 │                              policy, its change audited ALLOWED or DENIED.
 │                              remediation.py holds P15's: the code host and the
 │                              repository mapping, set whole, audited the same.
+│                              estimates.py holds P16's: plans, estimates, lines,
+│                              changes, pull requests and comparisons, each read
+│                              alone and joined in the route, as the guard confines
+│                              a select to one table.
 │                              latest_audit_only confines a read to the newest
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
@@ -1728,6 +1740,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0068_estimates_screen.py  TASK-P16-008. /plan/estimates admitted as a
+│       │                      saved view's screen
 │       ├── 0067_estimate_comparison.py  TASK-P16-007. estimate_comparison, payer
 │       │                      wide, and the estimate_comparison and retention_plans
 │       │                      cadences

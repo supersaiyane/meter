@@ -291,7 +291,7 @@ measured; 12 for the collector, the checks and retention against the database, t
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Partly done 2026-10-16: the MCP tools wait on ISS-302 |
 | Implements | Spec section 8 |
 | Delivers | FEAT-095, FEAT-096, FEAT-097 |
 | Depends on | TASK-P16-007 |
@@ -299,11 +299,29 @@ measured; 12 for the collector, the checks and retention against the database, t
 
 **Acceptance criteria.**
 
-- [ ] `GET /v1/estimates`, `/v1/estimates/{plan_id}` and `/v1/estimates/accuracy`, global scope,
-      each with `as_of` and `collected_at`, exportable, and in the MCP facade
-- [ ] The Estimates screen at `/cost/estimates`: the plans, one plan's lines with the unpriced count
-      first, and the accuracy, modelled against measured; saved views widened to it
-- [ ] Unit tests, and a Playwright journey
+- [x] `GET /v1/estimates`, `/v1/estimates/{plan_id}` and `/v1/estimates/accuracy`, global scope,
+      each with `as_of` and `collected_at`, exportable
+- [ ] The same routes in the MCP facade: moved to ISS-302
+- [x] The Estimates screen at `/plan/estimates`, corrected from `/cost/estimates`: the plans, one
+      plan's lines with the unpriced count first, and the accuracy, modelled against measured; saved
+      views widened to it
+- [x] Unit tests, and a Playwright journey
+
+**Delivered 2026-10-16.** `finops_api/routes/estimates.py` answers the three routes, each the
+organization's alone: a reader narrowed to an account is answered 404 with the reason, as the
+commitment routes answer, and every read goes through the guard, the tables `PayerWide`, through
+`finops_api/db/repositories/estimates.py`. `GET /v1/estimates` lists the newest plans, 200 unless
+asked for up to 1000, each with its estimate, comment and pull request's state, and says when older
+ones exist; `GET /v1/estimates/{plan_id}` returns its lines, the unpriced first, each with its
+components, what was unknown until apply or withheld as sensitive, and what the bill said;
+`GET /v1/estimates/accuracy` returns accuracy by type and in all from the judged alone, and counts
+the pending and the not compared apart. All three export. The screen is `EstimatesScreen` under
+Plan, at `/plan/estimates`, not `/cost/estimates`: the navigation has no Cost group, so spec
+section 8 is corrected. Migration 0068 admits it as a saved view's screen. The MCP facade does not
+carry the routes: a tool states each figure in dollars or as a count, and a pull request's number
+and a percentage error are neither, so the tools wait on ISS-302 rather than state a wrong unit.
+6 route tests against the database, the routes at 100 percent and the repository at 96 percent,
+measured; 8 screen unit tests; 2 Playwright journeys.
 
 ---
 

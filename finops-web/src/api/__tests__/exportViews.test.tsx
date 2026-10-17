@@ -122,7 +122,7 @@ describe('the export registry', () => {
     const titles = Object.values(EXPORT_TITLES);
     expect(Object.keys(EXPORT_TITLES).every((path) => path.startsWith('/api/v1/'))).toBe(true);
     expect(new Set(titles).size).toBe(titles.length);
-    // 38 since TASK-P9-010: the alternatives and the catalog's instance types and prices.
-    expect(titles).toHaveLength(40);
+    // 43 since TASK-P16-008: the plans, one plan and the accuracy of the estimates.
+    expect(titles).toHaveLength(43);
   });
 });
