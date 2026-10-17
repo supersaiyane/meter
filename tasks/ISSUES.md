@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-300 issues. 190 fixed, 108 open, 0 parked.
+301 issues. 190 fixed, 109 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -350,6 +350,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-292 | LOW | The front page's month end forecast ran out of its tile and lost a digit | FIXED | Found 2026-10-13 on the local stack at 1440 pixels. A tile's headline figure inherited the numeral's nowrap, and a forecast is an interval, two amounts and a word, so $17,522 to $23,568 ran 46 pixels out of its tile and read $23,56. Fixed the same day, CHG-0182: the figure wraps at its spaces, each amount whole. Held by a journey in finops-web/e2e/overview.spec.ts |
 | ISS-295 | LOW | DynamoDB reserved capacity cannot be read, so the inventory cannot list it | OPEN | Found 2026-10-13 specifying P14. botocore's DynamoDB service model has no operation that describes reserved capacity; it is bought and listed in the console only. The inventory lists it as unreadable rather than as none held, and its discount is still seen in the bill's commitment columns. Closes if AWS publishes a read |
 | ISS-298 | LOW | The commitments screen read a database column's places aloud, 0.8500000000 and 2.0000 | FIXED | Found 2026-10-13 proving TASK-P14-010 on the rebuilt local stack against the seeded demo. AWS's hourly amount reached the difference sentences with its column's ten places, its unit counts and Meter's unpriced shares with four, the split sentence named a flexible part of 0.000 when the plan had none, and the inventory spoke of an EC2Instance Savings Plan. Every figure was right and read as precision nobody has. Fixed the same day, CHG-0195: hourly amounts said to the tenth of a cent, counts as whole numbers, the split sentence saying only the parts a plan has, and the program by its name. Held by tests/query/test_purchase_plan.py and CommitmentPanels.test.tsx |
+| ISS-302 | LOW | The estimate routes are not in the MCP facade | OPEN | Found 2026-10-16 building TASK-P16-008. Spec section 8 says the MCP facade gains the estimate read routes. A tool, finops_api/tools.py, declares the unit of every numeric field it returns, and the two units, USD and count, are what the assistant draws a cited figure in, ISS-231. GET /v1/estimates carries a pull request's number, an identifier, and GET /v1/estimates/accuracy a percentage error; neither is dollars or a count, and declaring either as a count would let the assistant cite a pull request number as a quantity. GET /v1/estimates/{plan_id} takes a parameter, which no tool does, as for get_dashboard_cost, ISS-148. Options: add an identifier and a percent unit to finops_core.domain.insight.Unit and teach the citation to draw them; or give the tools an envelope of their own that leaves those fields out. The routes and the screen serve a person meanwhile. |
 
 <!-- generated:issue-register end -->
 

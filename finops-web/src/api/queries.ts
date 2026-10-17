@@ -47,6 +47,9 @@ import {
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import { aiCallersFixture, aiGpuFixture, aiSpendFixture } from './fixtures/ai';
 import type {
+  ApiEstimateAccuracy,
+  ApiEstimates,
+  ApiPlanEstimateDetail,
   ApiCommitmentCalendar,
   ApiCommitmentInventory,
   ApiPurchasePlans,
@@ -1106,4 +1109,36 @@ export function usePlanStep() {
       ),
     onSettled: () => queries.invalidateQueries({ queryKey: PLANS_KEY }),
   });
+}
+
+/**
+ * Plans priced before deployment and how close their estimates came, P16. The organization's
+ * alone, ADR-0025: the API answers a narrowed reader with a 404 that says so, so these are read
+ * only when the caller says the reader's scope is the whole organization.
+ */
+export function useEstimates(enabled: boolean) {
+  return useRead<ApiEstimates>(
+    ['estimates'],
+    '/api/v1/estimates',
+    enabled ? '/api/v1/estimates' : '',
+    { enabled },
+  );
+}
+
+/** One plan's lines, read once a plan is chosen. FEAT-095. */
+export function useEstimate(planId: string | null) {
+  const path = planId === null ? '' : `/api/v1/estimates/${encodeURIComponent(planId)}`;
+  return useRead<ApiPlanEstimateDetail>(['estimate', planId], '/api/v1/estimates/{plan_id}', path, {
+    enabled: planId !== null,
+  });
+}
+
+/** How close the estimates came to the bill, by resource type. FEAT-097. */
+export function useEstimateAccuracy(enabled: boolean) {
+  return useRead<ApiEstimateAccuracy>(
+    ['estimate-accuracy'],
+    '/api/v1/estimates/accuracy',
+    enabled ? '/api/v1/estimates/accuracy' : '',
+    { enabled },
+  );
 }

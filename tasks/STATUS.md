@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 98 total, 12 specified, 15 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 212 recorded |
-| Issues | 190 fixed, 108 open, 0 parked |
+| Changes | 213 recorded |
+| Issues | 190 fixed, 109 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -205,6 +205,8 @@ TASK-P16-006 writes the head's estimate as its pull request's one comment, edite
 own collector on the GitHub App, and keeps each pull request's state. TASK-P16-007 sets each
 resource a merged plan created against its thirty billed days, daily, at list cost within 10
 percent, restated for sixty days, creations only; plans and everything from them are kept 400 days.
+TASK-P16-008 serves the plans, one plan's lines and the accuracy, the organization's only, and the
+Estimates screen at `/plan/estimates`; the MCP tools wait on ISS-302.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -384,7 +386,7 @@ ISS-003.
 | P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 | P14 | 10 | 0 | 0 | 0 | 0 | 10 | [plan](../docs/plans/P14-implementation-plan.md) |
 | P15 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P15-implementation-plan.md) |
-| P16 | 7 | 0 | 0 | 0 | 3 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
+| P16 | 7 | 1 | 0 | 0 | 2 | 10 | [plan](../docs/plans/P16-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -714,6 +716,7 @@ ISS-003.
 | `TASK-P16-005` | Done 2026-10-16 | storing estimates, the `plan_estimates` collector |
 | `TASK-P16-006` | Done 2026-10-16 | the comment |
 | `TASK-P16-007` | Done 2026-10-16 | the estimate against the bill |
+| `TASK-P16-008` | Partly done 2026-10-16: the MCP tools wait on ISS-302 | the routes and the screen |
 
 <!-- generated:task-status end -->
 

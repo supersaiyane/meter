@@ -2834,7 +2834,18 @@ changes:
   what: TASK-P16-007, the estimate against the bill, the estimate_comparison collector and plan retention
   commit: pending
   detail: 'finops_query/estimate_accuracy.py judges a created resource''s thirty billed days at list cost against its estimate, effective cost beside it, WITHIN inside 10 percent, and accuracy by type from the judged alone. The daily estimate_comparison collector reads the latest priced plan of each merged pull request and folder, waits until FEAT-057 sees each created address in the mapped state after the merge, writes PENDING, then the verdict, restated for sixty days after the window; an unmapped folder or a resource unseen sixty days is NOT_COMPARED with why. Creations only, spec section 5.6 corrected: a replacement keeps its address. Migration 0067 adds estimate_comparison with checks refusing a verdict without its figures, and the cadences of the collector and retention_plans, which removes plans past METER_RETENTION_PLAN_DAYS, 400 by default, with everything from them.'
+- id: CHG-0213
+  date: '2026-10-16'
+  type: Feature
+  what: TASK-P16-008, the estimate routes and the Estimates screen
+  commit: pending
+  detail: 'finops_api/routes/estimates.py answers GET /v1/estimates, the newest plans with their estimate, comment and pull request state, /v1/estimates/{plan_id}, its lines the unpriced first with components, what was unknown or withheld and what the bill said, and /v1/estimates/accuracy, by type from the judged alone. The organization''s only, a narrowed reader answered 404 with the reason; all three export. The screen is at /plan/estimates under Plan, spec section 8 corrected from /cost/estimates, and migration 0068 admits it as a saved view''s screen. The MCP tools wait on ISS-302.'
 issues:
+- id: ISS-302
+  severity: LOW
+  status: OPEN
+  summary: The estimate routes are not in the MCP facade
+  detail: 'Found 2026-10-16 building TASK-P16-008. Spec section 8 says the MCP facade gains the estimate read routes. A tool, finops_api/tools.py, declares the unit of every numeric field it returns, and the two units, USD and count, are what the assistant draws a cited figure in, ISS-231. GET /v1/estimates carries a pull request''s number, an identifier, and GET /v1/estimates/accuracy a percentage error; neither is dollars or a count, and declaring either as a count would let the assistant cite a pull request number as a quantity. GET /v1/estimates/{plan_id} takes a parameter, which no tool does, as for get_dashboard_cost, ISS-148. Options: add an identifier and a percent unit to finops_core.domain.insight.Unit and teach the citation to draw them; or give the tools an envelope of their own that leaves those fields out. The routes and the screen serve a person meanwhile.'
 - id: ISS-301
   severity: MEDIUM
   status: FIXED

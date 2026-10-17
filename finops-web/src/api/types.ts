@@ -1927,3 +1927,105 @@ export interface ApiMergePolicy {
   readonly set_at: string | null;
   readonly merging_on: boolean;
 }
+
+/** One plan received for a pull request and folder, and its estimate once priced. FEAT-095. */
+export interface ApiPlanEstimate {
+  readonly plan_id: string;
+  readonly repository: string;
+  readonly pull_request: number;
+  readonly head_sha: string;
+  /** The folder within the repository, empty for its root. */
+  readonly folder: string;
+  readonly status: 'RECEIVED' | 'PRICED' | 'REFUSED';
+  /** Why a plan was refused; null for one read. */
+  readonly reason: string | null;
+  readonly received_at: string;
+  /** Null until the plan is priced. */
+  readonly monthly_before: string | null;
+  readonly monthly_after: string | null;
+  readonly monthly_change: string | null;
+  readonly currency: string | null;
+  readonly priced_lines: number | null;
+  readonly unpriced_lines: number | null;
+  /** Null while the comment waits, FEAT-096. */
+  readonly comment_status: 'WRITTEN' | 'SUPERSEDED' | 'FAILED' | null;
+  readonly comment_url: string | null;
+  readonly comment_reason: string | null;
+  readonly pull_request_state: 'OPEN' | 'MERGED' | 'CLOSED' | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+  readonly basis: 'modelled';
+}
+
+export interface ApiEstimates {
+  readonly plans: readonly ApiPlanEstimate[];
+  /** True when older plans exist beyond the number asked for. */
+  readonly more: boolean;
+}
+
+export interface ApiEstimateComponent {
+  readonly side: 'before' | 'after';
+  readonly what: string;
+  readonly quantity: string;
+  readonly unit: string;
+  readonly unit_price: string;
+  readonly monthly: string;
+  readonly sku_price_id: string;
+  readonly version: string;
+  readonly basis: 'modelled';
+}
+
+/** A created resource set against its thirty billed days, measured. FEAT-097. */
+export interface ApiEstimateComparison {
+  readonly verdict: 'PENDING' | 'WITHIN' | 'ABOVE' | 'BELOW' | 'NOT_COMPARED';
+  readonly reason: string | null;
+  readonly provider_id: string | null;
+  readonly window_start: string | null;
+  readonly window_end: string | null;
+  readonly list_monthly: string | null;
+  readonly effective_monthly: string | null;
+  readonly variance_percent: string | null;
+  readonly as_of: string;
+  readonly basis: 'measured';
+}
+
+export interface ApiEstimateLine {
+  readonly address: string;
+  readonly resource_type: string;
+  readonly actions: readonly string[];
+  readonly region: string | null;
+  readonly monthly_before: string | null;
+  readonly monthly_after: string | null;
+  /** Why the change is not priced; null for one priced. */
+  readonly reason: string | null;
+  readonly notes: readonly string[];
+  readonly unknown: readonly string[];
+  readonly withheld: readonly string[];
+  readonly components: readonly ApiEstimateComponent[];
+  readonly comparison: ApiEstimateComparison | null;
+  readonly basis: 'modelled';
+}
+
+export interface ApiPlanEstimateDetail {
+  readonly plan: ApiPlanEstimate;
+  /** The unpriced first, as the comment lists them. */
+  readonly lines: readonly ApiEstimateLine[];
+  readonly assumptions: string;
+}
+
+export interface ApiEstimateAccuracyRow {
+  /** A Terraform resource type, or `all`. */
+  readonly resource_type: string;
+  readonly compared: number;
+  readonly within: number;
+  readonly median_error_percent: string | null;
+  readonly basis: 'modelled against measured';
+}
+
+export interface ApiEstimateAccuracy {
+  readonly types: readonly ApiEstimateAccuracyRow[];
+  readonly within_percent: string;
+  readonly window_days: number;
+  readonly pending: number;
+  readonly not_compared: number;
+}

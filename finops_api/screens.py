@@ -28,6 +28,7 @@ SCREEN_PATHS: Final[tuple[str, ...]] = (
     "/analyze/ai",
     "/plan/budgets",
     "/plan/forecasts",
+    "/plan/estimates",
     "/plan/score",
     "/plan/unit-economics",
     "/optimize",

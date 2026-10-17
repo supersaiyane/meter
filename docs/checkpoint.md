@@ -132,6 +132,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-16 | TASK-P16-005, storing estimates, CHG-0210 | Done | Migration 0065's four tables, payer wide, with the figure-or-reason check; plan_records writes a plan; plan_estimates prices each plan received; comment split to its own collector, retention moved to 007 | migrations/versions/0065_plan_estimates.py:1, finops_ingest/plan_records.py:1, finops_ingest/collectors/plan_estimates.py:1 |
 | 2026-10-16 | TASK-P16-006, the comment, CHG-0211 | Done | estimate_comment renders it; write_comment on the GitHub adapter and the fakes; plan_comments writes the head's, supersedes older, keeps each pull request's state; migration 0066 | finops_query/estimate_comment.py:1, finops_ingest/collectors/plan_comments.py:1, migrations/versions/0066_plan_comments.py:1, finops_providers/github/code_host.py:1 |
 | 2026-10-16 | TASK-P16-007, the estimate against the bill, CHG-0212 | Done | estimate_accuracy judges the thirty day window at list within 10 percent; estimate_comparison waits to see each created address, PENDING then the verdict, restated sixty days; creations only, spec 5.6 corrected; migration 0067; retention_plans at 400 days | finops_query/estimate_accuracy.py:107, finops_ingest/collectors/estimate_comparison.py:99, migrations/versions/0067_estimate_comparison.py:52, finops_ingest/collectors/retention.py:253 |
+| 2026-10-16 | TASK-P16-008, the routes and the screen, CHG-0213 | Partly done | Three routes, the organization's only; EstimatesScreen at /plan/estimates, spec section 8 corrected; migration 0068; MCP tools moved to ISS-302 | finops_api/routes/estimates.py:1, finops_api/db/repositories/estimates.py:1, finops-web/src/screens/EstimatesScreen.tsx:1, migrations/versions/0068_estimates_screen.py:1 |
 
 ## Next action
 
@@ -141,7 +142,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 `docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
 merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P16-008**, the routes and the Estimates screen. TASK-P16-001 to 007 are done.
+1. **TASK-P16-009**, the local stack, proof and documents. TASK-P16-001 to 008 are done, 008's
+   MCP tools excepted, ISS-302.
 2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
 3. Meter never runs Terraform and stores no plan.
 

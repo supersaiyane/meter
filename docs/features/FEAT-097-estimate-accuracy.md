@@ -20,7 +20,7 @@ An estimate nobody checks is a guess. Proposal 6 asks for the estimate set again
 
 ## How it works
 
-The daily `estimate_comparison` collector, TASK-P16-007, reads the latest priced plan of each merged pull request and folder, and for each created line waits until FEAT-057 first sees the address in the state the folder is mapped to after the merge, keeping when. The resource joins the bill by its identifier, as FEAT-029 does. The day it was seen and the first full day after are skipped, and the next thirty are the window; until the bill reaches its last day the line is `PENDING`. `finops_query/estimate_accuracy.py` then sets the window's list cost, scaled to 730 hours, against the estimate, effective cost beside it: `WITHIN` inside 10 percent, the boundary included, `ABOVE` or `BELOW` otherwise. The verdict is read again each day for sixty days after the window, so a restated bill restates it. Accuracy by type counts only what was judged. Not yet on a route or screen: TASK-P16-008.
+The daily `estimate_comparison` collector, TASK-P16-007, reads the latest priced plan of each merged pull request and folder, and for each created line waits until FEAT-057 first sees the address in the state the folder is mapped to after the merge, keeping when. The resource joins the bill by its identifier, as FEAT-029 does. The day it was seen and the first full day after are skipped, and the next thirty are the window; until the bill reaches its last day the line is `PENDING`. `finops_query/estimate_accuracy.py` then sets the window's list cost, scaled to 730 hours, against the estimate, effective cost beside it: `WITHIN` inside 10 percent, the boundary included, `ABOVE` or `BELOW` otherwise. The verdict is read again each day for sixty days after the window, so a restated bill restates it. Accuracy by type counts only what was judged.
 
 ## Data sources and freshness
 
@@ -43,7 +43,7 @@ Bill figures stay in Meter, read by a person whose scope is the organization, AD
 
 ## Interface
 
-`GET /v1/estimates/accuracy`, and the accuracy on the Estimates screen.
+`GET /v1/estimates/accuracy`, and the accuracy on the Estimates screen at `/plan/estimates`, TASK-P16-008; each created line's verdict on `GET /v1/estimates/{plan_id}`. Not yet in the MCP facade, ISS-302.
 
 ## Not doing
 
