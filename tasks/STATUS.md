@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-10-15
+Last updated: 2026-10-17
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 98 total, 12 specified, 15 in build, 68 delivered |
 | Decisions | 38 architecture decision records |
-| Changes | 213 recorded |
-| Issues | 190 fixed, 109 open, 0 parked |
+| Changes | 214 recorded |
+| Issues | 191 fixed, 109 open, 0 parked |
 | Open questions | 45 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -207,6 +207,9 @@ resource a merged plan created against its thirty billed days, daily, at list co
 percent, restated for sixty days, creations only; plans and everything from them are kept 400 days.
 TASK-P16-008 serves the plans, one plan's lines and the accuracy, the organization's only, and the
 Estimates screen at `/plan/estimates`; the MCP tools wait on ISS-302.
+On 2026-10-17 the change log in INDEX.md was made to render: its delimiter row had one cell more
+than its header, so GitHub never drew it as a table. A test now holds every generated table to
+its header, ISS-303.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were

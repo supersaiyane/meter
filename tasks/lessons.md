@@ -809,3 +809,22 @@ The moment tasks begin to queue behind a gate, say so and say how long the queue
 
 **Triggers:** a gate started in the background, a second task drafted before the first merged, a
 branch stacked on an unmerged branch, a wait of more than one gate's length.
+
+## 2026-10-17: a generated table that never rendered
+
+**Mistake:** `scripts/docs/sync.py` wrote the change log with a delimiter row of seven cells under
+a header of six from the day it was written, so GitHub showed the whole change log in INDEX.md as
+raw text. Every task since checked the file only through `make check-docs`, which compares the
+text with what the generator would write and never how it renders, and none looked at it as a
+reader does.
+
+**Correction:** The owner wrote: "change log in section in readme is disturbed ... not properly
+formatted".
+
+**Rule:** A generated document is checked as it renders, not only as it is generated:
+`tests/scripts/test_generated_tables.py` holds every table's delimiter and rows to its header, in
+the renderers' output and in the documents they write. A table or a column added to a renderer
+changes its header and its delimiter in the same edit, and that test runs before the commit.
+
+**Triggers:** a new `render_` function in `scripts/docs/sync.py`, a column added to a generated
+table, a pipe inside a registry entry, the owner saying a document looks wrong.

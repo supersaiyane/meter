@@ -2840,7 +2840,18 @@ changes:
   what: TASK-P16-008, the estimate routes and the Estimates screen
   commit: pending
   detail: 'finops_api/routes/estimates.py answers GET /v1/estimates, the newest plans with their estimate, comment and pull request state, /v1/estimates/{plan_id}, its lines the unpriced first with components, what was unknown or withheld and what the bill said, and /v1/estimates/accuracy, by type from the judged alone. The organization''s only, a narrowed reader answered 404 with the reason; all three export. The screen is at /plan/estimates under Plan, spec section 8 corrected from /cost/estimates, and migration 0068 admits it as a saved view''s screen. The MCP tools wait on ISS-302.'
+- id: CHG-0214
+  date: '2026-10-17'
+  type: Process
+  what: The change log in INDEX.md renders as a table again, and every generated table is tested as it renders
+  commit: pending
+  detail: 'scripts/docs/sync.py wrote the change log''s delimiter row with seven cells under a six cell header, so GitHub drew none of the log as a table. It now writes six, and tests/scripts/test_generated_tables.py holds every renderer''s tables and every table in the documents it writes to their header, ISS-303.'
 issues:
+- id: ISS-303
+  severity: LOW
+  status: FIXED
+  summary: The change log in INDEX.md showed as raw text on GitHub
+  detail: 'Found by the owner on 2026-10-17. render_changes in scripts/docs/sync.py wrote a delimiter row of seven cells under the six cell header since the generator was written, commit 5355ac3, and GitHub draws a Markdown table only when the two agree. make check-docs compared the text with what the generator would write, so it passed. Fixed by CHG-0214: six cells, and tests/scripts/test_generated_tables.py holds every generated table''s delimiter and rows to its header.'
 - id: ISS-302
   severity: LOW
   status: OPEN
