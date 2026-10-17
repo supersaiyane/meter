@@ -134,6 +134,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-16 | TASK-P16-007, the estimate against the bill, CHG-0212 | Done | estimate_accuracy judges the thirty day window at list within 10 percent; estimate_comparison waits to see each created address, PENDING then the verdict, restated sixty days; creations only, spec 5.6 corrected; migration 0067; retention_plans at 400 days | finops_query/estimate_accuracy.py:107, finops_ingest/collectors/estimate_comparison.py:99, migrations/versions/0067_estimate_comparison.py:52, finops_ingest/collectors/retention.py:253 |
 | 2026-10-16 | TASK-P16-008, the routes and the screen, CHG-0213 | Partly done | Three routes, the organization's only; EstimatesScreen at /plan/estimates, spec section 8 corrected; migration 0068; MCP tools moved to ISS-302 | finops_api/routes/estimates.py:1, finops_api/db/repositories/estimates.py:1, finops-web/src/screens/EstimatesScreen.tsx:1, migrations/versions/0068_estimates_screen.py:1 |
 | 2026-10-17 | The change log rendered as a table, CHG-0214, ISS-303 | Done | render_changes wrote seven delimiter cells under six headers; now six, and a test holds every generated table to its header | scripts/docs/sync.py:169, tests/scripts/test_generated_tables.py:1 |
+| 2026-10-17 | TASK-P16-009, the local stack, proof and documents, CHG-0215 | Done | finops_fakes/plans.py; seed_demo records, prices and comments seven plans and lays down a comparison in every verdict; exit criteria 1 to 5 proven over the demo; FEAT-095 to 097 Delivered | finops_fakes/plans.py:1, scripts/demo/seed_demo.py:636, tests/scripts/test_p16_exit_criteria.py:1 |
 
 ## Next action
 
@@ -143,8 +144,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 `docs/plans/P16-implementation-plan.md`, ten tasks, each on its own branch from `main` in a worktree,
 merged once `make verify` is green, one after another without stopping except for an owner decision.
 
-1. **TASK-P16-009**, the local stack, proof and documents. TASK-P16-001 to 008 are done, 008's
-   MCP tools excepted, ISS-302.
+1. **TASK-P16-010**, a plan's arrival, waits on OPEN-44, which the owner is holding. TASK-P16-001
+   to 009 are done, 008's MCP tools excepted, ISS-302.
 2. TASK-P16-010 waits on OPEN-44, how a plan reaches Meter, held by the owner.
 3. Meter never runs Terraform and stores no plan.
 

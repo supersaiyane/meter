@@ -92,7 +92,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-98 features across 17 sub projects. 12 specified, 3 planned, 15 in build, 68 delivered.
+98 features across 17 sub projects. 12 specified, 3 planned, 12 in build, 71 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -194,9 +194,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-095](docs/features/FEAT-095-plan-pricing.md) | A Terraform plan reduced and priced from the catalogue | In build | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) sections 5.2 to 5.4, 5.7 and 5.8, [P16 plan](docs/plans/P16-implementation-plan.md) |
-| [FEAT-096](docs/features/FEAT-096-estimate-comment.md) | The estimate as one comment on the pull request, edited in place | In build | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.5, [P16 plan](docs/plans/P16-implementation-plan.md) |
-| [FEAT-097](docs/features/FEAT-097-estimate-accuracy.md) | The estimate compared with the bill, and its accuracy published | In build | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.6, [P16 plan](docs/plans/P16-implementation-plan.md) |
+| [FEAT-095](docs/features/FEAT-095-plan-pricing.md) | A Terraform plan reduced and priced from the catalogue | Delivered | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) sections 5.2 to 5.4, 5.7 and 5.8, [P16 plan](docs/plans/P16-implementation-plan.md) |
+| [FEAT-096](docs/features/FEAT-096-estimate-comment.md) | The estimate as one comment on the pull request, edited in place | Delivered | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.5, [P16 plan](docs/plans/P16-implementation-plan.md) |
+| [FEAT-097](docs/features/FEAT-097-estimate-accuracy.md) | The estimate compared with the bill, and its accuracy published | Delivered | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.6, [P16 plan](docs/plans/P16-implementation-plan.md) |
 | [FEAT-098](docs/features/FEAT-098-plan-arrival.md) | A plan reaching Meter from the pull request's pipeline | Specified | [P16 spec](docs/specs/2026-10-16-p16-costing-before-deployment-design.md) section 5.1, [P16 plan](docs/plans/P16-implementation-plan.md). Blocked by OPEN-44 |
 
 ### P3 Utilization and Rightsizing
@@ -556,6 +556,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0212 | 2026-10-16 | Feature | TASK-P16-007, the estimate against the bill, the estimate_comparison collector and plan retention | `pending` | finops_query/estimate_accuracy.py judges a created resource's thirty billed days at list cost against its estimate, effective cost beside it, WITHIN inside 10 percent, and accuracy by type from the judged alone. The daily estimate_comparison collector reads the latest priced plan of each merged pull request and folder, waits until FEAT-057 sees each created address in the mapped state after the merge, writes PENDING, then the verdict, restated for sixty days after the window; an unmapped folder or a resource unseen sixty days is NOT_COMPARED with why. Creations only, spec section 5.6 corrected: a replacement keeps its address. Migration 0067 adds estimate_comparison with checks refusing a verdict without its figures, and the cadences of the collector and retention_plans, which removes plans past METER_RETENTION_PLAN_DAYS, 400 by default, with everything from them. |
 | CHG-0213 | 2026-10-16 | Feature | TASK-P16-008, the estimate routes and the Estimates screen | `pending` | finops_api/routes/estimates.py answers GET /v1/estimates, the newest plans with their estimate, comment and pull request state, /v1/estimates/{plan_id}, its lines the unpriced first with components, what was unknown or withheld and what the bill said, and /v1/estimates/accuracy, by type from the judged alone. The organization's only, a narrowed reader answered 404 with the reason; all three export. The screen is at /plan/estimates under Plan, spec section 8 corrected from /cost/estimates, and migration 0068 admits it as a saved view's screen. The MCP tools wait on ISS-302. |
 | CHG-0214 | 2026-10-17 | Process | The change log in INDEX.md renders as a table again, and every generated table is tested as it renders | `pending` | scripts/docs/sync.py wrote the change log's delimiter row with seven cells under a six cell header, so GitHub drew none of the log as a table. It now writes six, and tests/scripts/test_generated_tables.py holds every renderer's tables and every table in the documents it writes to their header, ISS-303. |
+| CHG-0215 | 2026-10-17 | Feature | TASK-P16-009, P16 in the local demo and its exit criteria 1 to 5 proven | `pending` | finops_fakes/plans.py holds seven plans in the fake estate's repository; seed_demo.py records them, prices them through plan_estimates and writes their comments through plan_comments against a fake GitHub, a plan and a comment in every status, and lays down a comparison in every verdict. tests/scripts/test_p16_exit_criteria.py meets criteria 1 to 5 over that demo. FEAT-095 to FEAT-097 Delivered; criterion 6 waits on OPEN-44, TASK-P16-010. |
 
 <!-- generated:changes end -->
 

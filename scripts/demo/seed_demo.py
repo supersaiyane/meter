@@ -35,7 +35,7 @@ import re
 import sys
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
 from urllib.parse import urlsplit
@@ -45,6 +45,7 @@ from sqlalchemy import create_engine, text
 
 from finops_core.config import load_settings
 from finops_core.domain.account import AccountKey, Provider
+from finops_core.domain.fixes import PullRequestState, Readiness
 from finops_core.errors import CollectionError
 from finops_fakes import containers as container_estate
 from finops_fakes import cur, fixtures, prices, utilization
@@ -73,8 +74,18 @@ from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
 from finops_fakes.invoices import FakeInvoices
 from finops_fakes.ownership import FakeResourceCreators, FakeServiceCatalogue
+from finops_fakes.plans import (
+    DEMO_COMPARISONS,
+    DEMO_HEADS,
+    DEMO_MERGED_AGO,
+    DEMO_PLANS,
+    EFFECTIVE_SHARE,
+    DemoComparison,
+    DemoPlan,
+)
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
+from finops_fakes.pull_requests import RecordingPullRequests
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface, queries_as_of
 from finops_fakes.terraform_state import LOCATIONS as FAKE_STATE_LOCATIONS
@@ -90,6 +101,7 @@ from finops_ingest.collectors.commitment_inventory import CommitmentInventoryCol
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.estimate_comparison import PERCENT_PLACES, PLACES, UNSEEN, WRITE
 from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
@@ -99,6 +111,8 @@ from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
+from finops_ingest.collectors.plan_comments import PlanCommentsCollector
+from finops_ingest.collectors.plan_estimates import PlanEstimatesCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
 from finops_ingest.collectors.purchase_plan import PurchasePlanCollector
@@ -123,7 +137,9 @@ from finops_ingest.collectors.waste_parking import Parkable, WasteParkingCollect
 from finops_ingest.collectors.waste_volumes import VolumeCandidate
 from finops_ingest.commitment_policy import install_default_policy
 from finops_ingest.ledger import RunLedger
+from finops_ingest.plan_records import PlanTarget, record_plan
 from finops_ingest.registry import CollectorContext, install_default_schedule
+from finops_query.estimate_accuracy import MONTH_HOURS, WINDOW_HOURS, Billed, judge, window_after
 from finops_query.parser import GrafanaQueryParser
 
 #: Fixed, and readable as "seeded" in the first block, so a row found in a
@@ -615,6 +631,116 @@ def _seed_lifecycle(connection: Any, recommendation: Any, to: str, now: datetime
                 "now": now,
             },
         )
+
+
+def _seed_plans(
+    ledger: RunLedger, connection: Any, unit: Callable[..., Unit], now: datetime
+) -> int:
+    """P16, TASK-P16-009. A plan in every status, comments against a fake GitHub, and a
+    comparison in every verdict, from `finops_fakes.plans`.
+
+    The plans are recorded as the arrival route will record them, TASK-P16-010, priced by the
+    `plan_estimates` collector from the demo's catalog, and their comments written by the
+    `plan_comments` collector against a fake host holding the open and merged pull requests. When
+    each merged one was first seen merged is then set back to its history, and the comparisons are
+    laid down, as a fresh demo holds no thirty billed days after a merge. Laid down once.
+    """
+    held = connection.execute(
+        text("SELECT count(*) FROM terraform_plan WHERE tenant_id = :t"), {"t": DEMO_TENANT}
+    ).scalar_one()
+    if held:
+        return 0
+
+    def record(one: DemoPlan) -> None:
+        target = PlanTarget(DEMO_REPOSITORY, one.pull_request, one.head_sha, one.folder)
+        when = now - one.received_ago
+        record_plan(connection, DEMO_TENANT, target, one.found, route="seed_demo", now=when)
+
+    for one in DEMO_PLANS:
+        if one.priced:
+            record(one)
+    written = _through_the_ledger(
+        ledger, PlanEstimatesCollector(clock=lambda: now), connection, unit(), "plan_estimates"
+    )
+    for one in DEMO_PLANS:
+        if not one.priced:
+            record(one)
+    host = RecordingPullRequests()
+    for number, (head, merged) in DEMO_HEADS.items():
+        host.set_state(
+            DEMO_REPOSITORY,
+            PullRequestState(
+                number=number,
+                url=f"https://code.example/{DEMO_REPOSITORY}/pull/{number}",
+                open=not merged,
+                merged=merged,
+                readiness=Readiness.WAITING,
+                head_sha=head,
+            ),
+        )
+    commenter = PlanCommentsCollector(lambda _context, _connected: host, clock=lambda: now)
+    written += _through_the_ledger(ledger, commenter, connection, unit(), "plan_comments")
+    for number, ago in DEMO_MERGED_AGO.items():
+        connection.execute(
+            text(
+                "UPDATE plan_pull_request SET merged_seen_at = :seen WHERE tenant_id = :t "
+                "AND repository = :repo AND pull_request = :n AND state = 'MERGED'"
+            ),
+            {"seen": now - ago, "t": DEMO_TENANT, "repo": DEMO_REPOSITORY, "n": number},
+        )
+    for comparison in DEMO_COMPARISONS:
+        _seed_comparison(connection, comparison, now)
+    return written + len(DEMO_COMPARISONS)
+
+
+def _seed_comparison(connection: Any, one: DemoComparison, now: datetime) -> None:
+    """One created resource against its bill: judged by `judge` where the bill is laid down,
+    waiting where it is not yet billed, not compared where it was never seen."""
+    line = connection.execute(
+        text(
+            "SELECT l.plan_id, l.resource_type, l.monthly_after FROM plan_estimate_line l "
+            "JOIN terraform_plan p ON p.plan_id = l.plan_id WHERE l.tenant_id = :t "
+            "AND p.pull_request = :n AND p.status = 'PRICED' AND l.address = :a"
+        ),
+        {"t": DEMO_TENANT, "n": one.pull_request, "a": one.address},
+    ).one()
+    estimate = Decimal(line.monthly_after)
+    row: dict[str, Any] = {
+        "plan": line.plan_id,
+        "address": one.address,
+        "t": DEMO_TENANT,
+        "type": line.resource_type,
+        "provider": None,
+        "seen": None,
+        "start": None,
+        "end": None,
+        "estimate": estimate,
+        "list": None,
+        "effective": None,
+        "variance": None,
+        "verdict": one.verdict.value,
+        "reason": None,
+        "now": now,
+        "as_of": now,
+    }
+    if one.seen_ago is None:
+        row["reason"] = UNSEEN
+    else:
+        seen = now - one.seen_ago
+        window = window_after(seen)
+        row |= {"provider": one.provider_id, "seen": seen, "start": window.start, "end": window.end}
+    if one.seen_ago is not None and one.bill_share is not None:
+        listed = estimate * one.bill_share * WINDOW_HOURS / MONTH_HOURS
+        found = judge(estimate, Billed(30, 30, listed, listed * EFFECTIVE_SHARE))
+        if found.verdict is not one.verdict or found.variance_percent is None:
+            raise ValueError(f"{one.address}: a bill at {one.bill_share} reads {found.verdict}")
+        row |= {
+            "list": (found.list_monthly or Decimal(0)).quantize(PLACES),
+            "effective": (found.effective_monthly or Decimal(0)).quantize(PLACES),
+            "variance": found.variance_percent.quantize(PERCENT_PLACES),
+            "as_of": datetime.combine(row["end"], time(6), tzinfo=UTC),
+        }
+    connection.execute(WRITE, row)
 
 
 DEMO_AI_PROVIDERS = (FAKE_OPENAI, FAKE_ANTHROPIC)
@@ -1290,6 +1416,8 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         written += _seed_commitments(ledger, connection, unit, now, settings)
         # P15, after the recommendations it asks fixes for.
         written += _seed_fixes(connection, now, settings)
+        # P16, after the fixes, which connect the code host and map the folders its plans name.
+        written += _seed_plans(ledger, connection, unit, now)
 
         counts = {
             name: connection.execute(

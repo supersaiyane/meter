@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P16 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P16 spec](../specs/2026-10-16-p16-costing-before-deployment-design.md), sections 5.2 to 5.4, 5.7 and 5.8 |
-| Tasks | TASK-P16-002 to TASK-P16-005 |
+| Tasks | TASK-P16-002 to TASK-P16-005, TASK-P16-008 and TASK-P16-009 |
 | Decisions | OPEN-44 |
 | Issues addressed | None yet |
 | Refresh cadence | Every 10 minutes |

@@ -480,6 +480,7 @@
     "finops_fakes/invoices.py",
     "finops_fakes/llm.py",
     "finops_fakes/ownership.py",
+    "finops_fakes/plans.py",
     "finops_fakes/planted.py",
     "finops_fakes/platform_cost.py",
     "finops_fakes/prices.py",
@@ -1102,6 +1103,7 @@
     "tests/scripts/test_p13_exit_criteria.py",
     "tests/scripts/test_p14_exit_criteria.py",
     "tests/scripts/test_p15_exit_criteria.py",
+    "tests/scripts/test_p16_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -10913,6 +10915,16 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/plans.py",
+      "t": "finops_query/estimate_accuracy.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/plans.py",
+      "t": "finops_query/plan_reading.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/platform_cost.py",
       "t": "finops_providers/aws/platform_cost.py",
       "k": "python"
@@ -13719,6 +13731,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -13774,6 +13791,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/estimate_comparison.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/gpu_utilization.py",
       "k": "python"
     },
@@ -13815,6 +13837,16 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
       "k": "python"
     },
     {
@@ -13909,7 +13941,17 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_query/estimate_accuracy.py",
       "k": "python"
     },
     {
@@ -19205,6 +19247,71 @@
     {
       "s": "tests/scripts/test_p15_exit_criteria.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_core/domain/fixes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/collectors/estimate_comparison.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/collectors/plan_comments.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/collectors/plan_estimates.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/plan_records.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_query/estimate_comment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_query/plan_pricing.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_query/plan_quotes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p16_exit_criteria.py",
+      "t": "finops_query/plan_reading.py",
       "k": "python"
     },
     {
