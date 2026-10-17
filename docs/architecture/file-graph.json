@@ -1090,6 +1090,7 @@
     "tests/scripts/test_connect_ai_provider.py",
     "tests/scripts/test_deployed_settings.py",
     "tests/scripts/test_first_contact.py",
+    "tests/scripts/test_generated_tables.py",
     "tests/scripts/test_images.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",

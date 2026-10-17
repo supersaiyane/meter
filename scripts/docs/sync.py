@@ -169,7 +169,7 @@ def render_adrs(reg: Registry) -> str:
 def render_changes(reg: Registry) -> str:
     lines = [
         "| ID | Date | Type | What changed | Commit | Detail |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     lines += [
         f"| {c['id']} | {c['date']} | {c['type']} | {c['what']} | `{c['commit']}` | {c['detail']} |"
