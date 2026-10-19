@@ -219,7 +219,7 @@ are enforced before a commit is created rather than after.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | ADR-0017 |
 | Delivers | FEAT-049 |
 | Depends on | TASK-P0-001 |
@@ -242,17 +242,17 @@ written.
 
 **Acceptance criteria.**
 
-- [ ] One `pydantic-settings` class covering every variable in `.env.example`
-- [ ] **The process refuses to start** when a required value is missing or
+- [x] One `pydantic-settings` class covering every variable in `.env.example`
+- [x] **The process refuses to start** when a required value is missing or
       malformed, naming the variable
-- [ ] A test asserts every `METER_` variable in `.env.example` has a field on
+- [x] A test asserts every `METER_` variable in `.env.example` has a field on
       the settings class, and the reverse, so the two cannot drift
-- [ ] Flag resolution order: `feature_flag` table for the tenant, then the
+- [x] Flag resolution order: `feature_flag` table for the tenant, then the
       environment default, then the declared default. Cached 60 seconds
-- [ ] An unknown flag key reads as its declared default rather than raising
-- [ ] `METER_FEATURE_SCOPE_AUDIT` false is **rejected at startup** when
+- [x] An unknown flag key reads as its declared default rather than raising
+- [x] `METER_FEATURE_SCOPE_AUDIT` false is **rejected at startup** when
       `METER_ENV` is prod
-- [ ] `make check-docs` runs `check_flags.py` and `check_hardcoded.py`
+- [x] `make check-docs` runs `check_flags.py` and `check_hardcoded.py`
 
 **Tests.**
 
@@ -271,6 +271,11 @@ written.
   by deciding, or by not building the thing. A flag is for what must be
   switchable in production without a deploy.
 - Do not put a secret default in `.env.example`. It is committed.
+
+**Note on the flag table.** The `feature_flag` table lands in TASK-P0-010, so
+`FlagResolver` takes the per tenant lookup as a callable rather than a
+repository. TASK-P0-011 passes the real one in. The resolution order, the cache
+and the two failure behaviours are complete and tested against that seam.
 
 **Evidence.**
 

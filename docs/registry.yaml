@@ -352,7 +352,7 @@ features:
 - id: FEAT-049
   name: Configuration and feature flags, everything switchable, nothing hardcoded
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
   doc: docs/features/FEAT-049-configuration-and-feature-flags.md
 - id: FEAT-050
@@ -688,6 +688,13 @@ changes:
   type: Feature
   what: TASK-P0-005, the closed error taxonomy. Six causes, no catch all, and the coverage
     gate raised back to 80 now that there is a module to cover
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0037
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-034, the settings object and the flag resolver. Every value typed in one
+    place, no defaults in code except a flag, and a startup that refuses a bad configuration
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

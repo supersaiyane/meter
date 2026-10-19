@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 19 specified, 1 in build, 0 delivered |
+| Features | 50 total, 18 specified, 2 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 36 recorded |
+| Changes | 37 recorded |
 | Issues | 73 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 3 | 0 | 32 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 4 | 0 | 31 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -59,6 +59,7 @@ pytest harness and `conftest.py` do not.
 | Task | Status | Title |
 | --- | --- | --- |
 | `TASK-P0-001` | **Done 2026-10-07** | create the Python workspace and quality gates |
+| `TASK-P0-034` | Done, 2026-08-24 | settings object, feature flags and the no hardcoding gate |
 | `TASK-P0-005` | Done, 2026-08-24 | define the typed error taxonomy |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
@@ -111,6 +112,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | Design the interface | `docs/12-UI-DESIGN.md`, ADR-0019. The honesty guarantees were enforced in the database and undesigned at the pixel |
 | `[x]` | TASK-P0-029, verify the base images and establish the posture | Moved to python 3.13 and nginx 1.30 by measurement. ADR-0018 corrected the threshold |
 | `[x]` | TASK-P0-005, the typed error taxonomy | Six causes, no catch all. Coverage gate restored to 80 |
+| `[x]` | TASK-P0-034, settings object, constants and flag resolution | 46 variables typed, no defaults in code, startup refuses a bad configuration |
 
 ## Remaining sub projects
 

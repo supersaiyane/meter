@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P0 |
-| Status | Specified |
+| Status | In build |
 | Specification | [ADR-0017](../adr/ADR-0017-configuration-and-feature-flags.md), `.env.example` |
 | Tasks | TASK-P0-034 |
 | Decisions | ADR-0017 |

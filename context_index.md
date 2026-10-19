@@ -24,12 +24,16 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-8 public symbols across 1 packages.
+14 public symbols across 2 packages.
 
 ## finops_core
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
+| `ConfigurationError` | class | `finops_core/config.py:33` | The process cannot start with the configuration it was given. | nothing in this tree |
+| `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:134` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:154` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | nothing in this tree |
@@ -39,10 +43,21 @@ a duplicate.
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
 | `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | nothing in this tree |
 
+## finops_api
+
+| Symbol | Kind | Location | Purpose | Called by |
+| --- | --- | --- | --- | --- |
+| `FlagResolver` | class | `finops_api/flags.py:39` | Reads a flag for a tenant, caching the per tenant override briefly. | nothing in this tree |
+| `FlagResolver.is_enabled` | method | `finops_api/flags.py:55` |  | nothing in this tree |
+
 ## Called by nothing in this tree
 
 Each is an entry point, part of a public interface, or dead. Check each one, and delete what is dead. Rung zero of ADR-0013.
 
+- `ConfigurationError` in `finops_core/config.py:33`
+- `Settings` in `finops_core/config.py:37`
+- `Settings.region_list` in `finops_core/config.py:134`
+- `load_settings` in `finops_core/config.py:154`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
 - `AccessDenied` in `finops_core/errors.py:62`
@@ -51,3 +66,5 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `NoData` in `finops_core/errors.py:89`
 - `Unreachable` in `finops_core/errors.py:99`
 - `SchemaDrift` in `finops_core/errors.py:108`
+- `FlagResolver` in `finops_api/flags.py:39`
+- `FlagResolver.is_enabled` in `finops_api/flags.py:55`

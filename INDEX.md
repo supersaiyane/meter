@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 19 specified, 30 planned, 1 in build, 0 delivered.
+50 features across 8 sub projects. 18 specified, 30 planned, 2 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -93,7 +93,7 @@ block is caught by `make check-docs`. See
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
-| [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | Specified | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
+| [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | In build | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | Specified | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 
 ### P2 Query Cost Governance
@@ -249,6 +249,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0034 | 2026-08-24 | Process | The memory layer given a validity gate. Resume vectors, cited commits and identifiers are checked, the checkpoint archive rule became a script, and recording a lesson became one command | `a7e44b7` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0035 | 2026-08-24 | Process | Every file that forms the reusable base of the project tagged Basic boiler Plate Doc, with why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project | `798dda0` | [scripts/README.md](scripts/README.md) |
 | CHG-0036 | 2026-08-24 | Feature | TASK-P0-005, the closed error taxonomy. Six causes, no catch all, and the coverage gate raised back to 80 now that there is a module to cover | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0037 | 2026-08-24 | Feature | TASK-P0-034, the settings object and the flag resolver. Every value typed in one place, no defaults in code except a flag, and a startup that refuses a bad configuration | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

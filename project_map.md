@@ -127,13 +127,15 @@ meter/
 │                              that deletes rows from the memory log
 │
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
-│   └── errors.py              the six typed failure causes, closed set, no catch all
+│   ├── errors.py              the six typed failure causes, closed set, no catch all
+│   ├── config.py              every METER_ variable, typed. No defaults except flags
+│   └── constants.py           the values that are decisions rather than deployments
 ├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
 │                              Directory exists, __init__.py only
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
 │                              Directory exists, __init__.py only
-├── finops_api/                PLANNED  FastAPI, scope enforcement, routes
-│                              Directory exists, __init__.py only
+├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
+│   └── flags.py               flag resolution, tenant then environment then declared
 ├── finops-web/                PLANNED  React and TypeScript
 ├── finops_mcp/                PLANNED  MCP server, a facade over the HTTP API
 │                              Directory exists, __init__.py only. Ships as a
