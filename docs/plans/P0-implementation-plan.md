@@ -341,7 +341,7 @@ pytest tests/core/test_errors.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5 |
 | Depends on | TASK-P0-005 |
 | Estimate | M |
@@ -364,12 +364,12 @@ persistence concern and no cloud concern.
 
 **Acceptance criteria.**
 
-- [ ] Every entity is immutable. Updates return a new instance
-- [ ] `CloudAccount` carries `provider`, so nothing assumes AWS
-- [ ] `OrgNode.node_type` is a closed enum: `ROOT`, `OU`, `ACCOUNT`
-- [ ] `Scope` exposes `is_global` and an explicit account set, never a wildcard
-- [ ] `CostRecord` field names match FOCUS 1.1 exactly, per ADR-0002
-- [ ] Every fact carrying entity has an `as_of` field, and it is not optional
+- [x] Every entity is immutable. Updates return a new instance
+- [x] `CloudAccount` carries `provider`, so nothing assumes AWS
+- [x] `OrgNode.node_type` is a closed enum: `ROOT`, `OU`, `ACCOUNT`
+- [x] `Scope` exposes `is_global` and an explicit account set, never a wildcard
+- [x] `CostRecord` field names match FOCUS 1.1 exactly, per ADR-0002
+- [x] Every fact carrying entity has an `as_of` field, and it is not optional
 
 **Tests.**
 
@@ -388,6 +388,17 @@ persistence concern and no cloud concern.
   because the standard's value is that it is not ours to improve.
 - Do not make `as_of` optional "for convenience". Every screen shows freshness,
   and an optional field means some screen will show nothing.
+
+**Deviation.** One file beyond the list above, `finops_core/domain/fact.py`. The
+two timestamp rule was going to be a comment repeated in six modules, and a
+convention repeated six times is one that is missing from the seventh. It is a
+base class instead, so inheriting from `Fact` is what puts an entity in
+`test_as_of_is_required`, and a new fact without its timestamps fails the build.
+
+The FOCUS test reads the column list out of `docs/07-DATA-MODEL.md` rather than
+from a list beside the entity. A list beside the entity agrees with the entity
+by construction and proves nothing. Reading the schema document means the
+entity and its table cannot drift apart in either direction.
 
 **Evidence.**
 

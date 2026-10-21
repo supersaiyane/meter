@@ -19,6 +19,14 @@
     "finops_core/__init__.py",
     "finops_core/config.py",
     "finops_core/constants.py",
+    "finops_core/domain/__init__.py",
+    "finops_core/domain/account.py",
+    "finops_core/domain/cost.py",
+    "finops_core/domain/fact.py",
+    "finops_core/domain/identity.py",
+    "finops_core/domain/ingest.py",
+    "finops_core/domain/org.py",
+    "finops_core/domain/tenant.py",
     "finops_core/errors.py",
     "finops_ingest/__init__.py",
     "finops_mcp/__init__.py",
@@ -40,6 +48,7 @@
     "tests/conftest.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
+    "tests/core/test_domain.py",
     "tests/core/test_errors.py",
     "tests/test_checkpoint_rotation.py"
   ],
@@ -145,6 +154,86 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/ingest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/account.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/cost.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/identity.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/identity.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/ingest.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/ingest.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/org.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/org.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/tenant.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_config.py",
       "t": "finops_api/flags.py",
       "k": "python"
@@ -152,6 +241,46 @@
     {
       "s": "tests/core/test_config.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/ingest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {

@@ -129,7 +129,15 @@ meter/
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags
-│   └── constants.py           the values that are decisions rather than deployments
+│   ├── constants.py           the values that are decisions rather than deployments
+│   └── domain/                frozen entities, no persistence and no cloud concern
+│       ├── fact.py            the as_of and collected_at pair, inherited not repeated
+│       ├── account.py         Provider, AccountKey, CloudAccount. Never a bare id
+│       ├── tenant.py          Tenant and Scope. No wildcard, empty means nothing
+│       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
+│       ├── identity.py        Principal and Entitlement
+│       ├── ingest.py          IngestRun, CollectionFailure, Watermark
+│       └── cost.py            CostRecord, FOCUS 1.1 names, Decimal money
 ├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
 │                              Directory exists, __init__.py only
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors

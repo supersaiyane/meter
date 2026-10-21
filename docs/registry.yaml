@@ -82,7 +82,7 @@ features:
 - id: FEAT-004
   name: FOCUS 1.1 canonical cost schema
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md)'
   doc: docs/features/FEAT-004-focus-canonical-cost-schema.md
 - id: FEAT-005
@@ -695,6 +695,13 @@ changes:
   type: Feature
   what: TASK-P0-034, the settings object and the flag resolver. Every value typed in one
     place, no defaults in code except a flag, and a startup that refuses a bad configuration
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0038
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-006, the domain entities. Frozen throughout, no bare account identifier,
+    and a Fact base class that makes the two timestamp rule structural rather than a habit
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-14 public symbols across 2 packages.
+32 public symbols across 2 packages.
 
 ## finops_core
 
@@ -34,6 +34,24 @@ a duplicate.
 | `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
 | `Settings.region_list` | method | `finops_core/config.py:134` | `regions` is held as text because a comma separated list from the | nothing in this tree |
 | `load_settings` | function | `finops_core/config.py:154` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
+| `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | nothing in this tree |
+| `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
+| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | nothing in this tree |
+| `CloudAccount` | class | `finops_core/domain/account.py:47` | One account, as the provider described it at `as_of`. | nothing in this tree |
+| `CloudAccount.provider` | method | `finops_core/domain/account.py:57` |  | nothing in this tree |
+| `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | nothing in this tree |
+| `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
+| `Principal` | class | `finops_core/domain/identity.py:22` |  | nothing in this tree |
+| `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | nothing in this tree |
+| `RunStatus` | class | `finops_core/domain/ingest.py:24` |  | nothing in this tree |
+| `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
+| `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
+| `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
+| `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | nothing in this tree |
+| `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | nothing in this tree |
+| `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
+| `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | nothing in this tree |
+| `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | nothing in this tree |
@@ -58,6 +76,24 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Settings` in `finops_core/config.py:37`
 - `Settings.region_list` in `finops_core/config.py:134`
 - `load_settings` in `finops_core/config.py:154`
+- `Provider` in `finops_core/domain/account.py:18`
+- `AccountStatus` in `finops_core/domain/account.py:26`
+- `AccountKey` in `finops_core/domain/account.py:36`
+- `CloudAccount` in `finops_core/domain/account.py:47`
+- `CloudAccount.provider` in `finops_core/domain/account.py:57`
+- `CostRecord` in `finops_core/domain/cost.py:30`
+- `Fact` in `finops_core/domain/fact.py:27`
+- `Principal` in `finops_core/domain/identity.py:22`
+- `Entitlement` in `finops_core/domain/identity.py:30`
+- `RunStatus` in `finops_core/domain/ingest.py:24`
+- `IngestRun` in `finops_core/domain/ingest.py:34`
+- `CollectionFailure` in `finops_core/domain/ingest.py:53`
+- `Watermark` in `finops_core/domain/ingest.py:64`
+- `OrgNodeType` in `finops_core/domain/org.py:18`
+- `OrgNode` in `finops_core/domain/org.py:25`
+- `Tenant` in `finops_core/domain/tenant.py:23`
+- `Scope` in `finops_core/domain/tenant.py:29`
+- `Scope.permits` in `finops_core/domain/tenant.py:45`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
 - `AccessDenied` in `finops_core/errors.py:62`
