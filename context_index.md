@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-32 public symbols across 2 packages.
+56 public symbols across 2 packages.
 
 ## finops_core
 
@@ -47,8 +47,11 @@ a duplicate.
 | `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
 | `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
+| `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | nothing in this tree |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | nothing in this tree |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | nothing in this tree |
+| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | nothing in this tree |
+| `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | nothing in this tree |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
 | `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | nothing in this tree |
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | nothing in this tree |
@@ -60,6 +63,27 @@ a duplicate.
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | nothing in this tree |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
 | `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | nothing in this tree |
+| `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
+| `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | nothing in this tree |
+| `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | nothing in this tree |
+| `CostExport` | class | `finops_core/ports/cost.py:18` | Finds the billing export and reads charge rows out of it. | nothing in this tree |
+| `CostExport.latest_available_period` | method | `finops_core/ports/cost.py:21` | The most recent billing period the export actually holds. | nothing in this tree |
+| `CostExport.read_period` | method | `finops_core/ports/cost.py:34` | Every charge row covering the period, normalized to FOCUS 1.1. | nothing in this tree |
+| `ProviderSession` | class | `finops_core/ports/credentials.py:23` | An authenticated handle for one account and one region. Opaque by design. | nothing in this tree |
+| `ProviderSession.expires_at` | method | `finops_core/ports/credentials.py:27` | When this handle stops working, so a long run can renew before it does. | nothing in this tree |
+| `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
+| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | nothing in this tree |
+| `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
+| `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
+| `EntitlementResolver` | class | `finops_core/ports/identity.py:36` | Turns a principal into the scope it may read. | nothing in this tree |
+| `EntitlementResolver.resolve` | method | `finops_core/ports/identity.py:39` | The entitlement held by the principal, carrying its own `as_of`. | nothing in this tree |
+| `ResourceInventory` | class | `finops_core/ports/inventory.py:18` | Reads what exists in an account, and what depends on what. | nothing in this tree |
+| `ResourceInventory.list_resources` | method | `finops_core/ports/inventory.py:21` | Every resource in the account and region, optionally of one type. | nothing in this tree |
+| `ResourceInventory.list_dependencies` | method | `finops_core/ports/inventory.py:35` | What the named resource depends on, one level out. | nothing in this tree |
+| `MetricSource` | class | `finops_core/ports/metrics.py:19` | Reads observed values for a resource over a window. | nothing in this tree |
+| `MetricSource.read_series` | method | `finops_core/ports/metrics.py:22` | Every point for the metric over the window. | nothing in this tree |
+| `QuotaSource` | class | `finops_core/ports/quotas.py:17` | Reads the quotas that apply to an account and region. | nothing in this tree |
+| `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:20` | Every quota for the account and region, with usage where published. | nothing in this tree |
 
 ## finops_api
 
@@ -89,8 +113,11 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `IngestRun` in `finops_core/domain/ingest.py:34`
 - `CollectionFailure` in `finops_core/domain/ingest.py:53`
 - `Watermark` in `finops_core/domain/ingest.py:64`
+- `MetricPoint` in `finops_core/domain/metrics.py:20`
 - `OrgNodeType` in `finops_core/domain/org.py:18`
 - `OrgNode` in `finops_core/domain/org.py:25`
+- `QuotaUsage` in `finops_core/domain/quota.py:18`
+- `ResourceRef` in `finops_core/domain/resource.py:19`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `Scope` in `finops_core/domain/tenant.py:29`
 - `Scope.permits` in `finops_core/domain/tenant.py:45`
@@ -102,5 +129,26 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `NoData` in `finops_core/errors.py:89`
 - `Unreachable` in `finops_core/errors.py:99`
 - `SchemaDrift` in `finops_core/errors.py:108`
+- `AccountDiscovery` in `finops_core/ports/accounts.py:19`
+- `AccountDiscovery.list_accounts` in `finops_core/ports/accounts.py:22`
+- `AccountDiscovery.describe_organization` in `finops_core/ports/accounts.py:35`
+- `CostExport` in `finops_core/ports/cost.py:18`
+- `CostExport.latest_available_period` in `finops_core/ports/cost.py:21`
+- `CostExport.read_period` in `finops_core/ports/cost.py:34`
+- `ProviderSession` in `finops_core/ports/credentials.py:23`
+- `ProviderSession.expires_at` in `finops_core/ports/credentials.py:27`
+- `CredentialBroker` in `finops_core/ports/credentials.py:33`
+- `CredentialBroker.session_for` in `finops_core/ports/credentials.py:36`
+- `IdentityProvider` in `finops_core/ports/identity.py:19`
+- `IdentityProvider.authenticate` in `finops_core/ports/identity.py:22`
+- `EntitlementResolver` in `finops_core/ports/identity.py:36`
+- `EntitlementResolver.resolve` in `finops_core/ports/identity.py:39`
+- `ResourceInventory` in `finops_core/ports/inventory.py:18`
+- `ResourceInventory.list_resources` in `finops_core/ports/inventory.py:21`
+- `ResourceInventory.list_dependencies` in `finops_core/ports/inventory.py:35`
+- `MetricSource` in `finops_core/ports/metrics.py:19`
+- `MetricSource.read_series` in `finops_core/ports/metrics.py:22`
+- `QuotaSource` in `finops_core/ports/quotas.py:17`
+- `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
 - `FlagResolver` in `finops_api/flags.py:39`
 - `FlagResolver.is_enabled` in `finops_api/flags.py:55`

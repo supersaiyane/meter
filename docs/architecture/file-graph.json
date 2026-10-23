@@ -25,9 +25,20 @@
     "finops_core/domain/fact.py",
     "finops_core/domain/identity.py",
     "finops_core/domain/ingest.py",
+    "finops_core/domain/metrics.py",
     "finops_core/domain/org.py",
+    "finops_core/domain/quota.py",
+    "finops_core/domain/resource.py",
     "finops_core/domain/tenant.py",
     "finops_core/errors.py",
+    "finops_core/ports/__init__.py",
+    "finops_core/ports/accounts.py",
+    "finops_core/ports/cost.py",
+    "finops_core/ports/credentials.py",
+    "finops_core/ports/identity.py",
+    "finops_core/ports/inventory.py",
+    "finops_core/ports/metrics.py",
+    "finops_core/ports/quotas.py",
     "finops_ingest/__init__.py",
     "finops_mcp/__init__.py",
     "finops_providers/__init__.py",
@@ -50,6 +61,7 @@
     "tests/core/test_config.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
+    "tests/core/test_ports.py",
     "tests/test_checkpoint_rotation.py"
   ],
   "edges": [
@@ -219,6 +231,16 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/metrics.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/metrics.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/org.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -229,8 +251,118 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/quota.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/quota.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/resource.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/resource.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/tenant.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/accounts.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/accounts.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/cost.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/credentials.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/identity.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/inventory.py",
+      "t": "finops_core/domain/resource.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/metrics.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/metrics.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/quotas.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/quotas.py",
+      "t": "finops_core/domain/quota.py",
       "k": "python"
     },
     {
@@ -275,7 +407,22 @@
     },
     {
       "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
       "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_domain.py",
+      "t": "finops_core/domain/resource.py",
       "k": "python"
     },
     {
@@ -285,6 +432,11 @@
     },
     {
       "s": "tests/core/test_errors.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_ports.py",
       "t": "finops_core/__init__.py",
       "k": "python"
     }

@@ -30,7 +30,10 @@ from finops_core.domain.cost import CostRecord
 from finops_core.domain.fact import Fact
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.ingest import CollectionFailure, IngestRun, RunStatus, Watermark
+from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode, OrgNodeType
+from finops_core.domain.quota import QuotaUsage
+from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope, Tenant
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -354,3 +357,55 @@ def test_money_is_never_a_float() -> None:
     for name in ("billed_cost", "effective_cost", "pricing_quantity", "consumed_quantity"):
         value = getattr(record, name)
         assert value is None or isinstance(value, Decimal)
+
+
+# --- the three port contract types -------------------------------------------
+
+
+def test_a_metric_point_separates_the_instant_from_the_freshness() -> None:
+    """`at` is what the value describes. `as_of` is when the source was true."""
+    point = MetricPoint(
+        account_key=KEY,
+        namespace="AWS/Logs",
+        metric_name="IncomingBytes",
+        statistic="Sum",
+        unit="Bytes",
+        value=Decimal("1024"),
+        at=NOW,
+        as_of=NOW,
+        collected_at=NOW,
+    )
+    assert point.value == Decimal("1024")
+    assert point.at == point.as_of
+
+
+def test_a_resource_reference_holds_immutable_tags() -> None:
+    ref = ResourceRef(
+        account_key=KEY,
+        resource_id="i-0123456789abcdef0",
+        resource_type="AWS::EC2::Instance",
+        region_id="eu-west-1",
+        name="worker",
+        tags={"finops:module": "ingest"},
+        as_of=NOW,
+        collected_at=NOW,
+    )
+    assert ref.tags["finops:module"] == "ingest"
+    with pytest.raises(TypeError):
+        ref.tags["finops:module"] = "other"  # type: ignore[index]
+
+
+def test_unpublished_quota_usage_is_none_and_never_zero() -> None:
+    """Zero would read as plenty of headroom on a quota that is about to be hit."""
+    quota = QuotaUsage(
+        account_key=KEY,
+        region_id="eu-west-1",
+        service_code="logs",
+        quota_code="L-12345",
+        quota_name="Concurrent queries",
+        quota_limit=Decimal("30"),
+        used=None,
+        as_of=NOW,
+        collected_at=NOW,
+    )
+    assert quota.used is None

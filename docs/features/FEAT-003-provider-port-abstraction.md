@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P0 |
-| Status | Specified |
+| Status | In build |
 | Specification | `docs/02-ARCHITECTURE.md` section Ports |
 | Tasks | TASK-P0-007, 008, 009 |
 | Decisions | ADR-0002, ADR-0011 |

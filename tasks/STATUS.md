@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 17 specified, 3 in build, 0 delivered |
+| Features | 50 total, 16 specified, 4 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 38 recorded |
+| Changes | 39 recorded |
 | Issues | 73 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 5 | 0 | 30 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 6 | 0 | 29 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -62,6 +62,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-034` | Done, 2026-08-24 | settings object, feature flags and the no hardcoding gate |
 | `TASK-P0-005` | Done, 2026-08-24 | define the typed error taxonomy |
 | `TASK-P0-006` | Done, 2026-08-24 | define the domain entities |
+| `TASK-P0-007` | Done, 2026-08-24 | define the eight ports |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -115,6 +116,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-005, the typed error taxonomy | Six causes, no catch all. Coverage gate restored to 80 |
 | `[x]` | TASK-P0-034, settings object, constants and flag resolution | 46 variables typed, no defaults in code, startup refuses a bad configuration |
 | `[x]` | TASK-P0-006, the domain entities | Frozen throughout, FOCUS names, no bare account identifier |
+| `[x]` | TASK-P0-007, the eight ports | Protocols only. Every method documents which of the six causes it raises |
 
 ## Remaining sub projects
 

@@ -412,7 +412,7 @@ pytest tests/core/test_domain.py -v && make lint
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 4, architecture section "Ports" |
 | Delivers | FEAT-003 |
 | Depends on | TASK-P0-006 |
@@ -437,12 +437,12 @@ implementation, no cloud import.
 
 **Acceptance criteria.**
 
-- [ ] Eight protocols: `AccountDiscovery`, `CredentialBroker`, `CostExport`,
+- [x] Eight protocols: `AccountDiscovery`, `CredentialBroker`, `CostExport`,
       `MetricSource`, `ResourceInventory`, `QuotaSource`, `IdentityProvider`,
       `EntitlementResolver`
-- [ ] Every method documents which of the six errors it may raise
-- [ ] `lint-imports` passes, proving `finops_core` imports no cloud SDK
-- [ ] The six cloud ports are defined even though P0 only implements two, so
+- [x] Every method documents which of the six errors it may raise
+- [x] `lint-imports` passes, proving `finops_core` imports no cloud SDK
+- [x] The six cloud ports are defined even though P0 only implements two, so
       later sub projects do not reshape the abstraction
 
 **Tests.**
@@ -459,6 +459,19 @@ implementation, no cloud import.
   already failed.
 - Do not defer defining the four ports P0 does not implement. They are cheap
   now and expensive to retrofit once three consumers exist.
+
+**Deviation.** Three files beyond the list above:
+`finops_core/domain/metrics.py`, `finops_core/domain/resource.py` and
+`finops_core/domain/quota.py`. A port has to return something, and the rule
+that a port never returns a provider shaped type means the return types are
+domain types. They are deliberately thin, because the full shape of a time
+series belongs to the sub project that first reads one.
+
+`ProviderSession` is a ninth protocol and is not one of the eight. It is a
+supporting type for adapters, exposes only `expires_at`, and is absent from
+`finops_core.ports.__all__` on purpose. The moment the domain can reach a
+client object through it, `finops_core` has a cloud SDK in its import graph
+again.
 
 **Evidence.**
 

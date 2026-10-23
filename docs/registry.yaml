@@ -76,7 +76,7 @@ features:
 - id: FEAT-003
   name: Provider port abstraction, eight ports
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[architecture](docs/02-ARCHITECTURE.md) section "Ports"'
   doc: docs/features/FEAT-003-provider-port-abstraction.md
 - id: FEAT-004
@@ -702,6 +702,13 @@ changes:
   type: Feature
   what: TASK-P0-006, the domain entities. Frozen throughout, no bare account identifier,
     and a Fact base class that makes the two timestamp rule structural rather than a habit
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0039
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-007, the eight ports. Every method names which of the six causes it raises,
+    and a test fails the build when one does not
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

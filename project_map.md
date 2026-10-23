@@ -137,7 +137,18 @@ meter/
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
-│       └── cost.py            CostRecord, FOCUS 1.1 names, Decimal money
+│       ├── cost.py            CostRecord, FOCUS 1.1 names, Decimal money
+│       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
+│       ├── resource.py        ResourceRef. Opaque identifier, never parsed
+│       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
+│   └── ports/                 eight protocols. No implementation, no cloud import
+│       ├── accounts.py        AccountDiscovery
+│       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
+│       ├── cost.py            CostExport
+│       ├── metrics.py         MetricSource
+│       ├── inventory.py       ResourceInventory
+│       ├── quotas.py          QuotaSource
+│       └── identity.py        IdentityProvider and EntitlementResolver
 ├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
 │                              Directory exists, __init__.py only
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
