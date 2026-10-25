@@ -485,7 +485,7 @@ pytest tests/core/test_ports.py -v && .venv/bin/lint-imports
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 11 |
 | Depends on | TASK-P0-007 |
 | Estimate | M |
@@ -504,12 +504,12 @@ and API test runs with no AWS account.
 
 **Acceptance criteria.**
 
-- [ ] Implements all eight ports
-- [ ] Can be configured to raise any of the six error types for a named scope,
+- [x] Implements all eight ports
+- [x] Can be configured to raise any of the six error types for a named scope,
       because failure paths need testing more than success paths do
-- [ ] Ships a fixture organization with at least one root, two organizational
+- [x] Ships a fixture organization with at least one root, two organizational
       units, five accounts, one of which returns `AccessDenied`
-- [ ] Deterministic. The same fixture produces the same output every run
+- [x] Deterministic. The same fixture produces the same output every run
 
 **Do not.**
 
@@ -517,6 +517,14 @@ and API test runs with no AWS account.
   cares most about are all failure path tests.
 - Do not use randomness or wall clock time in fixtures. A flaky fixture makes
   every downstream test untrustworthy.
+
+**Note.** The fixture account identifiers are not twelve digit numbers and the
+region is fictional, because `scripts/ci/check_hardcoded.py` refuses both and is
+right to: a twelve digit literal in a repository is either a real account or a
+fixture that will one day be mistaken for one.
+
+Passing `failures` replaces the fixture plan rather than merging with it, so a
+test states exactly what fails and never inherits a rule it cannot see.
 
 **Evidence.**
 

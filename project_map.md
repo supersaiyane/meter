@@ -149,8 +149,10 @@ meter/
 │       ├── inventory.py       ResourceInventory
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
-├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
-│                              Directory exists, __init__.py only
+├── finops_providers/          IN BUILD  aws/, fake/, gcp/, azure/
+│   └── fake/                  in memory, all eight ports, no network and no clock
+│       ├── fixtures.py        one root, two units, five accounts, one denied
+│       └── provider.py        the failure plan. Any of the six, for any scope
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
 │                              Directory exists, __init__.py only
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes

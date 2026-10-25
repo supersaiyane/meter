@@ -252,6 +252,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0037 | 2026-08-24 | Feature | TASK-P0-034, the settings object and the flag resolver. Every value typed in one place, no defaults in code except a flag, and a startup that refuses a bad configuration | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0038 | 2026-08-24 | Feature | TASK-P0-006, the domain entities. Frozen throughout, no bare account identifier, and a Fact base class that makes the two timestamp rule structural rather than a habit | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0039 | 2026-08-24 | Feature | TASK-P0-007, the eight ports. Every method names which of the six causes it raises, and a test fails the build when one does not | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0040 | 2026-08-24 | Feature | TASK-P0-008, the fake provider. All eight ports in memory, any of the six causes plannable for any scope, and a fixture organization that never moves between runs | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

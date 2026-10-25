@@ -711,6 +711,13 @@ changes:
     and a test fails the build when one does not
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0040
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-008, the fake provider. All eight ports in memory, any of the six causes
+    plannable for any scope, and a fixture organization that never moves between runs
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

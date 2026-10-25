@@ -67,6 +67,12 @@ select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
 # in the P0 specification. Renaming them to satisfy a linter would silently
 # change stored data and break the two documents that define the taxonomy.
 "finops_core/errors.py" = ["N818"]
+# ARG002 wants an unused method argument removed or renamed. A port
+# implementation cannot do either. It has to accept the whole signature the
+# protocol declares, under the declared names, or a keyword call against the
+# port breaks on this implementation and not on the others. The fake ignores
+# some of what it is handed precisely because it is a fake.
+"finops_providers/fake/provider.py" = ["ARG002"]
 
 [tool.pytest.ini_options]
 # Restored to 80 by TASK-P0-005, the task that landed the first real module.

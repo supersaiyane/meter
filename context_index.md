@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-56 public symbols across 2 packages.
+69 public symbols across 3 packages.
 
 ## finops_core
 
@@ -36,31 +36,31 @@ a duplicate.
 | `load_settings` | function | `finops_core/config.py:154` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | nothing in this tree |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
-| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | nothing in this tree |
-| `CloudAccount` | class | `finops_core/domain/account.py:47` | One account, as the provider described it at `as_of`. | nothing in this tree |
+| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | `finops_providers/fake/fixtures.py` |
+| `CloudAccount` | class | `finops_core/domain/account.py:47` | One account, as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:57` |  | nothing in this tree |
-| `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | nothing in this tree |
+| `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
-| `Principal` | class | `finops_core/domain/identity.py:22` |  | nothing in this tree |
-| `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | nothing in this tree |
+| `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_providers/fake/fixtures.py` |
+| `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | `finops_providers/fake/provider.py` |
 | `RunStatus` | class | `finops_core/domain/ingest.py:24` |  | nothing in this tree |
 | `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
 | `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
-| `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | nothing in this tree |
+| `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/fake/fixtures.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | nothing in this tree |
-| `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | nothing in this tree |
-| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | nothing in this tree |
-| `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | nothing in this tree |
+| `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/fake/fixtures.py` |
+| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
+| `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
-| `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | nothing in this tree |
+| `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_providers/fake/provider.py` |
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
-| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | nothing in this tree |
+| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_providers/fake/provider.py` |
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | nothing in this tree |
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | nothing in this tree |
-| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | nothing in this tree |
+| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_providers/fake/provider.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
 | `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | nothing in this tree |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
@@ -85,6 +85,24 @@ a duplicate.
 | `QuotaSource` | class | `finops_core/ports/quotas.py:17` | Reads the quotas that apply to an account and region. | nothing in this tree |
 | `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:20` | Every quota for the account and region, with usage where published. | nothing in this tree |
 
+## finops_providers
+
+| Symbol | Kind | Location | Purpose | Called by |
+| --- | --- | --- | --- | --- |
+| `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
+| `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
+| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:81` |  | nothing in this tree |
+| `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:87` |  | nothing in this tree |
+| `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:94` |  | nothing in this tree |
+| `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:100` |  | nothing in this tree |
+| `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:104` |  | nothing in this tree |
+| `FakeProvider.read_series` | method | `finops_providers/fake/provider.py:121` |  | nothing in this tree |
+| `FakeProvider.list_resources` | method | `finops_providers/fake/provider.py:139` |  | nothing in this tree |
+| `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:149` |  | nothing in this tree |
+| `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:155` |  | nothing in this tree |
+| `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:161` |  | nothing in this tree |
+| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:174` |  | nothing in this tree |
+
 ## finops_api
 
 | Symbol | Kind | Location | Purpose | Called by |
@@ -102,31 +120,19 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `load_settings` in `finops_core/config.py:154`
 - `Provider` in `finops_core/domain/account.py:18`
 - `AccountStatus` in `finops_core/domain/account.py:26`
-- `AccountKey` in `finops_core/domain/account.py:36`
-- `CloudAccount` in `finops_core/domain/account.py:47`
 - `CloudAccount.provider` in `finops_core/domain/account.py:57`
-- `CostRecord` in `finops_core/domain/cost.py:30`
 - `Fact` in `finops_core/domain/fact.py:27`
-- `Principal` in `finops_core/domain/identity.py:22`
-- `Entitlement` in `finops_core/domain/identity.py:30`
 - `RunStatus` in `finops_core/domain/ingest.py:24`
 - `IngestRun` in `finops_core/domain/ingest.py:34`
 - `CollectionFailure` in `finops_core/domain/ingest.py:53`
 - `Watermark` in `finops_core/domain/ingest.py:64`
-- `MetricPoint` in `finops_core/domain/metrics.py:20`
 - `OrgNodeType` in `finops_core/domain/org.py:18`
-- `OrgNode` in `finops_core/domain/org.py:25`
-- `QuotaUsage` in `finops_core/domain/quota.py:18`
-- `ResourceRef` in `finops_core/domain/resource.py:19`
 - `Tenant` in `finops_core/domain/tenant.py:23`
-- `Scope` in `finops_core/domain/tenant.py:29`
 - `Scope.permits` in `finops_core/domain/tenant.py:45`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
-- `AccessDenied` in `finops_core/errors.py:62`
 - `Throttled` in `finops_core/errors.py:71`
 - `NotOptedIn` in `finops_core/errors.py:80`
-- `NoData` in `finops_core/errors.py:89`
 - `Unreachable` in `finops_core/errors.py:99`
 - `SchemaDrift` in `finops_core/errors.py:108`
 - `AccountDiscovery` in `finops_core/ports/accounts.py:19`
@@ -150,5 +156,18 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `MetricSource.read_series` in `finops_core/ports/metrics.py:22`
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
+- `FakeSession` in `finops_providers/fake/provider.py:33`
+- `FakeProvider` in `finops_providers/fake/provider.py:41`
+- `FakeProvider.session_for` in `finops_providers/fake/provider.py:81`
+- `FakeProvider.list_accounts` in `finops_providers/fake/provider.py:87`
+- `FakeProvider.describe_organization` in `finops_providers/fake/provider.py:94`
+- `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:100`
+- `FakeProvider.read_period` in `finops_providers/fake/provider.py:104`
+- `FakeProvider.read_series` in `finops_providers/fake/provider.py:121`
+- `FakeProvider.list_resources` in `finops_providers/fake/provider.py:139`
+- `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:149`
+- `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:155`
+- `FakeProvider.authenticate` in `finops_providers/fake/provider.py:161`
+- `FakeProvider.resolve` in `finops_providers/fake/provider.py:174`
 - `FlagResolver` in `finops_api/flags.py:39`
 - `FlagResolver.is_enabled` in `finops_api/flags.py:55`
