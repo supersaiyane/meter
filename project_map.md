@@ -124,7 +124,9 @@ meter/
 ├── tests/                     the suite. conftest.py refuses to run against a
 │                              real AWS account when no endpoint override is set.
 │                              test_checkpoint_rotation.py covers the only script
-│                              that deletes rows from the memory log
+│                              that deletes rows from the memory log.
+│   └── contract/              one suite, parameterised over providers. Run with
+│                              make test or pytest -m contract
 │
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all

@@ -538,7 +538,7 @@ pytest tests/providers/test_fake.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 11 |
 | Depends on | TASK-P0-008 |
 | Estimate | M |
@@ -557,16 +557,22 @@ is held to exactly the same contract as the fake.
 
 **Acceptance criteria.**
 
-- [ ] Marked `contract`, and parameterised over the provider under test
-- [ ] Runs against `fake` with no credentials
-- [ ] Runs against `aws` when `moto` is active, added in TASK-P0-017
-- [ ] Asserts error type parity: a scope that denies access raises
+- [x] Marked `contract`, and parameterised over the provider under test
+- [x] Runs against `fake` with no credentials
+- [x] Runs against `aws` when `moto` is active, added in TASK-P0-017
+- [x] Asserts error type parity: a scope that denies access raises
       `AccessDenied` from both providers, not a generic exception from one
 
 **Do not.**
 
 - Do not write separate test files per provider. The whole value is that one
   contract holds both, and two files drift apart within a month.
+
+**Note.** The `aws` parameter is registered now and marked skip, rather than
+left out until TASK-P0-017. A provider that is silently absent reads as a
+provider that passes, so the run says out loud that one implementation is
+currently under contract and the other is not. TASK-P0-017 replaces the skip
+with a builder and changes nothing else.
 
 **Evidence.**
 

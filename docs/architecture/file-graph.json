@@ -60,6 +60,10 @@
     "scripts/docs/sync.py",
     "tests/__init__.py",
     "tests/conftest.py",
+    "tests/contract/__init__.py",
+    "tests/contract/conftest.py",
+    "tests/contract/test_account_discovery.py",
+    "tests/contract/test_credential_broker.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
     "tests/core/test_domain.py",
@@ -463,6 +467,36 @@
     {
       "s": "finops_providers/fake/provider.py",
       "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_providers/fake/provider.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_account_discovery.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_account_discovery.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_credential_broker.py",
+      "t": "finops_core/__init__.py",
       "k": "python"
     },
     {

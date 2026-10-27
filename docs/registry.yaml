@@ -76,7 +76,7 @@ features:
 - id: FEAT-003
   name: Provider port abstraction, eight ports
   subproject: P0
-  status: In build
+  status: Delivered
   detail: '[architecture](docs/02-ARCHITECTURE.md) section "Ports"'
   doc: docs/features/FEAT-003-provider-port-abstraction.md
 - id: FEAT-004
@@ -716,6 +716,13 @@ changes:
   type: Feature
   what: TASK-P0-008, the fake provider. All eight ports in memory, any of the six causes
     plannable for any scope, and a fixture organization that never moves between runs
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0041
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-009, the port contract suite. One suite parameterised over providers, with
+    error type parity as the assertion it exists for. Wave B complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
