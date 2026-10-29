@@ -588,7 +588,7 @@ pytest -m contract -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5 |
 | Delivers | FEAT-004 |
 | Depends on | TASK-P0-006 |
@@ -609,18 +609,18 @@ impossible to violate rather than merely discouraged.
 
 **Acceptance criteria.**
 
-- [ ] All tables from spec section 5 exist: `tenant`, `principal`,
+- [x] All tables from spec section 5 exist: `tenant`, `principal`,
       `principal_scope`, `cloud_account`, `org_node`, `ingest_run`,
       `ingest_watermark`, `sync_error`, `cost_focus_daily`,
       `cost_provider_extra`, `platform_cost`, `audit_event`
-- [ ] `ingest_run.idempotency_key` carries a unique constraint. This is what
+- [x] `ingest_run.idempotency_key` carries a unique constraint. This is what
       makes re running a collector safe, per ISS-008
-- [ ] Every fact table has a non nullable `as_of`
-- [ ] Every table has `tenant_id`, including the single tenant ones
-- [ ] `org_node.parent_node_id` is a self referencing foreign key
-- [ ] `cost_focus_daily` is partitioned by `billing_period`
-- [ ] `make migrate` applies cleanly to an empty database, and downgrade works
-- [ ] **No `email` column on `cloud_account`.** The account root email is
+- [x] Every fact table has a non nullable `as_of`
+- [x] Every table has `tenant_id`, including the single tenant ones
+- [x] `org_node.parent_node_id` is a self referencing foreign key
+- [x] `cost_focus_daily` is partitioned by `billing_period`
+- [x] `make migrate` applies cleanly to an empty database, and downgrade works
+- [x] **No `email` column on `cloud_account`.** The account root email is
       personal data no feature reads. See `docs/09-DATA-CLASSIFICATION.md`
 
 **Tests.**
@@ -643,6 +643,32 @@ impossible to violate rather than merely discouraged.
 - Do not add an `email` column because the API returns one. Storing personal
   data that nothing consumes is the easiest exposure to avoid, and the cheapest
   moment to avoid it is before the column has data.
+
+**Two corrections to `docs/07-DATA-MODEL.md`, made in this task.** The schema
+document is the authority, so both were fixed there as well as in the migration
+and the models.
+
+The self referencing key on `org_node.parent_node_id` was missing. It is added
+as `DEFERRABLE INITIALLY DEFERRED`, because the tree is rebuilt in one
+transaction and children are written before their parents are guaranteed to be
+present. Without it, a dropped parent leaves a subtree that is simply absent
+from the map and nothing reports it.
+
+`principal_scope` had no `tenant_id`. It is the authorization cache, so the
+repository guard has to filter by tenant without a join, and a forgotten join on
+that table is exactly how one tenant reads another tenant's grants.
+
+**Deviations.** `finops_api/db/__init__.py` and `tests/db/test_models.py` beyond
+the file list. The metadata assertions need no database, so they run in `make
+test` and fail in seconds rather than in the integration job. `collector_schedule`
+is created as well, a thirteenth table, because ADR-0012 and constraint 9 make
+cadence data rather than code and `docs/07-DATA-MODEL.md` specifies it.
+
+The migration is raw SQL rather than `op.create_table` calls. Declarative
+partitioning and `num_nonnulls` have no faithful expression through the ORM
+helpers, and a migration that only approximates the schema document produces a
+database that passes review and then fails the invariant. The drift test is what
+makes two descriptions of one schema safe.
 
 **Evidence.**
 

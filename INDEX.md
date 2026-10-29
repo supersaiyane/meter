@@ -254,6 +254,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0039 | 2026-08-24 | Feature | TASK-P0-007, the eight ports. Every method names which of the six causes it raises, and a test fails the build when one does not | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0040 | 2026-08-24 | Feature | TASK-P0-008, the fake provider. All eight ports in memory, any of the six causes plannable for any scope, and a fixture organization that never moves between runs | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0041 | 2026-08-24 | Feature | TASK-P0-009, the port contract suite. One suite parameterised over providers, with error type parity as the assertion it exists for. Wave B complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0042 | 2026-08-24 | Feature | TASK-P0-010, the database schema and the initial migration. Thirteen tables whose invariants are constraints rather than conventions, proved against a real PostgreSQL | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

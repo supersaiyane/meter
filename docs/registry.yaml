@@ -725,6 +725,13 @@ changes:
     error type parity as the assertion it exists for. Wave B complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0042
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-010, the database schema and the initial migration. Thirteen tables whose
+    invariants are constraints rather than conventions, proved against a real PostgreSQL
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

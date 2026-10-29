@@ -158,7 +158,13 @@ meter/
 ├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
 │                              Directory exists, __init__.py only
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
-│   └── flags.py               flag resolution, tenant then environment then declared
+│   ├── flags.py               flag resolution, tenant then environment then declared
+│   └── db/models.py           thirteen tables as SQLAlchemy Core, for repositories
+│
+├── alembic.ini                no database URL in it, env.py reads the settings
+├── migrations/                the only way the schema changes
+│   ├── env.py                 URL from settings, overridable by a test
+│   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
 ├── finops-web/                PLANNED  React and TypeScript
 ├── finops_mcp/                PLANNED  MCP server, a facade over the HTTP API
 │                              Directory exists, __init__.py only. Ships as a

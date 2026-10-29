@@ -115,6 +115,7 @@ CREATE TABLE principal (
 -- EntitlementResolver returns at authentication time. An entry without an
 -- expiry would mean a revoked user keeps access, so expires_at is NOT NULL.
 CREATE TABLE principal_scope (
+    tenant_id       UUID        NOT NULL REFERENCES tenant(tenant_id),
     principal_id    UUID        NOT NULL REFERENCES principal(principal_id) ON DELETE CASCADE,
     account_id      TEXT,
     ou_id           TEXT,
@@ -127,6 +128,11 @@ CREATE TABLE principal_scope (
 CREATE INDEX ix_principal_scope__principal_expires
     ON principal_scope (principal_id, expires_at);
 ```
+
+`principal_scope` carries `tenant_id` even though `principal_id` reaches a
+tenant by join. It is the authorization cache, so the repository guard must be
+able to filter by tenant without a join, and a forgotten join on this table is
+exactly how one tenant reads another tenant's grants.
 
 `principal_scope` is the only table where `ON DELETE CASCADE` is correct: it is
 a cache, and losing it costs one resolution.
@@ -181,11 +187,21 @@ CREATE TABLE org_node (
     CONSTRAINT ck_org_node__type_valid
         CHECK (node_type IN ('ROOT', 'OU', 'ACCOUNT')),
     CONSTRAINT ck_org_node__root_has_no_parent
-        CHECK ((node_type = 'ROOT') = (parent_node_id IS NULL))
+        CHECK ((node_type = 'ROOT') = (parent_node_id IS NULL)),
+    CONSTRAINT fk_org_node__parent
+        FOREIGN KEY (tenant_id, parent_node_id)
+        REFERENCES org_node (tenant_id, node_id)
+        DEFERRABLE INITIALLY DEFERRED
 );
 CREATE INDEX ix_org_node__tenant_parent ON org_node (tenant_id, parent_node_id);
 CREATE INDEX ix_org_node__tenant_path   ON org_node (tenant_id, path text_pattern_ops);
 ```
+
+`fk_org_node__parent` is self referencing, so a node cannot name a parent that
+does not exist. It is `DEFERRABLE INITIALLY DEFERRED` because the tree is
+rebuilt in one transaction and children are written before their parents are
+guaranteed to be present. Without the constraint, a dropped parent leaves an
+orphan subtree that is simply absent from the map, and nothing reports it.
 
 `path` and `depth` are denormalised so a subtree filter is an index scan rather
 than a recursive walk. Both are rebuilt from scratch on every tree refresh, and
