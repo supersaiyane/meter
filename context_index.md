@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-69 public symbols across 3 packages.
+88 public symbols across 3 packages.
 
 ## finops_core
 
@@ -107,8 +107,27 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
+| `AccountRepository` | class | `finops_api/db/repositories/accounts.py:15` |  | nothing in this tree |
+| `AccountRepository.list_in_scope` | method | `finops_api/db/repositories/accounts.py:19` | Every account the scope permits, and nothing else. | nothing in this tree |
+| `AccountRepository.list_unhealthy` | method | `finops_api/db/repositories/accounts.py:23` | Accounts whose collector role is not healthy. | nothing in this tree |
+| `AccessContext` | class | `finops_api/db/repositories/base.py:31` | Who is reading, and under which request. Both land in the audit row. | nothing in this tree |
+| `ScopedRepository` | class | `finops_api/db/repositories/base.py:38` | Base for every repository that touches tenant data. | nothing in this tree |
+| `ScopedRepository.scoped_select` | method | `finops_api/db/repositories/base.py:49` | A select already confined to the scope. There is no unconfined variant. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
+| `ScopedRepository.fetch` | method | `finops_api/db/repositories/base.py:53` | Run a scoped read and record it. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
+| `scope_as_json` | function | `finops_api/db/repositories/base.py:86` | The scope as it was evaluated, so an audit row is readable a year later. | nothing in this tree |
+| `IngestRunRepository` | class | `finops_api/db/repositories/ingest.py:20` |  | nothing in this tree |
+| `IngestRunRepository.recent` | method | `finops_api/db/repositories/ingest.py:24` |  | nothing in this tree |
+| `SyncErrorRepository` | class | `finops_api/db/repositories/ingest.py:31` |  | nothing in this tree |
+| `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:35` |  | nothing in this tree |
+| `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | nothing in this tree |
+| `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | nothing in this tree |
 | `FlagResolver` | class | `finops_api/flags.py:39` | Reads a flag for a tenant, caching the per tenant override briefly. | nothing in this tree |
 | `FlagResolver.is_enabled` | method | `finops_api/flags.py:55` |  | nothing in this tree |
+| `ScopeViolationError` | class | `finops_api/guards.py:26` | A query was about to run against a scoped table without a scope. | nothing in this tree |
+| `require_scope` | function | `finops_api/guards.py:49` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/base.py` |
+| `scope_predicate` | function | `finops_api/guards.py:65` | The WHERE clause that confines a read to what the scope permits. | nothing in this tree |
+| `scoped_select` | function | `finops_api/guards.py:92` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
+| `assert_scoped` | function | `finops_api/guards.py:102` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
 
 ## Called by nothing in this tree
 
@@ -169,5 +188,8 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:155`
 - `FakeProvider.authenticate` in `finops_providers/fake/provider.py:161`
 - `FakeProvider.resolve` in `finops_providers/fake/provider.py:174`
-- `FlagResolver` in `finops_api/flags.py:39`
-- `FlagResolver.is_enabled` in `finops_api/flags.py:55`
+- `AccountRepository` in `finops_api/db/repositories/accounts.py:15`
+- `AccountRepository.list_in_scope` in `finops_api/db/repositories/accounts.py:19`
+- `AccountRepository.list_unhealthy` in `finops_api/db/repositories/accounts.py:23`
+- `AccessContext` in `finops_api/db/repositories/base.py:31`
+- `ScopedRepository` in `finops_api/db/repositories/base.py:38`

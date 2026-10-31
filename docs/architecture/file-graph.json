@@ -17,7 +17,13 @@
     "finops_api/__init__.py",
     "finops_api/db/__init__.py",
     "finops_api/db/models.py",
+    "finops_api/db/repositories/__init__.py",
+    "finops_api/db/repositories/accounts.py",
+    "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/ingest.py",
+    "finops_api/db/repositories/org.py",
     "finops_api/flags.py",
+    "finops_api/guards.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
     "finops_core/constants.py",
@@ -74,8 +80,10 @@
     "tests/core/test_errors.py",
     "tests/core/test_ports.py",
     "tests/db/__init__.py",
+    "tests/db/conftest.py",
     "tests/db/test_models.py",
     "tests/db/test_schema.py",
+    "tests/db/test_scope_guard.py",
     "tests/providers/__init__.py",
     "tests/providers/test_fake.py",
     "tests/test_checkpoint_rotation.py"
@@ -167,6 +175,91 @@
       "k": "docker"
     },
     {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/ingest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/accounts.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/accounts.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/accounts.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/base.py",
+      "t": "finops_api/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/base.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/base.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/base.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ingest.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ingest.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ingest.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/org.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/org.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/org.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/flags.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -174,6 +267,11 @@
     {
       "s": "finops_api/flags.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/guards.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -604,6 +702,31 @@
     {
       "s": "tests/db/test_schema.py",
       "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_scope_guard.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_scope_guard.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_scope_guard.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_scope_guard.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_scope_guard.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {

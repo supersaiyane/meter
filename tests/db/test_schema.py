@@ -10,58 +10,23 @@ database refuses, not about something the application remembers not to do.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from datetime import UTC, date, datetime
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
-from sqlalchemy import Engine, create_engine, text
+from sqlalchemy import Engine, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from finops_api.db import models
+
+from .conftest import alembic_config
 
 pytestmark = pytest.mark.integration
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 NOW = datetime(2026, 8, 24, 6, 0, tzinfo=UTC)
-
-
-def alembic_config(url: str) -> Config:
-    config = Config(str(ROOT / "alembic.ini"))
-    config.set_main_option("script_location", str(ROOT / "migrations"))
-    config.set_main_option("sqlalchemy.url", url)
-    return config
-
-
-@pytest.fixture(scope="module")
-def engine() -> Iterator[Engine]:
-    try:
-        from testcontainers.community.postgres import PostgresContainer
-    except ImportError:  # pragma: no cover - older testcontainers layout
-        from testcontainers.postgres import PostgresContainer
-
-    with PostgresContainer("postgres:16-alpine", driver="psycopg") as container:
-        url = container.get_connection_url()
-        command.upgrade(alembic_config(url), "head")
-        built = create_engine(url)
-        try:
-            yield built
-        finally:
-            built.dispose()
-
-
-@pytest.fixture
-def tenant_id(engine: Engine):
-    new_id = uuid4()
-    with engine.begin() as connection:
-        connection.execute(
-            text("INSERT INTO tenant (tenant_id, name) VALUES (:id, :name)"),
-            {"id": new_id, "name": f"tenant-{new_id}"},
-        )
-    return new_id
 
 
 # --- the two descriptions of the schema agree --------------------------------

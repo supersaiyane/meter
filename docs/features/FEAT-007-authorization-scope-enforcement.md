@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P0 |
-| Status | Specified |
+| Status | In build |
 | Specification | `docs/specs/2026-08-23-p0-foundation-design.md` sections 5.1 and 6 |
 | Tasks | TASK-P0-011, 012, 024 |
 | Decisions | ADR-0008 |

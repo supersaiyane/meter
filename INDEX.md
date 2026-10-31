@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 16 specified, 30 planned, 3 in build, 1 delivered.
+50 features across 8 sub projects. 15 specified, 30 planned, 4 in build, 1 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -89,7 +89,7 @@ block is caught by `make check-docs`. See
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
 | [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
-| [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
+| [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
@@ -255,6 +255,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0040 | 2026-08-24 | Feature | TASK-P0-008, the fake provider. All eight ports in memory, any of the six causes plannable for any scope, and a fixture organization that never moves between runs | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0041 | 2026-08-24 | Feature | TASK-P0-009, the port contract suite. One suite parameterised over providers, with error type parity as the assertion it exists for. Wave B complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0042 | 2026-08-24 | Feature | TASK-P0-010, the database schema and the initial migration. Thirteen tables whose invariants are constraints rather than conventions, proved against a real PostgreSQL | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0043 | 2026-08-24 | Feature | TASK-P0-011, repositories with the scope guard. The second of the two independent enforcement points, plus an audit row on every read. ISS-109 closed | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
@@ -265,7 +266,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**73 FIXED, 35 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**74 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -365,7 +366,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-106 | MEDIUM | TASK-P0-029 was completed without its Status, evidence or deviation being recorded in the plan, so the plan read as though no work had been done | FIXED | Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001, is now recorded rather than absorbed |
 | ISS-107 | MEDIUM | tasks/STATUS.md hand maintained a second copy of the plan task list and had drifted, showing 31 tasks and a finished task as not started | FIXED | Generated from the plan files by `scripts/docs/sync.py`. Each generated block now names its own source rather than all claiming the registry |
 | ISS-108 | MEDIUM | project_map.md and CLAUDE.md named the Python packages with hyphens, finops-core rather than finops_core, so a reader following either would look for a directory that cannot exist because a Python package cannot contain a hyphen | FIXED | Both corrected and the map verified against the tree. Also fixed: the map claimed PLANNED modules had no directory, which stopped being true at TASK-P0-029, the feature count said 42 against an actual 50, and nine files were absent from the listing |
-| ISS-109 | MEDIUM | Two of the five forbidden targets in the finops_mcp import contract are inert because finops_api.db and finops_api.guards do not exist yet, so the contract reads as more protective than it currently is | OPEN | Noted in `pyproject.toml`. TASK-P0-011 and TASK-P0-024 each carry a probe to confirm the contract fires once the module exists |
+| ISS-109 | MEDIUM | Two of the five forbidden targets in the finops_mcp import contract are inert because finops_api.db and finops_api.guards do not exist yet, so the contract reads as more protective than it currently is | FIXED | Noted in `pyproject.toml`. TASK-P0-011 and TASK-P0-024 each carry a probe to confirm the contract fires once the module exists |
 | ISS-111 | MEDIUM | TASK-P0-029 was marked done without running the dependency admission gate, one of its acceptance criteria | FIXED | Run 2026-10-07 against the full resolved tree: grype 0 findings across 97 packages, pip-audit 0 advisories across 113. Recorded in the task evidence |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

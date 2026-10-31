@@ -682,7 +682,7 @@ make up && make migrate && pytest tests/db -m integration -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5, section 8 |
 | Delivers | FEAT-007 |
 | Depends on | TASK-P0-010 |
@@ -705,13 +705,13 @@ caller forgets to ask for scoping.
 
 **Acceptance criteria.**
 
-- [ ] Every scoped repository method requires a `Scope` argument. It has no
+- [x] Every scoped repository method requires a `Scope` argument. It has no
       default value
-- [ ] The base repository refuses to execute a query against a scoped table
+- [x] The base repository refuses to execute a query against a scoped table
       without a scope filter, and raises rather than returning everything
-- [ ] `Scope.is_global` widens to every account, and writes an `audit_event`
+- [x] `Scope.is_global` widens to every account, and writes an `audit_event`
       tagged as global access
-- [ ] Every read writes an `audit_event` recording the scope evaluated
+- [x] Every read writes an `audit_event` recording the scope evaluated
 
 **Tests.**
 
@@ -725,6 +725,21 @@ caller forgets to ask for scoping.
 being inert for that target. Confirm it fires: add `import finops_api.db` to a
 scratch file under `finops_mcp`, run `lint-imports`, see the contract BROKEN,
 then remove it. ISS-109.
+
+**ISS-109 is closed.** Both forbidden targets were confirmed live rather than
+assumed: a scratch module under `finops_mcp` importing `finops_api.db` made
+`lint-imports` report the contract BROKEN, the same for `finops_api.guards`, and
+both went back to kept once removed.
+
+**A defect found and fixed inside this task, worth recording.** The first
+version of `assert_scoped` read the rendered WHERE clause looking for
+`tenant_id`. For an empty scope, SQLAlchemy folds `and_(tenant_id = x, false())`
+down to `false`, the text stops mentioning `tenant_id`, and the backstop
+rejected the one query that matters most: the fail closed case that must return
+nothing. A check that fails on the fail closed path is worse than no check,
+because it looks careful while being wrong. It now tests for an execution option
+that only `scoped_select` sets, which generative methods carry forward, so
+refinement with `where`, `order_by` and `limit` keeps the guarantee.
 
 **Do not.**
 

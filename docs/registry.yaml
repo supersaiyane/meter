@@ -100,7 +100,7 @@ features:
 - id: FEAT-007
   name: Authorization scope enforcement, two independent points
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md)'
   doc: docs/features/FEAT-007-authorization-scope-enforcement.md
 - id: FEAT-008
@@ -732,6 +732,13 @@ changes:
     invariants are constraints rather than conventions, proved against a real PostgreSQL
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0043
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-011, repositories with the scope guard. The second of the two independent
+    enforcement points, plus an audit row on every read. ISS-109 closed
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1344,7 +1351,7 @@ issues:
     50, and nine files were absent from the listing'
 - id: ISS-109
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: Two of the five forbidden targets in the finops_mcp import contract are inert because finops_api.db
     and finops_api.guards do not exist yet, so the contract reads as more protective than it currently
     is

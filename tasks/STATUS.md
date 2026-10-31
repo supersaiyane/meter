@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 16 specified, 3 in build, 1 delivered |
+| Features | 50 total, 15 specified, 4 in build, 1 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 42 recorded |
-| Issues | 73 fixed, 35 open, 0 parked |
+| Changes | 43 recorded |
+| Issues | 74 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 9 | 0 | 26 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 10 | 0 | 25 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -66,6 +66,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-008` | Done, 2026-08-24 | implement the fake provider |
 | `TASK-P0-009` | Done, 2026-08-24 | write the port contract test suite |
 | `TASK-P0-010` | Done, 2026-08-24 | create the database schema and migrations |
+| `TASK-P0-011` | Done, 2026-08-24 | implement repositories with the scope guard |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -123,6 +124,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-008, the fake provider | All eight ports in memory. Any of the six causes plannable per scope |
 | `[x]` | TASK-P0-009, the port contract suite | One suite over all providers. Error type parity asserted. Wave B complete |
 | `[x]` | TASK-P0-010, the schema and initial migration | Thirteen tables, invariants as constraints, proved on postgres 16 |
+| `[x]` | TASK-P0-011, repositories with the scope guard | No unscoped path exists. Every read audited. ISS-109 closed |
 
 ## Remaining sub projects
 

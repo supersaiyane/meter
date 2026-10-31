@@ -159,7 +159,10 @@ meter/
 │                              Directory exists, __init__.py only
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
-│   └── db/models.py           thirteen tables as SQLAlchemy Core, for repositories
+│   ├── guards.py              the scope guard. No default, empty means nothing
+│   └── db/
+│       ├── models.py          thirteen tables as SQLAlchemy Core
+│       └── repositories/      the only path to a scoped table, audited on read
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
