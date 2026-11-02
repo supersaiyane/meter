@@ -256,6 +256,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0041 | 2026-08-24 | Feature | TASK-P0-009, the port contract suite. One suite parameterised over providers, with error type parity as the assertion it exists for. Wave B complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0042 | 2026-08-24 | Feature | TASK-P0-010, the database schema and the initial migration. Thirteen tables whose invariants are constraints rather than conventions, proved against a real PostgreSQL | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0043 | 2026-08-24 | Feature | TASK-P0-011, repositories with the scope guard. The second of the two independent enforcement points, plus an audit row on every read. ISS-109 closed | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0044 | 2026-08-24 | Feature | TASK-P0-012, the identity ports with the local provider. Signed sessions, an entitlement cache that always expires, and scope coverage that reports the real total. Wave C complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

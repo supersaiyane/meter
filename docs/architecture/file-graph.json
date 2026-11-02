@@ -24,6 +24,10 @@
     "finops_api/db/repositories/org.py",
     "finops_api/flags.py",
     "finops_api/guards.py",
+    "finops_api/identity/__init__.py",
+    "finops_api/identity/coverage.py",
+    "finops_api/identity/local_config.py",
+    "finops_api/identity/session.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
     "finops_core/constants.py",
@@ -69,6 +73,8 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "tests/__init__.py",
+    "tests/api/__init__.py",
+    "tests/api/test_identity_local.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
@@ -272,6 +278,56 @@
     {
       "s": "finops_api/guards.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/__init__.py",
+      "t": "finops_api/identity/coverage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/__init__.py",
+      "t": "finops_api/identity/local_config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/__init__.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/local_config.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/local_config.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/local_config.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/local_config.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/session.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/session.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/identity/session.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -582,6 +638,31 @@
     {
       "s": "migrations/env.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_identity_local.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_identity_local.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_identity_local.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_identity_local.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_identity_local.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {

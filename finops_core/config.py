@@ -27,7 +27,7 @@ from typing import Literal
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from finops_core.constants import ENV_PREFIX, PRODUCTION_ENV
+from finops_core.constants import ENV_PREFIX, LOCAL_IDENTITY_PROVIDER, PRODUCTION_ENV
 
 
 class ConfigurationError(RuntimeError):
@@ -121,6 +121,19 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _production_guards(self) -> Settings:
+        if self.env == PRODUCTION_ENV and self.identity_provider == LOCAL_IDENTITY_PROVIDER:
+            raise ValueError(
+                "METER_IDENTITY_PROVIDER cannot be local_config when METER_ENV is prod. "
+                "The local provider reads users out of a file with no password and no "
+                "directory behind it, so reaching production with it selected is a total "
+                "authentication bypass rather than a degraded one. ISS-017."
+            )
+        if self.env == PRODUCTION_ENV and self.feature_local_auth:
+            raise ValueError(
+                "METER_FEATURE_LOCAL_AUTH cannot be true when METER_ENV is prod. It is the "
+                "other half of the same bypass ISS-017 describes, and a guard that covers "
+                "only one of the two ways in is not a guard."
+            )
         if self.env == PRODUCTION_ENV and not self.feature_scope_audit:
             raise ValueError(
                 "METER_FEATURE_SCOPE_AUDIT cannot be false when METER_ENV is prod. "

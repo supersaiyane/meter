@@ -762,7 +762,7 @@ pytest tests/db/test_scope_guard.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 6, ADR-0008 |
 | Delivers | FEAT-007 |
 | Depends on | TASK-P0-011 |
@@ -783,13 +783,13 @@ configuration driven local implementation that cannot reach production.
 
 **Acceptance criteria.**
 
-- [ ] `LocalConfigIdentityProvider` reads users, accounts and tiers from YAML
-- [ ] The application refuses to start when `METER_ENV` is `prod` and the
+- [x] `LocalConfigIdentityProvider` reads users, accounts and tiers from YAML
+- [x] The application refuses to start when `METER_ENV` is `prod` and the
       identity provider is `local_config`, per ISS-017
-- [ ] Sessions are signed, carry the resolved scope, and expire after 8 hours
-- [ ] `EntitlementResolver` output is cached with an explicit expiry, never
+- [x] Sessions are signed, carry the resolved scope, and expire after 8 hours
+- [x] `EntitlementResolver` output is cached with an explicit expiry, never
       indefinitely
-- [ ] `scope_coverage` is computed as visible accounts over total organization
+- [x] `scope_coverage` is computed as visible accounts over total organization
       accounts, per ISS-016
 
 **Tests.**
@@ -799,6 +799,19 @@ configuration driven local implementation that cannot reach production.
 | `tests/api/test_identity_local.py::test_local_provider_refuses_production` | Startup raises when env is prod |
 | `tests/api/test_identity_local.py::test_session_expires` | An expired session is rejected |
 | `tests/api/test_identity_local.py::test_scope_coverage_reports_partial_visibility` | Coverage reports 2 of 5, not 2 of 2 |
+
+**Where the production refusal lives.** In `finops_core/config.py`, with the
+other startup guards, not in the identity package. A guard that lives inside the
+thing it is guarding is a guard that a refactor of that thing removes. It also
+covers both ways in: `METER_IDENTITY_PROVIDER=local_config` and
+`METER_FEATURE_LOCAL_AUTH=true`, because a guard that closes one of two doors is
+not a guard.
+
+**Deviation.** `finops_api/identity/coverage.py` beyond the file list, holding
+`ScopeCoverage`. It refuses to be constructed with a total smaller than the
+visible count, which is ISS-016 arriving in person: a total computed from the
+visible set always reports full coverage, which is exactly why that bug survives
+review.
 
 **Do not.**
 

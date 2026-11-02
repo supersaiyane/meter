@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-88 public symbols across 3 packages.
+101 public symbols across 3 packages.
 
 ## finops_core
 
@@ -32,17 +32,17 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `ConfigurationError` | class | `finops_core/config.py:33` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:134` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:154` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
-| `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:147` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
+| `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
-| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | `finops_providers/fake/fixtures.py` |
+| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/fixtures.py` |
 | `CloudAccount` | class | `finops_core/domain/account.py:47` | One account, as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:57` |  | nothing in this tree |
 | `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
-| `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_providers/fake/fixtures.py` |
-| `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | `finops_providers/fake/provider.py` |
+| `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
+| `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | `finops_api/identity/local_config.py`, `finops_providers/fake/provider.py` |
 | `RunStatus` | class | `finops_core/domain/ingest.py:24` |  | nothing in this tree |
 | `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
 | `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
@@ -53,16 +53,16 @@ a duplicate.
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
-| `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_providers/fake/provider.py` |
+| `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
-| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_providers/fake/provider.py` |
+| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | nothing in this tree |
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | nothing in this tree |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_providers/fake/provider.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | nothing in this tree |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py` |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | nothing in this tree |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | nothing in this tree |
@@ -128,6 +128,19 @@ a duplicate.
 | `scope_predicate` | function | `finops_api/guards.py:65` | The WHERE clause that confines a read to what the scope permits. | nothing in this tree |
 | `scoped_select` | function | `finops_api/guards.py:92` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
 | `assert_scoped` | function | `finops_api/guards.py:102` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
+| `ScopeCoverage` | class | `finops_api/identity/coverage.py:19` | Visible accounts against every account the organization holds. | nothing in this tree |
+| `ScopeCoverage.is_partial` | method | `finops_api/identity/coverage.py:36` | True when the figures on the page describe part of the organization. | nothing in this tree |
+| `ScopeCoverage.fraction` | method | `finops_api/identity/coverage.py:41` | Visible share, between 0 and 1. An empty organization is fully covered. | nothing in this tree |
+| `ScopeCoverage.as_dict` | method | `finops_api/identity/coverage.py:47` | The shape every API response carries alongside its numbers. | nothing in this tree |
+| `LocalUser` | class | `finops_api/identity/local_config.py:43` |  | nothing in this tree |
+| `load_users` | function | `finops_api/identity/local_config.py:51` | Read the file, refusing anything malformed rather than skipping it. | nothing in this tree |
+| `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | nothing in this tree |
+| `LocalConfigIdentityProvider.authenticate` | method | `finops_api/identity/local_config.py:110` | In local development the token is the subject. Unknown is refused. | nothing in this tree |
+| `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | nothing in this tree |
+| `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | nothing in this tree |
+| `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | nothing in this tree |
+| `SessionSigner.issue` | method | `finops_api/identity/session.py:77` |  | nothing in this tree |
+| `SessionSigner.verify` | method | `finops_api/identity/session.py:91` |  | nothing in this tree |
 
 ## Called by nothing in this tree
 
@@ -135,9 +148,8 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 
 - `ConfigurationError` in `finops_core/config.py:33`
 - `Settings` in `finops_core/config.py:37`
-- `Settings.region_list` in `finops_core/config.py:134`
-- `load_settings` in `finops_core/config.py:154`
-- `Provider` in `finops_core/domain/account.py:18`
+- `Settings.region_list` in `finops_core/config.py:147`
+- `load_settings` in `finops_core/config.py:167`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:57`
 - `Fact` in `finops_core/domain/fact.py:27`
@@ -153,7 +165,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Throttled` in `finops_core/errors.py:71`
 - `NotOptedIn` in `finops_core/errors.py:80`
 - `Unreachable` in `finops_core/errors.py:99`
-- `SchemaDrift` in `finops_core/errors.py:108`
 - `AccountDiscovery` in `finops_core/ports/accounts.py:19`
 - `AccountDiscovery.list_accounts` in `finops_core/ports/accounts.py:22`
 - `AccountDiscovery.describe_organization` in `finops_core/ports/accounts.py:35`
@@ -193,3 +204,5 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountRepository.list_unhealthy` in `finops_api/db/repositories/accounts.py:23`
 - `AccessContext` in `finops_api/db/repositories/base.py:31`
 - `ScopedRepository` in `finops_api/db/repositories/base.py:38`
+- `scope_as_json` in `finops_api/db/repositories/base.py:86`
+- `IngestRunRepository` in `finops_api/db/repositories/ingest.py:20`

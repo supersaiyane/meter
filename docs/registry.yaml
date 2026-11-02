@@ -739,6 +739,14 @@ changes:
     enforcement points, plus an audit row on every read. ISS-109 closed
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0044
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-012, the identity ports with the local provider. Signed sessions, an
+    entitlement cache that always expires, and scope coverage that reports the real total.
+    Wave C complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

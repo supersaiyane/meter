@@ -75,9 +75,43 @@ def test_an_unknown_environment_name_is_refused(monkeypatch: pytest.MonkeyPatch)
     assert "METER_ENV" in str(caught.value)
 
 
+PRODUCTION_READY = {
+    "METER_ENV": "prod",
+    "METER_IDENTITY_PROVIDER": "oidc",
+    "METER_FEATURE_LOCAL_AUTH": "false",
+}
+
+
+def test_the_local_identity_provider_cannot_reach_production(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A provider with no directory behind it is a total bypass. ISS-017."""
+    apply(monkeypatch, {**PRODUCTION_READY, "METER_IDENTITY_PROVIDER": "local_config"})
+    with pytest.raises(ConfigurationError) as caught:
+        load_settings()
+    assert "METER_IDENTITY_PROVIDER" in str(caught.value)
+
+
+def test_the_local_auth_flag_cannot_be_on_in_production(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The other half of the same bypass. A guard covering one way in is not a guard."""
+    apply(monkeypatch, {**PRODUCTION_READY, "METER_FEATURE_LOCAL_AUTH": "true"})
+    with pytest.raises(ConfigurationError) as caught:
+        load_settings()
+    assert "METER_FEATURE_LOCAL_AUTH" in str(caught.value)
+
+
+def test_a_production_configuration_without_the_local_provider_loads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    apply(monkeypatch, PRODUCTION_READY)
+    assert load_settings().env == "prod"
+
+
 def test_scope_audit_cannot_be_off_in_prod(monkeypatch: pytest.MonkeyPatch) -> None:
     """The one flag with no legitimate off state in production."""
-    apply(monkeypatch, {"METER_ENV": "prod", "METER_FEATURE_SCOPE_AUDIT": "false"})
+    apply(monkeypatch, {**PRODUCTION_READY, "METER_FEATURE_SCOPE_AUDIT": "false"})
     with pytest.raises(ConfigurationError) as caught:
         load_settings()
     assert "METER_FEATURE_SCOPE_AUDIT" in str(caught.value)

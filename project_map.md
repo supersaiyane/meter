@@ -160,6 +160,10 @@ meter/
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── guards.py              the scope guard. No default, empty means nothing
+│   ├── identity/              behind the two ports ADR-0008 parked
+│   │   ├── local_config.py    users from a file. Refused in prod by config.py
+│   │   ├── session.py         signed, carries the scope, always expires
+│   │   └── coverage.py        visible over the organization total, never over visible
 │   └── db/
 │       ├── models.py          thirteen tables as SQLAlchemy Core
 │       └── repositories/      the only path to a scoped table, audited on read

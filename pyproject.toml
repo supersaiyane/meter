@@ -92,6 +92,15 @@ markers = [
 [tool.mypy]
 python_version = "3.13"
 strict = true
+
+# pyyaml ships no type information and there is no bundled stub. The alternative
+# is admitting types-PyYAML through make dep-check, which enlarges the tracked
+# dependency surface for a package that contributes nothing at runtime. Values
+# read from yaml are narrowed explicitly at the point of use instead, which is
+# where the checking has to happen anyway.
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
 warn_unreachable = true
 
 # The rule that keeps multi cloud cheap. finops_core must stay free of every

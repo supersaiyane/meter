@@ -21,6 +21,11 @@ ENV_PREFIX = "METER_"
 # The environment name that turns on the production only guards.
 PRODUCTION_ENV = "prod"
 
+# The identity provider that reads users from a file. Refused in production,
+# because a provider with no directory behind it is a total authentication
+# bypass rather than a degraded one. ISS-017.
+LOCAL_IDENTITY_PROVIDER = "local_config"
+
 # How long a per tenant flag override is trusted before it is read again.
 # Fixed rather than configured on purpose: it is the bound on how long a flag
 # flip takes to reach every worker, which is a property of the design and not
