@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-101 public symbols across 3 packages.
+110 public symbols across 3 packages.
 
 ## finops_core
 
@@ -57,12 +57,12 @@ a duplicate.
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
-| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
-| `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | nothing in this tree |
-| `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | nothing in this tree |
+| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, `finops_providers/fake/provider.py` |
+| `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | `finops_providers/aws/client.py` |
+| `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py` |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_providers/fake/provider.py` |
-| `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | nothing in this tree |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py` |
+| `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py` |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_providers/aws/client.py` |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | nothing in this tree |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | nothing in this tree |
@@ -89,19 +89,28 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
+| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/credentials.py` |
+| `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
+| `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
+| `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
+| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/credentials.py` |
+| `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
+| `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
+| `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
+| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | nothing in this tree |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
-| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:81` |  | nothing in this tree |
-| `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:87` |  | nothing in this tree |
-| `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:94` |  | nothing in this tree |
-| `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:100` |  | nothing in this tree |
-| `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:104` |  | nothing in this tree |
-| `FakeProvider.read_series` | method | `finops_providers/fake/provider.py:121` |  | nothing in this tree |
-| `FakeProvider.list_resources` | method | `finops_providers/fake/provider.py:139` |  | nothing in this tree |
-| `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:149` |  | nothing in this tree |
-| `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:155` |  | nothing in this tree |
-| `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:161` |  | nothing in this tree |
-| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:174` |  | nothing in this tree |
+| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | nothing in this tree |
+| `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:99` |  | nothing in this tree |
+| `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:106` |  | nothing in this tree |
+| `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:112` |  | nothing in this tree |
+| `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:116` |  | nothing in this tree |
+| `FakeProvider.read_series` | method | `finops_providers/fake/provider.py:133` |  | nothing in this tree |
+| `FakeProvider.list_resources` | method | `finops_providers/fake/provider.py:151` |  | nothing in this tree |
+| `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:161` |  | nothing in this tree |
+| `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
+| `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
+| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
 
 ## finops_api
 
@@ -137,7 +146,7 @@ a duplicate.
 | `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | nothing in this tree |
 | `LocalConfigIdentityProvider.authenticate` | method | `finops_api/identity/local_config.py:110` | In local development the token is the subject. Unknown is refused. | nothing in this tree |
 | `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | nothing in this tree |
-| `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | nothing in this tree |
+| `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | `finops_providers/aws/credentials.py` |
 | `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | nothing in this tree |
 | `SessionSigner.issue` | method | `finops_api/identity/session.py:77` |  | nothing in this tree |
 | `SessionSigner.verify` | method | `finops_api/identity/session.py:91` |  | nothing in this tree |
@@ -162,9 +171,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Scope.permits` in `finops_core/domain/tenant.py:45`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
-- `Throttled` in `finops_core/errors.py:71`
-- `NotOptedIn` in `finops_core/errors.py:80`
-- `Unreachable` in `finops_core/errors.py:99`
 - `AccountDiscovery` in `finops_core/ports/accounts.py:19`
 - `AccountDiscovery.list_accounts` in `finops_core/ports/accounts.py:22`
 - `AccountDiscovery.describe_organization` in `finops_core/ports/accounts.py:35`
@@ -186,23 +192,26 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `MetricSource.read_series` in `finops_core/ports/metrics.py:22`
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
+- `partition_for` in `finops_providers/aws/client.py:96`
+- `error_code` in `finops_providers/aws/client.py:119`
+- `AwsSession` in `finops_providers/aws/credentials.py:44`
+- `AwsCredentialBroker` in `finops_providers/aws/credentials.py:53`
+- `AwsCredentialBroker.external_id` in `finops_providers/aws/credentials.py:72`
+- `AwsCredentialBroker.session_for` in `finops_providers/aws/credentials.py:89`
 - `FakeSession` in `finops_providers/fake/provider.py:33`
 - `FakeProvider` in `finops_providers/fake/provider.py:41`
-- `FakeProvider.session_for` in `finops_providers/fake/provider.py:81`
-- `FakeProvider.list_accounts` in `finops_providers/fake/provider.py:87`
-- `FakeProvider.describe_organization` in `finops_providers/fake/provider.py:94`
-- `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:100`
-- `FakeProvider.read_period` in `finops_providers/fake/provider.py:104`
-- `FakeProvider.read_series` in `finops_providers/fake/provider.py:121`
-- `FakeProvider.list_resources` in `finops_providers/fake/provider.py:139`
-- `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:149`
-- `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:155`
-- `FakeProvider.authenticate` in `finops_providers/fake/provider.py:161`
-- `FakeProvider.resolve` in `finops_providers/fake/provider.py:174`
+- `FakeProvider.session_for` in `finops_providers/fake/provider.py:93`
+- `FakeProvider.list_accounts` in `finops_providers/fake/provider.py:99`
+- `FakeProvider.describe_organization` in `finops_providers/fake/provider.py:106`
+- `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:112`
+- `FakeProvider.read_period` in `finops_providers/fake/provider.py:116`
+- `FakeProvider.read_series` in `finops_providers/fake/provider.py:133`
+- `FakeProvider.list_resources` in `finops_providers/fake/provider.py:151`
+- `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:161`
+- `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:167`
+- `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
+- `FakeProvider.resolve` in `finops_providers/fake/provider.py:186`
 - `AccountRepository` in `finops_api/db/repositories/accounts.py:15`
 - `AccountRepository.list_in_scope` in `finops_api/db/repositories/accounts.py:19`
 - `AccountRepository.list_unhealthy` in `finops_api/db/repositories/accounts.py:23`
 - `AccessContext` in `finops_api/db/repositories/base.py:31`
-- `ScopedRepository` in `finops_api/db/repositories/base.py:38`
-- `scope_as_json` in `finops_api/db/repositories/base.py:86`
-- `IngestRunRepository` in `finops_api/db/repositories/ingest.py:20`

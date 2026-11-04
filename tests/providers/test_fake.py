@@ -80,7 +80,7 @@ def test_discovery_still_lists_the_account_that_denies_access() -> None:
 def test_the_denied_account_raises_access_denied_not_a_generic_error() -> None:
     with pytest.raises(errors.AccessDenied) as caught:
         provider().session_for(fixtures.DENIED_ACCOUNT_KEY, fixtures.REGION)
-    assert caught.value.scope_key == str(fixtures.DENIED_ACCOUNT_KEY)
+    assert caught.value.scope_key == f"{fixtures.DENIED_ACCOUNT_KEY}:{fixtures.REGION}"
     assert caught.value.remediation
 
 

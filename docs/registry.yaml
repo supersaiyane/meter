@@ -70,7 +70,7 @@ features:
 - id: FEAT-002
   name: Cross account credential brokering by StackSet deployed role
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md)'
   doc: docs/features/FEAT-002-cross-account-credential-brokering.md
 - id: FEAT-003
@@ -745,6 +745,13 @@ changes:
   what: TASK-P0-012, the identity ports with the local provider. Signed sessions, an
     entitlement cache that always expires, and scope coverage that reports the real total.
     Wave C complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0045
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-017, the AWS credential broker. Bounded timeouts and retries, sessions
+    refreshed before expiry, and every provider code mapped to one of the six causes
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

@@ -101,6 +101,17 @@ strict = true
 [[tool.mypy.overrides]]
 module = "yaml"
 ignore_missing_imports = true
+
+# boto3 and botocore ship no py.typed marker. The typed alternative is
+# boto3-stubs, which is a large, service split, version pinned dependency for a
+# package that contributes nothing at runtime, and it would have to be admitted
+# through make dep-check. The adapter narrows every value it takes out of a
+# response at the point of use instead, which is where the checking has to
+# happen regardless of whether a stub exists. Worth revisiting if the adapter
+# surface grows past a handful of calls.
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+ignore_missing_imports = true
 warn_unreachable = true
 
 # The rule that keeps multi cloud cheap. finops_core must stay free of every

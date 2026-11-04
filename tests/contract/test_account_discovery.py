@@ -7,9 +7,14 @@ import pytest
 from finops_core.domain.account import CloudAccount, Provider
 from finops_core.domain.org import OrgNode, OrgNodeType
 
-from .conftest import ProviderUnderTest
+from .conftest import ACCOUNT_DISCOVERY, ProviderUnderTest
 
 pytestmark = pytest.mark.contract
+
+
+@pytest.fixture(autouse=True)
+def _skip_when_unimplemented(requires_port) -> None:
+    requires_port(ACCOUNT_DISCOVERY)
 
 
 def test_lists_accounts_as_domain_entities(subject: ProviderUnderTest) -> None:

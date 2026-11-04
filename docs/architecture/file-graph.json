@@ -54,6 +54,9 @@
     "finops_ingest/__init__.py",
     "finops_mcp/__init__.py",
     "finops_providers/__init__.py",
+    "finops_providers/aws/__init__.py",
+    "finops_providers/aws/client.py",
+    "finops_providers/aws/credentials.py",
     "finops_providers/fake/__init__.py",
     "finops_providers/fake/fixtures.py",
     "finops_providers/fake/provider.py",
@@ -91,6 +94,9 @@
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/providers/__init__.py",
+    "tests/providers/aws/__init__.py",
+    "tests/providers/aws/conftest.py",
+    "tests/providers/aws/test_credentials.py",
     "tests/providers/test_fake.py",
     "tests/test_checkpoint_rotation.py"
   ],
@@ -536,6 +542,41 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/__init__.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/client.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/client.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/credentials.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/fake/__init__.py",
       "t": "finops_providers/fake/provider.py",
       "k": "python"
@@ -667,7 +708,17 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/credentials.py",
       "k": "python"
     },
     {
@@ -808,6 +859,41 @@
     {
       "s": "tests/db/test_scope_guard.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/conftest.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_credentials.py",
+      "t": "finops_providers/aws/credentials.py",
       "k": "python"
     },
     {

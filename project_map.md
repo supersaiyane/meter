@@ -152,6 +152,9 @@ meter/
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
 ├── finops_providers/          IN BUILD  aws/, fake/, gcp/, azure/
+│   ├── aws/                   the only package that imports boto3
+│   │   ├── client.py          bounded config, and provider code to typed cause
+│   │   └── credentials.py     assume role, cached until before expiry
 │   └── fake/                  in memory, all eight ports, no network and no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope

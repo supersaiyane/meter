@@ -13,9 +13,15 @@ import pytest
 
 from finops_core import errors
 
-from .conftest import ProviderUnderTest
+from .conftest import CREDENTIAL_BROKER, ProviderUnderTest
 
 pytestmark = pytest.mark.contract
+
+
+@pytest.fixture(autouse=True)
+def _skip_when_unimplemented(requires_port) -> None:
+    requires_port(CREDENTIAL_BROKER)
+
 
 SIX_CAUSES = tuple(errors.CollectionError.__subclasses__())
 
@@ -58,7 +64,10 @@ def test_the_failure_carries_the_scope_the_collector_and_a_remediation(
     with pytest.raises(errors.AccessDenied) as caught:
         subject.provider.session_for(subject.denied_account, subject.region)
     failure = caught.value
-    assert failure.scope_key == str(subject.denied_account)
+    # The account has to be identifiable from the scope key. The exact shape is
+    # provider:account:region, documented in docs/07-DATA-MODEL.md, but a
+    # contract that pins the whole string tests formatting rather than meaning.
+    assert str(subject.denied_account) in failure.scope_key
     assert failure.collector
     assert failure.remediation.strip()
 

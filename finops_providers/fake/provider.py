@@ -67,11 +67,23 @@ class FakeProvider:
     def _known(self, account: AccountKey) -> bool:
         return any(existing.key == account for existing in self._accounts)
 
-    def _require_known(self, account: AccountKey) -> None:
-        self._fail_if_planned(str(account))
+    def _require_known(self, account: AccountKey, region: str | None = None) -> None:
+        # The scope key format is the one docs/07-DATA-MODEL.md documents,
+        # provider:account:region. The contract suite caught this diverging from
+        # the AWS adapter, which is exactly what it is for.
+        scope_key = str(account) if region is None else f"{account}:{region}"
+        # A plan may be keyed on either form, and whichever matched, the error
+        # carries the most specific key so a reader can tell which region failed.
+        planned = self._failures.get(scope_key) or self._failures.get(str(account))
+        if planned is not None:
+            raise planned(
+                scope_key=scope_key,
+                collector=COLLECTOR,
+                detail="planned by the fake provider",
+            )
         if not self._known(account):
             raise AccessDenied(
-                scope_key=str(account),
+                scope_key=scope_key,
                 collector=COLLECTOR,
                 detail="the fixture organization does not contain this account",
             )
@@ -79,7 +91,7 @@ class FakeProvider:
     # -- CredentialBroker --------------------------------------------------
 
     def session_for(self, account: AccountKey, region: str) -> FakeSession:
-        self._require_known(account)
+        self._require_known(account, region)
         return FakeSession(account=account, region=region, expires_at=fixtures.SESSION_EXPIRES_AT)
 
     # -- AccountDiscovery --------------------------------------------------

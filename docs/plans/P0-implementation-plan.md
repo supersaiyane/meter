@@ -1036,7 +1036,7 @@ make tf-plan
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 4 |
 | Delivers | FEAT-002 |
 | Depends on | TASK-P0-007. **Not TASK-P0-014** |
@@ -1068,13 +1068,31 @@ and correct error typing.
 
 **Acceptance criteria.**
 
-- [ ] Assumes `FinOpsCollectorRole` with the ExternalId from Secrets Manager
-- [ ] Caches sessions until 5 minutes before expiry, then refreshes
-- [ ] Maps `AccessDenied` and `AccessDeniedException` to the `AccessDenied`
+- [x] Assumes `FinOpsCollectorRole` with the ExternalId from Secrets Manager
+- [x] Caches sessions until 5 minutes before expiry, then refreshes
+- [x] Maps `AccessDenied` and `AccessDeniedException` to the `AccessDenied`
       domain error, and throttling codes to `Throttled`
-- [ ] Sets connect and read timeouts, and a bounded retry policy, so a broken
+- [x] Sets connect and read timeouts, and a bounded retry policy, so a broken
       network path fails fast rather than consuming the whole task timeout
-- [ ] Passes the contract suite from TASK-P0-009 under `moto`
+- [x] Passes the contract suite from TASK-P0-009 under `moto`
+
+**The partition is derived, not written down.** `role_arn` builds the ARN from
+`partition_for(region)`, because a literal partition is an assumption that only
+breaks in the environments where being wrong is most expensive, and it breaks as
+an unhelpful malformed ARN error rather than as anything readable.
+
+**What the contract suite caught immediately.** The fake used `provider:account`
+as its scope key and the AWS adapter used `provider:account:region`, which is the
+format `docs/07-DATA-MODEL.md` documents. The fake was wrong and now matches.
+This is the divergence the suite exists to find, and it found it on the first run
+against a second implementation. The contract now asserts the account is
+identifiable from the scope key rather than pinning the whole string, because a
+contract that pins formatting tests formatting.
+
+**Providers declare which ports they satisfy.** An adapter arrives one port at a
+time. The alternative is a file of skips nobody prunes, or a suite that quietly
+reports a missing implementation as passing. `AccountDiscovery` currently reports
+as skipped for `aws`, by name, until TASK-P0-018.
 
 **Do not.**
 

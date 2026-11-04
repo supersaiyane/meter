@@ -31,3 +31,10 @@ LOCAL_IDENTITY_PROVIDER = "local_config"
 # flip takes to reach every worker, which is a property of the design and not
 # something an operator should be tuning under pressure.
 TENANT_FLAG_CACHE_TTL_SECONDS = 60
+
+# How long before a session expires the broker refreshes it. A design property
+# rather than a deployment knob: it is the margin that stops a call starting
+# with a credential that dies mid flight, and an expired session produces
+# errors that read like permission problems, which is a bad hour for whoever
+# is debugging.
+SESSION_REFRESH_MARGIN_SECONDS = 300
