@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 14 specified, 30 planned, 5 in build, 1 delivered.
+50 features across 8 sub projects. 13 specified, 30 planned, 6 in build, 1 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -83,7 +83,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-001](docs/features/FEAT-001-account-onboarding-and-org-topology.md) | Account onboarding and organization topology, parent to child map | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
+| [FEAT-001](docs/features/FEAT-001-account-onboarding-and-org-topology.md) | Account onboarding and organization topology, parent to child map | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
 | [FEAT-002](docs/features/FEAT-002-cross-account-credential-brokering.md) | Cross account credential brokering by StackSet deployed role | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
 | [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
@@ -258,6 +258,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0043 | 2026-08-24 | Feature | TASK-P0-011, repositories with the scope guard. The second of the two independent enforcement points, plus an audit row on every read. ISS-109 closed | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0044 | 2026-08-24 | Feature | TASK-P0-012, the identity ports with the local provider. Signed sessions, an entitlement cache that always expires, and scope coverage that reports the real total. Wave C complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0045 | 2026-08-24 | Feature | TASK-P0-017, the AWS credential broker. Bounded timeouts and retries, sessions refreshed before expiry, and every provider code mapped to one of the six causes | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0046 | 2026-08-24 | Feature | TASK-P0-018, AWS account discovery. The exact tree, every call paginated, no account dropped, and the contract suite live across both providers with no skips | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

@@ -38,3 +38,9 @@ TENANT_FLAG_CACHE_TTL_SECONDS = 60
 # errors that read like permission problems, which is a bad hour for whoever
 # is debugging.
 SESSION_REFRESH_MARGIN_SECONDS = 300
+
+# First delay before retrying a throttled organization call, doubling after
+# each attempt. The Organizations API is throttled hard and globally, so the
+# first retry has to wait rather than sprint, and the number of attempts comes
+# from METER_AWS_MAX_RETRIES so an operator can lower it under pressure.
+THROTTLE_BACKOFF_BASE_SECONDS = 1.0

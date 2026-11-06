@@ -150,7 +150,7 @@ CREATE TABLE cloud_account (
     -- email address, which is personal data that no feature reads. Storing
     -- personal data nothing consumes is the easiest kind of exposure to avoid.
     -- See docs/09-DATA-CLASSIFICATION.md.
-    status                  TEXT        NOT NULL,   -- ACTIVE | SUSPENDED | PENDING | DEPARTED
+    status                  TEXT        NOT NULL,   -- ACTIVE | SUSPENDED | PENDING | DEPARTED | UNKNOWN
     payer_account_id        TEXT,
     joined_at               TIMESTAMPTZ,
     onboarded_at            TIMESTAMPTZ,
@@ -164,7 +164,7 @@ CREATE TABLE cloud_account (
     CONSTRAINT uq_cloud_account__tenant_provider_account
         UNIQUE (tenant_id, provider, account_id),
     CONSTRAINT ck_cloud_account__status_valid
-        CHECK (status IN ('ACTIVE', 'SUSPENDED', 'PENDING', 'DEPARTED')),
+        CHECK (status IN ('ACTIVE', 'SUSPENDED', 'PENDING', 'DEPARTED', 'UNKNOWN')),
     CONSTRAINT ck_cloud_account__role_health_valid
         CHECK (role_health IN ('HEALTHY', 'ACCESS_DENIED', 'NOT_DEPLOYED',
                                'THROTTLED', 'UNKNOWN'))

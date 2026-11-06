@@ -5,6 +5,7 @@ Constraint 1 in CLAUDE.md, proved by `lint-imports` on every build: nothing in
 package rather than a rewrite of everything above it.
 """
 
+from finops_providers.aws.accounts import AwsAccountDiscovery
 from finops_providers.aws.credentials import AwsCredentialBroker, AwsSession
 
-__all__ = ["AwsCredentialBroker", "AwsSession"]
+__all__ = ["AwsAccountDiscovery", "AwsCredentialBroker", "AwsSession"]

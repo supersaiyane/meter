@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-110 public symbols across 3 packages.
+114 public symbols across 3 packages.
 
 ## finops_core
 
@@ -36,9 +36,9 @@ a duplicate.
 | `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
-| `AccountKey` | class | `finops_core/domain/account.py:36` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/fixtures.py` |
-| `CloudAccount` | class | `finops_core/domain/account.py:47` | One account, as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
-| `CloudAccount.provider` | method | `finops_core/domain/account.py:57` |  | nothing in this tree |
+| `AccountKey` | class | `finops_core/domain/account.py:48` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
+| `CloudAccount` | class | `finops_core/domain/account.py:59` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
+| `CloudAccount.provider` | method | `finops_core/domain/account.py:69` |  | nothing in this tree |
 | `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
 | `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
@@ -49,7 +49,7 @@ a duplicate.
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/fake/fixtures.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | nothing in this tree |
-| `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/fake/fixtures.py` |
+| `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
@@ -89,11 +89,15 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/credentials.py` |
+| `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | nothing in this tree |
+| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py` |
+| `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | nothing in this tree |
+| `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | nothing in this tree |
+| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
 | `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
 | `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
 | `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
-| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/credentials.py` |
+| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
@@ -160,7 +164,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Settings.region_list` in `finops_core/config.py:147`
 - `load_settings` in `finops_core/config.py:167`
 - `AccountStatus` in `finops_core/domain/account.py:26`
-- `CloudAccount.provider` in `finops_core/domain/account.py:57`
+- `CloudAccount.provider` in `finops_core/domain/account.py:69`
 - `Fact` in `finops_core/domain/fact.py:27`
 - `RunStatus` in `finops_core/domain/ingest.py:24`
 - `IngestRun` in `finops_core/domain/ingest.py:34`
@@ -192,6 +196,9 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `MetricSource.read_series` in `finops_core/ports/metrics.py:22`
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
+- `AwsAccountDiscovery` in `finops_providers/aws/accounts.py:55`
+- `AwsAccountDiscovery.list_accounts` in `finops_providers/aws/accounts.py:88`
+- `AwsAccountDiscovery.describe_organization` in `finops_providers/aws/accounts.py:91`
 - `partition_for` in `finops_providers/aws/client.py:96`
 - `error_code` in `finops_providers/aws/client.py:119`
 - `AwsSession` in `finops_providers/aws/credentials.py:44`
@@ -212,6 +219,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
 - `FakeProvider.resolve` in `finops_providers/fake/provider.py:186`
 - `AccountRepository` in `finops_api/db/repositories/accounts.py:15`
-- `AccountRepository.list_in_scope` in `finops_api/db/repositories/accounts.py:19`
-- `AccountRepository.list_unhealthy` in `finops_api/db/repositories/accounts.py:23`
-- `AccessContext` in `finops_api/db/repositories/base.py:31`

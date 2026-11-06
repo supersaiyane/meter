@@ -94,7 +94,7 @@ STATEMENTS: tuple[str, ...] = (
         CONSTRAINT uq_cloud_account__tenant_provider_account
             UNIQUE (tenant_id, provider, account_id),
         CONSTRAINT ck_cloud_account__status_valid
-            CHECK (status IN ('ACTIVE', 'SUSPENDED', 'PENDING', 'DEPARTED')),
+            CHECK (status IN ('ACTIVE', 'SUSPENDED', 'PENDING', 'DEPARTED', 'UNKNOWN')),
         CONSTRAINT ck_cloud_account__role_health_valid
             CHECK (role_health IN ('HEALTHY', 'ACCESS_DENIED', 'NOT_DEPLOYED',
                                    'THROTTLED', 'UNKNOWN'))

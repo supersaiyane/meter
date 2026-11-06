@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 14 specified, 5 in build, 1 delivered |
+| Features | 50 total, 13 specified, 6 in build, 1 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 45 recorded |
+| Changes | 46 recorded |
 | Issues | 74 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 12 | 0 | 23 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 13 | 0 | 22 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -69,6 +69,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-011` | Done, 2026-08-24 | implement repositories with the scope guard |
 | `TASK-P0-012` | Done, 2026-08-24 | implement the identity ports with the local provider |
 | `TASK-P0-017` | Done, 2026-08-24 | implement the AWS credential broker |
+| `TASK-P0-018` | Done, 2026-08-24 | implement AWS account discovery |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -129,6 +130,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-011, repositories with the scope guard | No unscoped path exists. Every read audited. ISS-109 closed |
 | `[x]` | TASK-P0-012, identity ports and the local provider | Signed sessions, cache always expires, coverage over the real total. Wave C complete |
 | `[x]` | TASK-P0-017, the AWS credential broker | Bounded retries, refresh before expiry, every code mapped to a typed cause |
+| `[x]` | TASK-P0-018, AWS account discovery | The exact tree, every call paginated, no account dropped |
 
 ## Remaining sub projects
 

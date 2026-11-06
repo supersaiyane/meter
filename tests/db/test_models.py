@@ -194,3 +194,16 @@ def test_check_constraints_carry_names() -> None:
         for constraint in table.constraints:
             if isinstance(constraint, CheckConstraint):
                 assert constraint.name, table.name
+
+
+def test_the_stored_account_statuses_match_the_domain_enum() -> None:
+    """A domain enum and a check constraint that disagree fail at the first write."""
+    from finops_core.domain.account import AccountStatus
+
+    assert set(models.ACCOUNT_STATUSES) == {member.value for member in AccountStatus}
+
+
+def test_the_stored_node_types_match_the_domain_enum() -> None:
+    from finops_core.domain.org import OrgNodeType
+
+    assert set(models.NODE_TYPES) == {member.value for member in OrgNodeType}

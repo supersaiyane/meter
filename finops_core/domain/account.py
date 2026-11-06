@@ -24,12 +24,24 @@ class Provider(StrEnum):
 
 
 class AccountStatus(StrEnum):
-    """What the provider says about the account, not what we infer."""
+    """What the provider says about the account, not what we infer.
 
-    ACTIVE = "active"
-    SUSPENDED = "suspended"
-    CLOSED = "closed"
-    UNKNOWN = "unknown"
+    The values are the ones `docs/07-DATA-MODEL.md` stores, because a domain
+    enum and a database check constraint that disagree fail at the first write
+    and not one moment before.
+
+    `UNKNOWN` is for a status the adapter does not recognise. The account is
+    still returned, because dropping it shrinks the denominator that
+    `scope_coverage` and every organization total are computed from, which is
+    ISS-016 arriving by another route. The collector raises SchemaDrift
+    alongside it, so the unrecognised value is loud rather than absorbed.
+    """
+
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+    PENDING = "PENDING"
+    DEPARTED = "DEPARTED"
+    UNKNOWN = "UNKNOWN"
 
 
 @dataclass(frozen=True, order=True)

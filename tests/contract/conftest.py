@@ -80,6 +80,63 @@ AWS_DENIED = AccountKey(provider=Provider.AWS, account_id="444455556666")
 AWS_UNKNOWN = AccountKey(provider=Provider.AWS, account_id="777788889999")
 
 
+AWS_ROOT = "r-contract"
+AWS_UNIT = "ou-contract"
+
+
+class ContractOrganizations:
+    """A fixed organization for the contract, containing the denied account.
+
+    moto generates its own account identifiers, so the organization the contract
+    needs, one that definitely contains the account we then get refused on,
+    cannot be built there. What the contract is asking of an adapter is whether
+    it turns provider responses into domain objects with the right shape and
+    parentage, and that is exactly what this exercises.
+    """
+
+    def get_paginator(self, operation: str) -> Any:
+        return _ContractPaginator(operation)
+
+
+class _ContractPaginator:
+    def __init__(self, operation: str) -> None:
+        self._operation = operation
+
+    def paginate(self, **kwargs: Any) -> Any:
+        parent = kwargs.get("ParentId")
+        if self._operation == "list_roots":
+            return iter([{"Roots": [{"Id": AWS_ROOT, "Name": "root"}]}])
+        if self._operation == "list_organizational_units_for_parent":
+            units = [{"Id": AWS_UNIT, "Name": "unit"}] if parent == AWS_ROOT else []
+            return iter([{"OrganizationalUnits": units}])
+        accounts = (
+            [
+                {"Id": AWS_KNOWN.account_id, "Name": "known", "Status": "ACTIVE"},
+                {"Id": AWS_DENIED.account_id, "Name": "denied", "Status": "ACTIVE"},
+            ]
+            if parent == AWS_UNIT
+            else []
+        )
+        return iter([{"Accounts": accounts}])
+
+
+class AwsUnderContract:
+    """The two AWS adapters presented as the one object the contract talks to."""
+
+    def __init__(self, broker: Any, discovery: Any) -> None:
+        self._broker = broker
+        self._discovery = discovery
+
+    def session_for(self, account: AccountKey, region: str) -> Any:
+        return self._broker.session_for(account, region)
+
+    def list_accounts(self) -> Any:
+        return self._discovery.list_accounts()
+
+    def describe_organization(self) -> Any:
+        return self._discovery.describe_organization()
+
+
 def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
     """The AWS adapter under moto.
 
@@ -92,6 +149,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
     from botocore.exceptions import ClientError
     from moto import mock_aws
 
+    from finops_providers.aws.accounts import AwsAccountDiscovery
     from finops_providers.aws.credentials import AwsCredentialBroker
 
     settings = settings_from_example(monkeypatch)
@@ -123,14 +181,17 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
 
         yield ProviderUnderTest(
             name="aws",
-            provider=AwsCredentialBroker(settings, client_factory=factory),
+            provider=AwsUnderContract(
+                broker=AwsCredentialBroker(settings, client_factory=factory),
+                discovery=AwsAccountDiscovery(
+                    settings, client_factory=lambda: ContractOrganizations()
+                ),
+            ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
             denied_account=AWS_DENIED,
             unknown_account=AWS_UNKNOWN,
-            # AccountDiscovery arrives in TASK-P0-018. Declared rather than
-            # omitted, so the run says which port is not under contract yet.
-            supports=frozenset({CREDENTIAL_BROKER}),
+            supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER}),
         )
     finally:
         mock.stop()

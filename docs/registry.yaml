@@ -64,7 +64,7 @@ features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7'
   doc: docs/features/FEAT-001-account-onboarding-and-org-topology.md
 - id: FEAT-002
@@ -752,6 +752,13 @@ changes:
   type: Feature
   what: TASK-P0-017, the AWS credential broker. Bounded timeouts and retries, sessions
     refreshed before expiry, and every provider code mapped to one of the six causes
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0046
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-018, AWS account discovery. The exact tree, every call paginated, no account
+    dropped, and the contract suite live across both providers with no skips
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

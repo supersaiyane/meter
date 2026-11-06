@@ -47,7 +47,7 @@ metadata = MetaData()
 ERROR_TYPES = ("AccessDenied", "Throttled", "NotOptedIn", "NoData", "Unreachable", "SchemaDrift")
 
 RUN_STATUSES = ("CLAIMED", "RUNNING", "SUCCEEDED", "FAILED", "PARTIAL")
-ACCOUNT_STATUSES = ("ACTIVE", "SUSPENDED", "PENDING", "DEPARTED")
+ACCOUNT_STATUSES = ("ACTIVE", "SUSPENDED", "PENDING", "DEPARTED", "UNKNOWN")
 ROLE_HEALTH = ("HEALTHY", "ACCESS_DENIED", "NOT_DEPLOYED", "THROTTLED", "UNKNOWN")
 NODE_TYPES = ("ROOT", "OU", "ACCOUNT")
 TIERS = ("viewer", "analyst", "owner")

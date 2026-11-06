@@ -1114,7 +1114,7 @@ pytest tests/providers/aws/test_credentials.py -v && pytest -m contract -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5.2, section 7 |
 | Delivers | FEAT-001 |
 | Depends on | TASK-P0-017 |
@@ -1131,12 +1131,12 @@ pytest tests/providers/aws/test_credentials.py -v && pytest -m contract -v
 
 **Acceptance criteria.**
 
-- [ ] Walks `ListRoots`, then `ListOrganizationalUnitsForParent` and
+- [x] Walks `ListRoots`, then `ListOrganizationalUnitsForParent` and
       `ListAccountsForParent` recursively
-- [ ] Paginates everything. No unpaginated call anywhere
-- [ ] Returns domain `OrgNode` and `CloudAccount`, never a raw API shape
-- [ ] Handles a suspended account without failing the run
-- [ ] Backs off on throttling rather than failing, per the P0 risk table
+- [x] Paginates everything. No unpaginated call anywhere
+- [x] Returns domain `OrgNode` and `CloudAccount`, never a raw API shape
+- [x] Handles a suspended account without failing the run
+- [x] Backs off on throttling rather than failing, per the P0 risk table
 
 **Tests.**
 
@@ -1145,6 +1145,22 @@ pytest tests/providers/aws/test_credentials.py -v && pytest -m contract -v
 | `tests/providers/aws/test_accounts.py::test_builds_four_level_tree` | Nested organizational units resolve with correct parents |
 | `tests/providers/aws/test_accounts.py::test_paginates` | A 300 account fixture returns 300, not the first page |
 | `tests/providers/aws/test_accounts.py::test_suspended_account_is_marked_not_dropped` | A suspended account appears with the correct status |
+
+**A mismatch fixed on the way in.** The domain `AccountStatus` was
+`active | suspended | closed | unknown` while `docs/07-DATA-MODEL.md` stores
+`ACTIVE | SUSPENDED | PENDING | DEPARTED`. A domain enum and a check constraint
+that disagree fail at the first write and not one moment before, so the domain
+now follows the document, `UNKNOWN` was added to the constraint, and a test
+asserts the two sets stay equal. The initial migration was edited rather than
+superseded because it has not been deployed anywhere; constraint 12 governs
+released schemas.
+
+`UNKNOWN` exists so an unrecognised provider status does not become a dropped
+account. Dropping one shrinks the denominator behind every organization total
+and every `scope_coverage` figure, which is ISS-016 arriving by another route.
+
+**The contract suite is now fully live.** Both ports are implemented for `aws`,
+so all 28 contract tests run against both providers with no skips.
 
 **Do not.**
 
