@@ -6,7 +6,14 @@ returns a new instance and nothing is edited underneath a caller that is still
 reading it.
 """
 
-from finops_core.domain.account import AccountKey, AccountStatus, CloudAccount, Provider
+from finops_core.domain.account import (
+    AccountHealth,
+    AccountKey,
+    AccountStatus,
+    CloudAccount,
+    Provider,
+    RoleHealth,
+)
 from finops_core.domain.cost import CostRecord
 from finops_core.domain.fact import Fact
 from finops_core.domain.identity import Entitlement, Principal
@@ -15,6 +22,7 @@ from finops_core.domain.org import OrgNode, OrgNodeType
 from finops_core.domain.tenant import Scope, Tenant
 
 __all__ = [
+    "AccountHealth",
     "AccountKey",
     "AccountStatus",
     "CloudAccount",
@@ -27,6 +35,7 @@ __all__ = [
     "OrgNodeType",
     "Principal",
     "Provider",
+    "RoleHealth",
     "RunStatus",
     "Scope",
     "Tenant",

@@ -58,6 +58,7 @@
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/client.py",
     "finops_providers/aws/credentials.py",
+    "finops_providers/aws/health.py",
     "finops_providers/fake/__init__.py",
     "finops_providers/fake/fixtures.py",
     "finops_providers/fake/provider.py",
@@ -99,6 +100,7 @@
     "tests/providers/aws/conftest.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_credentials.py",
+    "tests/providers/aws/test_health.py",
     "tests/providers/test_fake.py",
     "tests/test_checkpoint_rotation.py"
   ],
@@ -554,6 +556,11 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/__init__.py",
+      "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/accounts.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -611,6 +618,16 @@
     {
       "s": "finops_providers/aws/credentials.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/health.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -976,6 +993,21 @@
     {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_health.py",
+      "t": "finops_providers/aws/health.py",
       "k": "python"
     },
     {

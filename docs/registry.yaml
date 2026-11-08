@@ -761,6 +761,13 @@ changes:
     dropped, and the contract suite live across both providers with no skips
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0047
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-019, the account health check. NOT_DEPLOYED and ACCESS_DENIED kept apart by
+    a deployment probe rather than by guessing at an error message. Wave E complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

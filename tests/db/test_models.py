@@ -207,3 +207,10 @@ def test_the_stored_node_types_match_the_domain_enum() -> None:
     from finops_core.domain.org import OrgNodeType
 
     assert set(models.NODE_TYPES) == {member.value for member in OrgNodeType}
+
+
+def test_the_stored_role_health_values_match_the_domain_enum() -> None:
+    """NOT_DEPLOYED and ACCESS_DENIED must both survive the round trip, separately."""
+    from finops_core.domain.account import RoleHealth
+
+    assert set(models.ROLE_HEALTH) == {member.value for member in RoleHealth}

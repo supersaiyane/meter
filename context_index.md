@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-114 public symbols across 3 packages.
+119 public symbols across 3 packages.
 
 ## finops_core
 
@@ -36,9 +36,12 @@ a duplicate.
 | `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
-| `AccountKey` | class | `finops_core/domain/account.py:48` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
-| `CloudAccount` | class | `finops_core/domain/account.py:59` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
-| `CloudAccount.provider` | method | `finops_core/domain/account.py:69` |  | nothing in this tree |
+| `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | nothing in this tree |
+| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
+| `CloudAccount` | class | `finops_core/domain/account.py:80` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
+| `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
+| `AccountHealth` | class | `finops_core/domain/account.py:95` | Whether we could actually use the collector role, and why not if not. | `finops_providers/aws/health.py` |
+| `AccountHealth.is_usable` | method | `finops_core/domain/account.py:105` |  | nothing in this tree |
 | `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
 | `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
@@ -72,7 +75,7 @@ a duplicate.
 | `ProviderSession` | class | `finops_core/ports/credentials.py:23` | An authenticated handle for one account and one region. Opaque by design. | nothing in this tree |
 | `ProviderSession.expires_at` | method | `finops_core/ports/credentials.py:27` | When this handle stops working, so a long run can renew before it does. | nothing in this tree |
 | `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
-| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | nothing in this tree |
+| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_providers/aws/health.py` |
 | `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
 | `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
 | `EntitlementResolver` | class | `finops_core/ports/identity.py:36` | Turns a principal into the scope it may read. | nothing in this tree |
@@ -90,7 +93,7 @@ a duplicate.
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
 | `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | nothing in this tree |
-| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py` |
+| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py`, `finops_providers/aws/health.py` |
 | `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | nothing in this tree |
 | `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | nothing in this tree |
 | `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
@@ -101,10 +104,12 @@ a duplicate.
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
-| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | nothing in this tree |
+| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_providers/aws/health.py` |
+| `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
+| `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | nothing in this tree |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
-| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | nothing in this tree |
+| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_providers/aws/health.py` |
 | `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:99` |  | nothing in this tree |
 | `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:106` |  | nothing in this tree |
 | `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:112` |  | nothing in this tree |
@@ -164,7 +169,9 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Settings.region_list` in `finops_core/config.py:147`
 - `load_settings` in `finops_core/config.py:167`
 - `AccountStatus` in `finops_core/domain/account.py:26`
-- `CloudAccount.provider` in `finops_core/domain/account.py:69`
+- `RoleHealth` in `finops_core/domain/account.py:47`
+- `CloudAccount.provider` in `finops_core/domain/account.py:90`
+- `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
 - `Fact` in `finops_core/domain/fact.py:27`
 - `RunStatus` in `finops_core/domain/ingest.py:24`
 - `IngestRun` in `finops_core/domain/ingest.py:34`
@@ -184,7 +191,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `ProviderSession` in `finops_core/ports/credentials.py:23`
 - `ProviderSession.expires_at` in `finops_core/ports/credentials.py:27`
 - `CredentialBroker` in `finops_core/ports/credentials.py:33`
-- `CredentialBroker.session_for` in `finops_core/ports/credentials.py:36`
 - `IdentityProvider` in `finops_core/ports/identity.py:19`
 - `IdentityProvider.authenticate` in `finops_core/ports/identity.py:22`
 - `EntitlementResolver` in `finops_core/ports/identity.py:36`
@@ -204,10 +210,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AwsSession` in `finops_providers/aws/credentials.py:44`
 - `AwsCredentialBroker` in `finops_providers/aws/credentials.py:53`
 - `AwsCredentialBroker.external_id` in `finops_providers/aws/credentials.py:72`
-- `AwsCredentialBroker.session_for` in `finops_providers/aws/credentials.py:89`
+- `AccountHealthCheck` in `finops_providers/aws/health.py:54`
+- `AccountHealthCheck.check` in `finops_providers/aws/health.py:67`
 - `FakeSession` in `finops_providers/fake/provider.py:33`
 - `FakeProvider` in `finops_providers/fake/provider.py:41`
-- `FakeProvider.session_for` in `finops_providers/fake/provider.py:93`
 - `FakeProvider.list_accounts` in `finops_providers/fake/provider.py:99`
 - `FakeProvider.describe_organization` in `finops_providers/fake/provider.py:106`
 - `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:112`
@@ -218,4 +224,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:167`
 - `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
 - `FakeProvider.resolve` in `finops_providers/fake/provider.py:186`
-- `AccountRepository` in `finops_api/db/repositories/accounts.py:15`

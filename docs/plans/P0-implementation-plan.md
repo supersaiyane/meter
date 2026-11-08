@@ -1181,7 +1181,7 @@ pytest tests/providers/aws/test_accounts.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5.2, section 7 |
 | Delivers | FEAT-001 |
 | Depends on | TASK-P0-018 |
@@ -1199,12 +1199,32 @@ so a failed onboarding is visible rather than silent.
 
 **Acceptance criteria.**
 
-- [ ] Attempts an assume role plus one cheap call
-- [ ] Maps the outcome to `HEALTHY`, `ACCESS_DENIED`, `NOT_DEPLOYED`,
+- [x] Attempts an assume role plus one cheap call
+- [x] Maps the outcome to `HEALTHY`, `ACCESS_DENIED`, `NOT_DEPLOYED`,
       `THROTTLED` or `UNKNOWN`
-- [ ] Distinguishes "role does not exist" from "role exists but denies", since
+- [x] Distinguishes "role does not exist" from "role exists but denies", since
       the remediation differs completely
-- [ ] Records the error string, so a user can act without reading logs
+- [x] Records the error string, so a user can act without reading logs
+
+**How the distinction is actually made, and what it cost.** STS cannot tell the
+two apart. Assuming a role that does not exist and assuming a role whose trust
+policy refuses you both return `AccessDenied`, with messages that vary by account
+and by day. Reading the message text would produce a confident answer that is
+wrong for half the cases, and the two answers send the fix to different people,
+which is worse than no answer.
+
+So the authoritative signal is the deployment. `AccountHealthCheck` takes a
+`deployment_probe`, and TASK-P0-014 supplies the real one from the StackSet.
+Without a probe a refusal is `UNKNOWN` with the provider's own message recorded
+and a remediation naming both possibilities. That is honest rather than
+unhelpful: it says which two things to check instead of picking an owner at
+random. A test asserts the two states are never collapsed, and another asserts
+the no probe case does not guess.
+
+**Deviation.** `RoleHealth` and `AccountHealth` live in
+`finops_core/domain/account.py` rather than in the adapter, because `role_health`
+is a stored column and a domain enum that disagrees with a check constraint fails
+at the first write. A test holds the two sets equal.
 
 **Do not.**
 

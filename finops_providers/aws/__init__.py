@@ -7,5 +7,11 @@ package rather than a rewrite of everything above it.
 
 from finops_providers.aws.accounts import AwsAccountDiscovery
 from finops_providers.aws.credentials import AwsCredentialBroker, AwsSession
+from finops_providers.aws.health import AccountHealthCheck
 
-__all__ = ["AwsAccountDiscovery", "AwsCredentialBroker", "AwsSession"]
+__all__ = [
+    "AccountHealthCheck",
+    "AwsAccountDiscovery",
+    "AwsCredentialBroker",
+    "AwsSession",
+]

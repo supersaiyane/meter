@@ -44,6 +44,27 @@ class AccountStatus(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+class RoleHealth(StrEnum):
+    """Whether the collector role in a member account is actually usable.
+
+    `NOT_DEPLOYED` and `ACCESS_DENIED` are kept apart deliberately. The first
+    means the StackSet has not reached the account and the fix belongs to
+    whoever owns the deployment. The second means the role is there and its
+    policy is wrong, and the fix belongs to whoever owns the policy. Collapsing
+    them produces a single message that sends half the cases to the wrong person.
+
+    `UNKNOWN` is not a synonym for either. It is the honest answer when the
+    provider refused without saying which of the two it was, and the recorded
+    error is what a human uses to tell them apart.
+    """
+
+    HEALTHY = "HEALTHY"
+    ACCESS_DENIED = "ACCESS_DENIED"
+    NOT_DEPLOYED = "NOT_DEPLOYED"
+    THROTTLED = "THROTTLED"
+    UNKNOWN = "UNKNOWN"
+
+
 @dataclass(frozen=True, order=True)
 class AccountKey:
     """The only way an account is referred to anywhere in the domain."""
@@ -68,3 +89,18 @@ class CloudAccount(Fact):
     @property
     def provider(self) -> Provider:
         return self.key.provider
+
+
+@dataclass(frozen=True, kw_only=True)
+class AccountHealth(Fact):
+    """Whether we could actually use the collector role, and why not if not."""
+
+    key: AccountKey
+    health: RoleHealth
+    #: What the provider said, kept verbatim so a user can act without reading
+    #: logs. Empty only when the check succeeded.
+    error: str = ""
+
+    @property
+    def is_usable(self) -> bool:
+        return self.health is RoleHealth.HEALTHY

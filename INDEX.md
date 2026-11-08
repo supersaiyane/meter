@@ -259,6 +259,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0044 | 2026-08-24 | Feature | TASK-P0-012, the identity ports with the local provider. Signed sessions, an entitlement cache that always expires, and scope coverage that reports the real total. Wave C complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0045 | 2026-08-24 | Feature | TASK-P0-017, the AWS credential broker. Bounded timeouts and retries, sessions refreshed before expiry, and every provider code mapped to one of the six causes | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0046 | 2026-08-24 | Feature | TASK-P0-018, AWS account discovery. The exact tree, every call paginated, no account dropped, and the contract suite live across both providers with no skips | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0047 | 2026-08-24 | Feature | TASK-P0-019, the account health check. NOT_DEPLOYED and ACCESS_DENIED kept apart by a deployment probe rather than by guessing at an error message. Wave E complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
