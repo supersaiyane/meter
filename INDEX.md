@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 13 specified, 30 planned, 6 in build, 1 delivered.
+50 features across 8 sub projects. 12 specified, 30 planned, 7 in build, 1 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 | [FEAT-002](docs/features/FEAT-002-cross-account-credential-brokering.md) | Cross account credential brokering by StackSet deployed role | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
 | [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
-| [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
+| [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
 | [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
 | [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
@@ -260,6 +260,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0045 | 2026-08-24 | Feature | TASK-P0-017, the AWS credential broker. Bounded timeouts and retries, sessions refreshed before expiry, and every provider code mapped to one of the six causes | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0046 | 2026-08-24 | Feature | TASK-P0-018, AWS account discovery. The exact tree, every call paginated, no account dropped, and the contract suite live across both providers with no skips | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0047 | 2026-08-24 | Feature | TASK-P0-019, the account health check. NOT_DEPLOYED and ACCESS_DENIED kept apart by a deployment probe rather than by guessing at an error message. Wave E complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0048 | 2026-08-24 | Feature | TASK-P0-020, the run ledger and watermarks. Idempotent claims, watermarks that only move forward, and run uniqueness scoped to the tenant after a collision was found | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

@@ -19,8 +19,14 @@ fixture library becomes a file every test depends on and nobody understands.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
+from pathlib import Path
+from uuid import UUID, uuid4
 
 import pytest
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import Engine, create_engine, text
 
 
 @pytest.fixture(scope="session")
@@ -53,3 +59,49 @@ def _refuse_real_aws() -> None:
             "Unset AWS_PROFILE and AWS_ACCESS_KEY_ID, or set AWS_ENDPOINT_URL.",
             returncode=2,
         )
+
+
+# --- the database container, shared by every test that needs one -------------
+#
+# This was next to the database tests until the ingest tests needed it too.
+# Starting a container per directory is the kind of cost that gets integration
+# tests quietly disabled, so it is session scoped and lives here. Tests keep out
+# of each other's way by taking a fresh tenant each.
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def alembic_config(url: str) -> Config:
+    config = Config(str(ROOT / "alembic.ini"))
+    config.set_main_option("script_location", str(ROOT / "migrations"))
+    config.set_main_option("sqlalchemy.url", url)
+    return config
+
+
+@pytest.fixture(scope="session")
+def engine() -> Iterator[Engine]:
+    try:
+        from testcontainers.community.postgres import PostgresContainer
+    except ImportError:  # pragma: no cover - older testcontainers layout
+        from testcontainers.postgres import PostgresContainer
+
+    with PostgresContainer("postgres:16-alpine", driver="psycopg") as container:
+        url = container.get_connection_url()
+        command.upgrade(alembic_config(url), "head")
+        built = create_engine(url)
+        try:
+            yield built
+        finally:
+            built.dispose()
+
+
+@pytest.fixture
+def tenant_id(engine: Engine) -> UUID:
+    """A tenant of its own per test, so no test can see another's rows."""
+    new_id = uuid4()
+    with engine.begin() as connection:
+        connection.execute(
+            text("INSERT INTO tenant (tenant_id, name) VALUES (:id, :name)"),
+            {"id": new_id, "name": f"tenant-{new_id}"},
+        )
+    return new_id

@@ -1246,7 +1246,7 @@ pytest tests/providers/aws/test_health.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 5.3, section 7 |
 | Delivers | FEAT-005 |
 | Depends on | TASK-P0-010 |
@@ -1263,11 +1263,11 @@ pytest tests/providers/aws/test_health.py -v
 
 **Acceptance criteria.**
 
-- [ ] Claims a run by inserting the idempotency key, and a duplicate claim is a
+- [x] Claims a run by inserting the idempotency key, and a duplicate claim is a
       no operation rather than a second run
-- [ ] Records `items_written`, `bytes_read`, `error_type` and the as of window
-- [ ] Advances the watermark only on success
-- [ ] A crashed run is reclaimable after a timeout, rather than blocking that
+- [x] Records `items_written`, `bytes_read`, `error_type` and the as of window
+- [x] Advances the watermark only on success
+- [x] A crashed run is reclaimable after a timeout, rather than blocking that
       scope forever
 
 **Tests.**
@@ -1277,6 +1277,23 @@ pytest tests/providers/aws/test_health.py -v
 | `tests/ingest/test_ledger.py::test_running_three_times_writes_one_result_set` | The core idempotency guarantee, ISS-008 |
 | `tests/ingest/test_ledger.py::test_watermark_not_advanced_on_failure` | A failed run does not skip data |
 | `tests/ingest/test_ledger.py::test_crashed_run_is_reclaimable` | A stale claim can be retaken |
+
+**A defect the tests found, and it was not a test artifact.**
+`uq_ingest_run__idempotency_key` was unique on the key alone, and the key does
+not include the tenant. Two tenants who have onboarded the same account would
+therefore collide: the second would find the unit already claimed, never collect
+it, and report nothing wrong anywhere. The constraint is now on
+`(tenant_id, idempotency_key)`, which is what every other invariant in this
+schema already does, and `docs/07-DATA-MODEL.md` records it. A test claims the
+same unit of work for two tenants and expects both to succeed.
+
+**The watermark only moves forward.** `GREATEST` rather than assignment, so a
+backfill reading an older window cannot rewind the frontier and cause every
+window after it to be collected again.
+
+**Reclaiming takes the row over rather than adding one.** A test asserts the run
+count stays at one, because a second row for the same unit is the double count
+the idempotency key exists to prevent, arriving through the recovery path.
 
 **Do not.**
 

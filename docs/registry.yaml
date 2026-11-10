@@ -88,7 +88,7 @@ features:
 - id: FEAT-005
   name: Ingestion framework, idempotent and partial failure tolerant
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7'
   doc: docs/features/FEAT-005-ingestion-framework.md
 - id: FEAT-006
@@ -766,6 +766,13 @@ changes:
   type: Feature
   what: TASK-P0-019, the account health check. NOT_DEPLOYED and ACCESS_DENIED kept apart by
     a deployment probe rather than by guessing at an error message. Wave E complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0048
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-020, the run ledger and watermarks. Idempotent claims, watermarks that only
+    move forward, and run uniqueness scoped to the tenant after a collision was found
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

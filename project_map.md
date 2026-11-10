@@ -160,8 +160,8 @@ meter/
 │   └── fake/                  in memory, all eight ports, no network and no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
-├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
-│                              Directory exists, __init__.py only
+├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
+│   └── ledger.py              idempotent claims, watermarks that only advance
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── guards.py              the scope guard. No default, empty means nothing

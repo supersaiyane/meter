@@ -165,7 +165,7 @@ STATEMENTS: tuple[str, ...] = (
         error_detail        TEXT,
         as_of_window_start  TIMESTAMPTZ NOT NULL,
         as_of_window_end    TIMESTAMPTZ NOT NULL,
-        CONSTRAINT uq_ingest_run__idempotency_key UNIQUE (idempotency_key),
+        CONSTRAINT uq_ingest_run__idempotency_key UNIQUE (tenant_id, idempotency_key),
         CONSTRAINT ck_ingest_run__status_valid
             CHECK (status IN ('CLAIMED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'PARTIAL')),
         CONSTRAINT ck_ingest_run__error_type_valid

@@ -215,7 +215,7 @@ ingest_run = Table(
     Column("error_detail", Text),
     Column("as_of_window_start", DateTime(timezone=True), nullable=False),
     Column("as_of_window_end", DateTime(timezone=True), nullable=False),
-    UniqueConstraint("idempotency_key", name="uq_ingest_run__idempotency_key"),
+    UniqueConstraint("tenant_id", "idempotency_key", name="uq_ingest_run__idempotency_key"),
     CheckConstraint(_in_list("status", RUN_STATUSES), name="ck_ingest_run__status_valid"),
     CheckConstraint(
         f"error_type IS NULL OR {_in_list('error_type', ERROR_TYPES)}",

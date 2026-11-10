@@ -67,7 +67,9 @@ def test_the_idempotency_key_is_unique() -> None:
         for constraint in models.ingest_run.constraints
         if isinstance(constraint, UniqueConstraint)
     }
-    assert ("idempotency_key",) in unique
+    # Per tenant, because the key does not carry the tenant and a global
+    # constraint would make two tenants sharing an account collide.
+    assert ("tenant_id", "idempotency_key") in unique
 
 
 def test_every_fact_table_has_a_non_nullable_as_of() -> None:

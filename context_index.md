@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-119 public symbols across 3 packages.
+127 public symbols across 4 packages.
 
 ## finops_core
 
@@ -120,6 +120,19 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
+
+## finops_ingest
+
+| Symbol | Kind | Location | Purpose | Called by |
+| --- | --- | --- | --- | --- |
+| `idempotency_key` | function | `finops_ingest/ledger.py:48` | A stable identity for one unit of work. | nothing in this tree |
+| `RunClaim` | class | `finops_ingest/ledger.py:62` | A unit of work this worker now owns. | nothing in this tree |
+| `RunLedger` | class | `finops_ingest/ledger.py:73` | Claims, completes and fails runs, and moves watermarks. | nothing in this tree |
+| `RunLedger.claim` | method | `finops_ingest/ledger.py:90` | Take ownership of one unit of work, or return None if there is none to take. | nothing in this tree |
+| `RunLedger.running` | method | `finops_ingest/ledger.py:165` |  | nothing in this tree |
+| `RunLedger.complete` | method | `finops_ingest/ledger.py:168` | Record the result, then move the watermark. Never the other way round. | nothing in this tree |
+| `RunLedger.fail` | method | `finops_ingest/ledger.py:188` | Record the typed cause. The watermark does not move. | nothing in this tree |
+| `RunLedger.watermark` | method | `finops_ingest/ledger.py:237` | How far this collector has read for this scope, or None if never. | nothing in this tree |
 
 ## finops_api
 

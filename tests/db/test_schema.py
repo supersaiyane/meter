@@ -20,8 +20,7 @@ from sqlalchemy import Engine, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from finops_api.db import models
-
-from .conftest import alembic_config
+from tests.conftest import alembic_config
 
 pytestmark = pytest.mark.integration
 

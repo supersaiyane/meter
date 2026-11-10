@@ -260,7 +260,7 @@ CREATE TABLE ingest_run (
     error_detail        TEXT,
     as_of_window_start  TIMESTAMPTZ NOT NULL,
     as_of_window_end    TIMESTAMPTZ NOT NULL,
-    CONSTRAINT uq_ingest_run__idempotency_key UNIQUE (idempotency_key),
+    CONSTRAINT uq_ingest_run__idempotency_key UNIQUE (tenant_id, idempotency_key),
     CONSTRAINT ck_ingest_run__status_valid
         CHECK (status IN ('CLAIMED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'PARTIAL')),
     CONSTRAINT ck_ingest_run__error_type_valid
@@ -287,6 +287,12 @@ Two constraints here carry most of the design.
 key is `sha256(collector, scope_key, as_of_window_start, as_of_window_end)`. It
 is enforced in the database rather than in application code because that is
 what holds when two workers claim the same unit simultaneously. ISS-008.
+
+The constraint is on `(tenant_id, idempotency_key)` rather than on the key
+alone. The key does not include the tenant, so a global constraint would make
+two tenants who have onboarded the same account collide: the second would find
+the unit already claimed, never collect it, and report nothing wrong. Every
+other invariant in this schema is per tenant and this one is no different.
 
 `ck_ingest_run__error_type_valid` mirrors the closed error taxonomy exactly. A
 new error type cannot be introduced without a migration, which is deliberate:

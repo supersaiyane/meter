@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 13 specified, 6 in build, 1 delivered |
+| Features | 50 total, 12 specified, 7 in build, 1 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 47 recorded |
+| Changes | 48 recorded |
 | Issues | 74 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 14 | 0 | 21 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 15 | 0 | 20 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -71,6 +71,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-017` | Done, 2026-08-24 | implement the AWS credential broker |
 | `TASK-P0-018` | Done, 2026-08-24 | implement AWS account discovery |
 | `TASK-P0-019` | Done, 2026-08-24 | implement the account health check |
+| `TASK-P0-020` | Done, 2026-08-24 | implement the run ledger and watermarks |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -133,6 +134,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-017, the AWS credential broker | Bounded retries, refresh before expiry, every code mapped to a typed cause |
 | `[x]` | TASK-P0-018, AWS account discovery | The exact tree, every call paginated, no account dropped |
 | `[x]` | TASK-P0-019, the account health check | NOT_DEPLOYED and ACCESS_DENIED kept apart by evidence, not a guess. Wave E complete |
+| `[x]` | TASK-P0-020, the run ledger and watermarks | Idempotent claims, forward only watermarks, uniqueness scoped per tenant |
 
 ## Remaining sub projects
 
