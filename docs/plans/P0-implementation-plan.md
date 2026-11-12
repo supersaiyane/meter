@@ -1314,7 +1314,7 @@ pytest tests/ingest/test_ledger.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 7 |
 | Delivers | FEAT-005 |
 | Depends on | TASK-P0-020, TASK-P0-017 |
@@ -1335,13 +1335,13 @@ account's failure fail the run.
 
 **Acceptance criteria.**
 
-- [ ] Dispatcher enumerates `(tenant, account, region, collector)` and publishes
+- [x] Dispatcher enumerates `(tenant, account, region, collector)` and publishes
       one message per unit, with a dedup key
-- [ ] Worker claims a run, resolves credentials, executes, records the outcome
-- [ ] A raised domain error is recorded against that scope and the worker
+- [x] Worker claims a run, resolves credentials, executes, records the outcome
+- [x] A raised domain error is recorded against that scope and the worker
       continues. It never propagates to fail the batch
-- [ ] Messages failing three times land in the dead letter queue
-- [ ] Structured logs carry `run_id`, `collector`, `scope_key` on every line
+- [x] Messages failing three times land in the dead letter queue
+- [x] Structured logs carry `run_id`, `collector`, `scope_key` on every line
 
 **Tests.**
 
@@ -1350,6 +1350,24 @@ account's failure fail the run.
 | `tests/ingest/test_worker.py::test_one_account_access_denied_does_not_fail_run` | Spec section 11, test 1. The single most important test in P0 |
 | `tests/ingest/test_worker.py::test_no_data_and_access_denied_are_distinguishable` | Spec section 11, test 2. ISS-015 |
 | `tests/ingest/test_dispatcher.py::test_dedup_key_prevents_duplicate_units` | Re dispatch within a window is a no operation |
+
+**The boundary is tested from both sides.** `except CollectionError` and
+nothing wider, so a test asserts an AccessDenied is recorded and the batch
+continues, and another asserts a ValueError propagates and crashes the worker. A
+bare except that logs and moves on would pass the first test and fail nobody, so
+the second one is what keeps the rule.
+
+**One transaction per unit, and a test that proves it.** After a batch where one
+account fails, the successful account's watermark is present. Under one shared
+transaction it would have been rolled back with the failure, and the run would
+report nothing wrong and have written nothing.
+
+**The dead letter path leaves a record before the message goes.** Without it the
+message disappears into the queue's own accounting and the only trace is a
+metric nobody is watching.
+
+**Repeated failures count rather than accumulate rows.** Ten thousand rows
+saying an account is broken buries the three accounts that actually are.
 
 **Do not.**
 

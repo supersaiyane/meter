@@ -775,6 +775,13 @@ changes:
     move forward, and run uniqueness scoped to the tenant after a collision was found
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0049
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-021, the dispatcher and worker. One transaction per unit, only the six
+    caught, and the two spec section 11 tests passing
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

@@ -44,3 +44,11 @@ SESSION_REFRESH_MARGIN_SECONDS = 300
 # first retry has to wait rather than sprint, and the number of attempts comes
 # from METER_AWS_MAX_RETRIES so an operator can lower it under pressure.
 THROTTLE_BACKOFF_BASE_SECONDS = 1.0
+
+# How many times a unit of work may be received before it is treated as poison
+# and left for the dead letter queue. Three, because two is not enough to ride
+# out a transient throttle and more than three turns a permanently broken
+# account into a permanent load. It matches the queue redrive policy, and the
+# worker knows it so that the fourth delivery records an outcome rather than
+# silently disappearing into the queue's own accounting.
+MAX_DELIVERY_ATTEMPTS = 3

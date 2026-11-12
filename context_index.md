@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-127 public symbols across 4 packages.
+156 public symbols across 4 packages.
 
 ## finops_core
 
@@ -65,7 +65,7 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py` |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_providers/fake/provider.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_providers/aws/client.py` |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py` |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | nothing in this tree |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | nothing in this tree |
@@ -75,7 +75,7 @@ a duplicate.
 | `ProviderSession` | class | `finops_core/ports/credentials.py:23` | An authenticated handle for one account and one region. Opaque by design. | nothing in this tree |
 | `ProviderSession.expires_at` | method | `finops_core/ports/credentials.py:27` | When this handle stops working, so a long run can renew before it does. | nothing in this tree |
 | `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
-| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_providers/aws/health.py` |
+| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
 | `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
 | `EntitlementResolver` | class | `finops_core/ports/identity.py:36` | Turns a principal into the scope it may read. | nothing in this tree |
@@ -104,12 +104,12 @@ a duplicate.
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
-| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_providers/aws/health.py` |
+| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | nothing in this tree |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
-| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_providers/aws/health.py` |
+| `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:99` |  | nothing in this tree |
 | `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:106` |  | nothing in this tree |
 | `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:112` |  | nothing in this tree |
@@ -125,14 +125,43 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `idempotency_key` | function | `finops_ingest/ledger.py:48` | A stable identity for one unit of work. | nothing in this tree |
-| `RunClaim` | class | `finops_ingest/ledger.py:62` | A unit of work this worker now owns. | nothing in this tree |
-| `RunLedger` | class | `finops_ingest/ledger.py:73` | Claims, completes and fails runs, and moves watermarks. | nothing in this tree |
-| `RunLedger.claim` | method | `finops_ingest/ledger.py:90` | Take ownership of one unit of work, or return None if there is none to take. | nothing in this tree |
-| `RunLedger.running` | method | `finops_ingest/ledger.py:165` |  | nothing in this tree |
-| `RunLedger.complete` | method | `finops_ingest/ledger.py:168` | Record the result, then move the watermark. Never the other way round. | nothing in this tree |
-| `RunLedger.fail` | method | `finops_ingest/ledger.py:188` | Record the typed cause. The watermark does not move. | nothing in this tree |
-| `RunLedger.watermark` | method | `finops_ingest/ledger.py:237` | How far this collector has read for this scope, or None if never. | nothing in this tree |
+| `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
+| `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
+| `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
+| `Publisher` | class | `finops_ingest/dispatcher.py:57` | Somewhere to put a unit of work. | nothing in this tree |
+| `Publisher.publish` | method | `finops_ingest/dispatcher.py:63` |  | nothing in this tree |
+| `InMemoryPublisher` | class | `finops_ingest/dispatcher.py:66` | A publisher for the local stack and for tests. | nothing in this tree |
+| `InMemoryPublisher.publish` | method | `finops_ingest/dispatcher.py:79` |  | nothing in this tree |
+| `DispatchResult` | class | `finops_ingest/dispatcher.py:88` |  | nothing in this tree |
+| `DispatchResult.total` | method | `finops_ingest/dispatcher.py:93` |  | nothing in this tree |
+| `Dispatcher` | class | `finops_ingest/dispatcher.py:97` | Turns a tenant, its accounts and its collectors into units of work. | nothing in this tree |
+| `Dispatcher.enumerate_units` | method | `finops_ingest/dispatcher.py:104` | One unit per (tenant, account, region, collector), or one per tenant. | nothing in this tree |
+| `Dispatcher.dispatch` | method | `finops_ingest/dispatcher.py:135` |  | nothing in this tree |
+| `idempotency_key` | function | `finops_ingest/ledger.py:53` | A stable identity for one unit of work. | `finops_ingest/dispatcher.py` |
+| `RunClaim` | class | `finops_ingest/ledger.py:67` | A unit of work this worker now owns. | nothing in this tree |
+| `RunLedger` | class | `finops_ingest/ledger.py:78` | Claims, completes and fails runs, and moves watermarks. | `finops_ingest/worker.py` |
+| `RunLedger.claim` | method | `finops_ingest/ledger.py:95` | Take ownership of one unit of work, or return None if there is none to take. | `finops_ingest/worker.py` |
+| `RunLedger.running` | method | `finops_ingest/ledger.py:170` |  | `finops_ingest/worker.py` |
+| `RunLedger.complete` | method | `finops_ingest/ledger.py:173` | Record the result, then move the watermark. Never the other way round. | `finops_ingest/worker.py` |
+| `RunLedger.fail` | method | `finops_ingest/ledger.py:193` | Record the typed cause. The watermark does not move. | `finops_ingest/worker.py` |
+| `RunLedger.record_sync_error` | method | `finops_ingest/ledger.py:244` | Keep one open row per scope and cause, counting repeats. | `finops_ingest/worker.py` |
+| `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
+| `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
+| `CollectorScope` | class | `finops_ingest/registry.py:22` | What one unit of this collector's work covers. | nothing in this tree |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | nothing in this tree |
+| `Collector` | class | `finops_ingest/registry.py:45` |  | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:51` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:57` |  | nothing in this tree |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:65` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 7 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:74` |  | nothing in this tree |
+| `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
+| `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
+| `BatchResult.count` | method | `finops_ingest/worker.py:62` |  | nothing in this tree |
+| `BatchResult.is_partial` | method | `finops_ingest/worker.py:66` | True when the batch wrote something and something also failed. | nothing in this tree |
+| `log_fields` | function | `finops_ingest/worker.py:77` | The three fields every line carries, so a failure can be joined up. | nothing in this tree |
+| `Worker` | class | `finops_ingest/worker.py:91` | Claims a unit, resolves credentials, runs the collector, records the outcome. | nothing in this tree |
+| `Worker.handle_batch` | method | `finops_ingest/worker.py:110` | One transaction per unit. Never one transaction for the batch. | nothing in this tree |
+| `Worker.handle` | method | `finops_ingest/worker.py:116` |  | nothing in this tree |
 
 ## finops_api
 

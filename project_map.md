@@ -161,7 +161,10 @@ meter/
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
-│   └── ledger.py              idempotent claims, watermarks that only advance
+│   ├── ledger.py              idempotent claims, watermarks that only advance
+│   ├── registry.py            what a collector is. Cadence lives in the database
+│   ├── dispatcher.py          one message per unit, keyed like the ledger claim
+│   └── worker.py              one transaction per unit. Only the six are caught
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── guards.py              the scope guard. No default, empty means nothing

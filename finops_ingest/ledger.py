@@ -28,7 +28,7 @@ from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from uuid import UUID, uuid4
 
-from sqlalchemy import text
+from sqlalchemy import column, table, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.exc import IntegrityError
 
@@ -39,6 +39,11 @@ Clock = Callable[[], datetime]
 #: The statuses a claim can be taken back from. A run that reached a terminal
 #: state is never reclaimed, because its result already exists.
 RECLAIMABLE = ("CLAIMED", "RUNNING")
+
+
+#: A minimal description of the one table this module removes rows from, so the
+#: statement is built rather than written out and every value is bound.
+_SYNC_ERROR = table("sync_error", column("tenant_id"), column("collector"), column("scope_key"))
 
 
 def _system_clock() -> datetime:
@@ -232,6 +237,53 @@ class RunLedger:
                 "as_of": claim.window_end,
                 "now": self._clock(),
             },
+        )
+
+    # -- what a user sees --------------------------------------------------
+
+    def record_sync_error(self, collector: str, scope_key: str, error: CollectionError) -> None:
+        """Keep one open row per scope and cause, counting repeats.
+
+        A new row per occurrence would bury the three accounts that are actually
+        broken under ten thousand rows saying so. `remediation` is stored rather
+        than derived at read time, because the person who has to act on it should
+        not need the code that produced it.
+        """
+        self._connection.execute(
+            text(
+                "INSERT INTO sync_error (error_id, tenant_id, collector, scope_key, "
+                "error_type, detail, remediation, first_seen_at, last_seen_at, occurrences) "
+                "VALUES (:id, :tenant, :collector, :scope, :cause, :detail, :remediation, "
+                ":now, :now, 1) "
+                "ON CONFLICT (tenant_id, collector, scope_key, error_type) DO UPDATE SET "
+                "last_seen_at = EXCLUDED.last_seen_at, detail = EXCLUDED.detail, "
+                "occurrences = sync_error.occurrences + 1"
+            ),
+            {
+                "id": uuid4(),
+                "tenant": self._tenant_id,
+                "collector": collector,
+                "scope": scope_key,
+                "cause": error.cause,
+                "detail": error.detail or error.cause,
+                "remediation": error.remediation,
+                "now": self._clock(),
+            },
+        )
+
+    def clear_sync_error(self, collector: str, scope_key: str) -> None:
+        """A scope that has succeeded no longer has an open error against it.
+
+        Built with the Core construct rather than as literal SQL, so the three
+        values are bound parameters and the statement cannot be widened by a
+        scope key that happens to contain punctuation.
+        """
+        self._connection.execute(
+            _SYNC_ERROR.delete().where(
+                _SYNC_ERROR.c.tenant_id == self._tenant_id,
+                _SYNC_ERROR.c.collector == collector,
+                _SYNC_ERROR.c.scope_key == scope_key,
+            )
         )
 
     def watermark(self, collector: str, scope_key: str) -> datetime | None:
