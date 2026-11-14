@@ -262,6 +262,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0047 | 2026-08-24 | Feature | TASK-P0-019, the account health check. NOT_DEPLOYED and ACCESS_DENIED kept apart by a deployment probe rather than by guessing at an error message. Wave E complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0048 | 2026-08-24 | Feature | TASK-P0-020, the run ledger and watermarks. Idempotent claims, watermarks that only move forward, and run uniqueness scoped to the tenant after a collision was found | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0049 | 2026-08-24 | Feature | TASK-P0-021, the dispatcher and worker. One transaction per unit, only the six caught, and the two spec section 11 tests passing | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0050 | 2026-08-24 | Feature | TASK-P0-022, the organization tree and account health collectors, plus the cadence rows that make the hourly refresh data rather than a claim | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

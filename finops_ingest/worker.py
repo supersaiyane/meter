@@ -31,7 +31,7 @@ from finops_core.constants import MAX_DELIVERY_ATTEMPTS
 from finops_core.errors import CollectionError, SchemaDrift
 from finops_ingest.dispatcher import WorkUnit
 from finops_ingest.ledger import RunLedger
-from finops_ingest.registry import CollectorRegistry, CollectorScope
+from finops_ingest.registry import CollectorContext, CollectorRegistry, CollectorScope
 
 Clock = Callable[[], datetime]
 Connections = Callable[[], AbstractContextManager[Connection]]
@@ -131,7 +131,9 @@ class Worker:
 
             try:
                 session = self._session_for(unit, collector.scope)
-                result = collector.run(unit, session)
+                result = collector.run(
+                    CollectorContext(unit=unit, connection=connection, session=session)
+                )
             except CollectionError as failure:
                 # Exactly the six, and nothing wider. An unexpected exception is
                 # allowed past here deliberately.

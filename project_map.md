@@ -164,7 +164,10 @@ meter/
 │   ├── ledger.py              idempotent claims, watermarks that only advance
 │   ├── registry.py            what a collector is. Cadence lives in the database
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
-│   └── worker.py              one transaction per unit. Only the six are caught
+│   ├── worker.py              one transaction per unit. Only the six are caught
+│   └── collectors/
+│       ├── org_tree.py        whole tree replaced in one transaction, never emptied
+│       └── account_health.py  role_health written every run, including failed ones
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── guards.py              the scope guard. No default, empty means nothing

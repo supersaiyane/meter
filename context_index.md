@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-156 public symbols across 4 packages.
+162 public symbols across 4 packages.
 
 ## finops_core
 
@@ -34,9 +34,9 @@ a duplicate.
 | `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
 | `Settings.region_list` | method | `finops_core/config.py:147` | `regions` is held as text because a comma separated list from the | nothing in this tree |
 | `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
-| `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py` |
+| `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
-| `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | nothing in this tree |
+| `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
 | `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `CloudAccount` | class | `finops_core/domain/account.py:80` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
@@ -51,7 +51,7 @@ a duplicate.
 | `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/fake/fixtures.py` |
-| `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | nothing in this tree |
+| `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
@@ -63,12 +63,12 @@ a duplicate.
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, `finops_providers/fake/provider.py` |
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | `finops_providers/aws/client.py` |
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py` |
-| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_providers/fake/provider.py` |
+| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/org_tree.py`, `finops_providers/fake/provider.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py` |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py` |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
-| `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | nothing in this tree |
-| `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | nothing in this tree |
+| `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
+| `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
 | `CostExport` | class | `finops_core/ports/cost.py:18` | Finds the billing export and reads charge rows out of it. | nothing in this tree |
 | `CostExport.latest_available_period` | method | `finops_core/ports/cost.py:21` | The most recent billing period the export actually holds. | nothing in this tree |
 | `CostExport.read_period` | method | `finops_core/ports/cost.py:34` | Every charge row covering the period, normalized to FOCUS 1.1. | nothing in this tree |
@@ -79,7 +79,7 @@ a duplicate.
 | `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
 | `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
 | `EntitlementResolver` | class | `finops_core/ports/identity.py:36` | Turns a principal into the scope it may read. | nothing in this tree |
-| `EntitlementResolver.resolve` | method | `finops_core/ports/identity.py:39` | The entitlement held by the principal, carrying its own `as_of`. | nothing in this tree |
+| `EntitlementResolver.resolve` | method | `finops_core/ports/identity.py:39` | The entitlement held by the principal, carrying its own `as_of`. | `finops_ingest/collectors/org_tree.py` |
 | `ResourceInventory` | class | `finops_core/ports/inventory.py:18` | Reads what exists in an account, and what depends on what. | nothing in this tree |
 | `ResourceInventory.list_resources` | method | `finops_core/ports/inventory.py:21` | Every resource in the account and region, optionally of one type. | nothing in this tree |
 | `ResourceInventory.list_dependencies` | method | `finops_core/ports/inventory.py:35` | What the named resource depends on, one level out. | nothing in this tree |
@@ -94,8 +94,8 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py`, `finops_providers/aws/health.py` |
-| `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | nothing in this tree |
-| `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | nothing in this tree |
+| `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | `finops_ingest/collectors/org_tree.py` |
+| `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | `finops_ingest/collectors/org_tree.py` |
 | `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
 | `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
 | `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
@@ -106,12 +106,12 @@ a duplicate.
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
 | `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
-| `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | nothing in this tree |
+| `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_ingest/collectors/account_health.py` |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
 | `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
-| `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:99` |  | nothing in this tree |
-| `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:106` |  | nothing in this tree |
+| `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:99` |  | `finops_ingest/collectors/org_tree.py` |
+| `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:106` |  | `finops_ingest/collectors/org_tree.py` |
 | `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:112` |  | nothing in this tree |
 | `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:116` |  | nothing in this tree |
 | `FakeProvider.read_series` | method | `finops_providers/fake/provider.py:133` |  | nothing in this tree |
@@ -119,12 +119,15 @@ a duplicate.
 | `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:161` |  | nothing in this tree |
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
-| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
+| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_ingest/collectors/org_tree.py` |
 
 ## finops_ingest
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
+| `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
+| `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
+| `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
 | `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
 | `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
 | `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
@@ -148,12 +151,15 @@ a duplicate.
 | `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
 | `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:22` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | nothing in this tree |
-| `Collector` | class | `finops_ingest/registry.py:45` |  | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:51` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:57` |  | nothing in this tree |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:65` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 7 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:74` |  | nothing in this tree |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py` |
+| `CollectorContext` | class | `finops_ingest/registry.py:40` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
+| `Collector` | class | `finops_ingest/registry.py:64` |  | nothing in this tree |
+| `ScheduleEntry` | class | `finops_ingest/registry.py:71` | One collector's cadence, with the reason it is that number. | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:114` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:144` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:150` |  | nothing in this tree |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:158` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 7 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:167` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
 | `BatchResult.count` | method | `finops_ingest/worker.py:62` |  | nothing in this tree |
@@ -196,7 +202,7 @@ a duplicate.
 | `load_users` | function | `finops_api/identity/local_config.py:51` | Read the file, refusing anything malformed rather than skipping it. | nothing in this tree |
 | `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | nothing in this tree |
 | `LocalConfigIdentityProvider.authenticate` | method | `finops_api/identity/local_config.py:110` | In local development the token is the subject. Unknown is refused. | nothing in this tree |
-| `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | nothing in this tree |
+| `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | `finops_ingest/collectors/org_tree.py` |
 | `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | `finops_providers/aws/credentials.py` |
 | `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | nothing in this tree |
 | `SessionSigner.issue` | method | `finops_api/identity/session.py:77` |  | nothing in this tree |
@@ -211,7 +217,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Settings.region_list` in `finops_core/config.py:147`
 - `load_settings` in `finops_core/config.py:167`
 - `AccountStatus` in `finops_core/domain/account.py:26`
-- `RoleHealth` in `finops_core/domain/account.py:47`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
 - `Fact` in `finops_core/domain/fact.py:27`
@@ -219,14 +224,11 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `IngestRun` in `finops_core/domain/ingest.py:34`
 - `CollectionFailure` in `finops_core/domain/ingest.py:53`
 - `Watermark` in `finops_core/domain/ingest.py:64`
-- `OrgNodeType` in `finops_core/domain/org.py:18`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `Scope.permits` in `finops_core/domain/tenant.py:45`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
 - `AccountDiscovery` in `finops_core/ports/accounts.py:19`
-- `AccountDiscovery.list_accounts` in `finops_core/ports/accounts.py:22`
-- `AccountDiscovery.describe_organization` in `finops_core/ports/accounts.py:35`
 - `CostExport` in `finops_core/ports/cost.py:18`
 - `CostExport.latest_available_period` in `finops_core/ports/cost.py:21`
 - `CostExport.read_period` in `finops_core/ports/cost.py:34`
@@ -236,7 +238,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `IdentityProvider` in `finops_core/ports/identity.py:19`
 - `IdentityProvider.authenticate` in `finops_core/ports/identity.py:22`
 - `EntitlementResolver` in `finops_core/ports/identity.py:36`
-- `EntitlementResolver.resolve` in `finops_core/ports/identity.py:39`
 - `ResourceInventory` in `finops_core/ports/inventory.py:18`
 - `ResourceInventory.list_resources` in `finops_core/ports/inventory.py:21`
 - `ResourceInventory.list_dependencies` in `finops_core/ports/inventory.py:35`
@@ -245,19 +246,14 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
 - `AwsAccountDiscovery` in `finops_providers/aws/accounts.py:55`
-- `AwsAccountDiscovery.list_accounts` in `finops_providers/aws/accounts.py:88`
-- `AwsAccountDiscovery.describe_organization` in `finops_providers/aws/accounts.py:91`
 - `partition_for` in `finops_providers/aws/client.py:96`
 - `error_code` in `finops_providers/aws/client.py:119`
 - `AwsSession` in `finops_providers/aws/credentials.py:44`
 - `AwsCredentialBroker` in `finops_providers/aws/credentials.py:53`
 - `AwsCredentialBroker.external_id` in `finops_providers/aws/credentials.py:72`
 - `AccountHealthCheck` in `finops_providers/aws/health.py:54`
-- `AccountHealthCheck.check` in `finops_providers/aws/health.py:67`
 - `FakeSession` in `finops_providers/fake/provider.py:33`
 - `FakeProvider` in `finops_providers/fake/provider.py:41`
-- `FakeProvider.list_accounts` in `finops_providers/fake/provider.py:99`
-- `FakeProvider.describe_organization` in `finops_providers/fake/provider.py:106`
 - `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:112`
 - `FakeProvider.read_period` in `finops_providers/fake/provider.py:116`
 - `FakeProvider.read_series` in `finops_providers/fake/provider.py:133`
@@ -265,4 +261,14 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:161`
 - `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:167`
 - `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
-- `FakeProvider.resolve` in `finops_providers/fake/provider.py:186`
+- `AccountHealthCollector` in `finops_ingest/collectors/account_health.py:34`
+- `compute_paths` in `finops_ingest/collectors/org_tree.py:45`
+- `OrgTreeCollector` in `finops_ingest/collectors/org_tree.py:79`
+- `WorkUnit` in `finops_ingest/dispatcher.py:29`
+- `WorkUnit.scope_key` in `finops_ingest/dispatcher.py:40`
+- `WorkUnit.dedup_key` in `finops_ingest/dispatcher.py:52`
+- `Publisher` in `finops_ingest/dispatcher.py:57`
+- `Publisher.publish` in `finops_ingest/dispatcher.py:63`
+- `InMemoryPublisher` in `finops_ingest/dispatcher.py:66`
+- `InMemoryPublisher.publish` in `finops_ingest/dispatcher.py:79`
+- `DispatchResult` in `finops_ingest/dispatcher.py:88`

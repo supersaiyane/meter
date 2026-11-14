@@ -28,7 +28,7 @@ ACCOUNTS = (
 REGIONS = ("eu-west-1", "eu-west-2")
 
 
-def nothing(_unit: object, _session: object) -> CollectorOutcome:
+def nothing(_context: object) -> CollectorOutcome:
     return CollectorOutcome()
 
 

@@ -52,6 +52,9 @@
     "finops_core/ports/metrics.py",
     "finops_core/ports/quotas.py",
     "finops_ingest/__init__.py",
+    "finops_ingest/collectors/__init__.py",
+    "finops_ingest/collectors/account_health.py",
+    "finops_ingest/collectors/org_tree.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
     "finops_ingest/registry.py",
@@ -99,6 +102,9 @@
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
+    "tests/ingest/collectors/__init__.py",
+    "tests/ingest/collectors/test_account_health.py",
+    "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_worker.py",
@@ -553,6 +559,41 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/account_health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/account_health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/account_health.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/org_tree.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/org_tree.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/org_tree.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/org_tree.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/dispatcher.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -980,6 +1021,61 @@
     {
       "s": "tests/db/test_scope_guard.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_account_health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_account_health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_account_health.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_account_health.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_account_health.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

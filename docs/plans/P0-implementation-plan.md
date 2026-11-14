@@ -1389,7 +1389,7 @@ pytest tests/ingest -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-24 |
 | Implements | P0 spec section 7 |
 | Delivers | FEAT-001 |
 | Depends on | TASK-P0-021, TASK-P0-018, TASK-P0-019 |
@@ -1409,12 +1409,33 @@ human step.
 
 **Acceptance criteria.**
 
-- [ ] Rebuilds `org_node` transactionally, so the tree is never half updated
-- [ ] Upserts `cloud_account`, and marks a departed account as such rather than
+- [x] Rebuilds `org_node` transactionally, so the tree is never half updated
+- [x] Upserts `cloud_account`, and marks a departed account as such rather than
       deleting it
-- [ ] A new account appears within one hour with no human step, which is the
+- [x] A new account appears within one hour with no human step, which is the
       P0 definition of done
-- [ ] `role_health` is set for every account on every run
+- [x] `role_health` is set for every account on every run
+
+**A gap this task exposed.** A collector could not write anything: the worker
+kept the transaction and passed only the cloud session. `CollectorRunner` now
+takes a `CollectorContext` carrying the unit, the worker's own transaction and
+the session, so a collector's writes commit or roll back with the run record and
+no collector can open a second transaction that disagrees with the first.
+
+**Two extra refusals, both about what a reader would otherwise see.** An empty
+discovery result is refused rather than applied, because an organization always
+holds at least its management account and applying zero would mark every account
+departed in one transaction. A cycle in the tree is refused rather than walked.
+
+**`cloud_account` has no parent column, deliberately.** An account's place in the
+tree is its own `org_node` row. Storing the parent in both would create two
+answers that disagree the first time an account is moved.
+
+**The hourly claim is now data rather than aspiration.** `install_default_schedule`
+seeds `collector_schedule` for a tenant with both cadences and the reason each
+one is that number, per ADR-0012 and constraint 9. It never overwrites an
+existing row, so an operator who has deliberately slowed a collector down does
+not have that undone by a redeploy.
 
 **Do not.**
 

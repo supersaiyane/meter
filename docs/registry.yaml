@@ -782,6 +782,13 @@ changes:
     caught, and the two spec section 11 tests passing
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0050
+  date: '2026-08-24'
+  type: Feature
+  what: TASK-P0-022, the organization tree and account health collectors, plus the cadence
+    rows that make the hourly refresh data rather than a claim
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

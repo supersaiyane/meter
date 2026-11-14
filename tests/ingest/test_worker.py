@@ -21,7 +21,13 @@ from sqlalchemy import Engine, text
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import AccessDenied, NoData, Throttled
 from finops_ingest.dispatcher import WorkUnit
-from finops_ingest.registry import Collector, CollectorOutcome, CollectorRegistry, CollectorScope
+from finops_ingest.registry import (
+    Collector,
+    CollectorContext,
+    CollectorOutcome,
+    CollectorRegistry,
+    CollectorScope,
+)
 from finops_ingest.worker import Outcome, Worker
 
 START = datetime(2026, 8, 24, 0, 0, tzinfo=UTC)
@@ -44,7 +50,8 @@ class ScriptedCollector:
         self.failures = failures or {}
         self.ran: list[str] = []
 
-    def __call__(self, unit: WorkUnit, _session: object) -> CollectorOutcome:
+    def __call__(self, context: CollectorContext) -> CollectorOutcome:
+        unit = context.unit
         self.ran.append(unit.scope_key)
         failure = self.failures.get(unit.account.account_id if unit.account else "")
         if failure is not None:
@@ -154,7 +161,7 @@ def test_an_unexpected_exception_crashes_the_worker(engine: Engine, tenant_id: U
     """A silent unknown failure is worse than a crash, so this must not be caught."""
 
     class Exploding(ScriptedCollector):
-        def __call__(self, _unit: WorkUnit, _session: object) -> CollectorOutcome:
+        def __call__(self, _context: CollectorContext) -> CollectorOutcome:
             raise ValueError("something nobody predicted")
 
     with pytest.raises(ValueError, match="nobody predicted"):

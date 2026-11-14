@@ -36,9 +36,28 @@ class CollectorOutcome:
     bytes_read: int = 0
 
 
-#: A collector receives the unit it is running and, for account scoped work, the
-#: session to run it with. Organization scoped collectors get None.
-CollectorRunner = Callable[[Any, Any], CollectorOutcome]
+@dataclass(frozen=True)
+class CollectorContext:
+    """Everything a collector is given, and nothing it is not.
+
+    The connection is the worker's own transaction for this one unit. A
+    collector writing through it inherits the guarantee that its work commits or
+    rolls back with the run record, and a collector cannot open a second
+    transaction and leave the two disagreeing.
+
+    `unit` is typed loosely on purpose: `WorkUnit` lives in the dispatcher, and
+    the dispatcher already imports this module.
+    """
+
+    unit: Any
+    connection: Any
+    #: The assumed session for account scoped work. None for organization scope,
+    #: which runs on the hub's own credentials.
+    session: Any = None
+
+
+#: A collector receives one context and reports what it did.
+CollectorRunner = Callable[[CollectorContext], CollectorOutcome]
 
 
 @dataclass(frozen=True)
@@ -46,6 +65,80 @@ class Collector:
     name: str
     scope: CollectorScope
     run: CollectorRunner
+
+
+@dataclass(frozen=True)
+class ScheduleEntry:
+    """One collector's cadence, with the reason it is that number.
+
+    ADR-0012 and constraint 9: cadence is data, not code. `reason` is NOT NULL
+    in the table because a cadence nobody can explain is a number nobody can
+    safely change, and the first thing anyone does with an unexplained interval
+    under cost pressure is double it.
+    """
+
+    collector: str
+    cadence_seconds: int
+    reason: str
+    est_cost_per_run: str
+
+
+HOURLY = 3600
+
+#: What a new tenant starts with. Installed at onboarding rather than in a
+#: migration, because the table is keyed by tenant and a migration knows none.
+DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
+    ScheduleEntry(
+        collector="org_tree",
+        cadence_seconds=HOURLY,
+        reason=(
+            "A new account has to appear within one hour with no human step, which is "
+            "the P0 definition of done for onboarding. Faster buys nothing, because "
+            "accounts are created by people and not by autoscaling."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="account_health",
+        cadence_seconds=HOURLY,
+        reason=(
+            "A broken collector role is invisible until something tries to read the "
+            "account, so the check runs as often as the tree it belongs to. The calls "
+            "are free, and the alternative is finding out from a missing number."
+        ),
+        est_cost_per_run="0",
+    ),
+)
+
+
+def install_default_schedule(connection: Any, tenant_id: Any, updated_by: str) -> int:
+    """Give a tenant the P0 cadences. Idempotent, and never overwrites a change.
+
+    An operator who has deliberately slowed a collector down should not have that
+    undone by a redeploy, so an existing row is left alone.
+    """
+    from sqlalchemy import text
+
+    written = 0
+    for entry in DEFAULT_SCHEDULE:
+        result = connection.execute(
+            text(
+                "INSERT INTO collector_schedule (tenant_id, collector, cadence_seconds, "
+                "reason, est_cost_per_run, updated_by) VALUES (:tenant, :collector, "
+                ":cadence, :reason, :cost, :who) "
+                "ON CONFLICT (tenant_id, collector) DO NOTHING"
+            ),
+            {
+                "tenant": tenant_id,
+                "collector": entry.collector,
+                "cadence": entry.cadence_seconds,
+                "reason": entry.reason,
+                "cost": entry.est_cost_per_run,
+                "who": updated_by,
+            },
+        )
+        written += result.rowcount or 0
+    return written
 
 
 class CollectorRegistry:
