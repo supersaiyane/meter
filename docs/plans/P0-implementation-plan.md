@@ -1457,7 +1457,7 @@ pytest tests/ingest/collectors -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 7, section 5.5 |
 | Delivers | FEAT-008 |
 | Depends on | TASK-P0-021 |
@@ -1474,11 +1474,29 @@ pytest tests/ingest/collectors -v
 
 **Acceptance criteria.**
 
-- [ ] One daily Cost Explorer request, grouped by the `finops:module` tag
-- [ ] Runs daily, not hourly, because Cost Explorer charges per request
-- [ ] An untagged cost lands in an explicit `unallocated` bucket rather than
+- [x] One daily Cost Explorer request, grouped by the `finops:module` tag
+- [x] Runs daily, not hourly, because Cost Explorer charges per request
+- [x] An untagged cost lands in an explicit `unallocated` bucket rather than
       being dropped
-- [ ] The Cost Explorer request cost is itself attributed to the ingest module
+- [x] The Cost Explorer request cost is itself attributed to the ingest module
+
+**How the metering charge is attributed, and why it is not an extra row.** The
+Cost Explorer charge arrives untagged, because an account level API charge has
+no resource to hang a tag on. It is re attributed from `unallocated` to `ingest`
+rather than added as a synthetic row at a list price. Adding one would double
+count, since the real charge appears in the next day's own report, which is the
+whole point of metering ourselves.
+
+**Three files rather than one.** `finops_core/domain/platform.py` holds
+`PlatformCost` and the `unallocated` constant, `finops_providers/aws/platform_cost.py`
+makes the request and translates provider failures, and the collector writes and
+re attributes. The collector must not import boto3, and an untranslated botocore
+error reaching the worker would crash it rather than being recorded, since the
+worker deliberately catches only the six.
+
+**The response's tag key is checked, not assumed.** Being answered about a
+different tag than the one requested would make every module attribution below
+it wrong, so it is `SchemaDrift` rather than something absorbed.
 
 **Do not.**
 

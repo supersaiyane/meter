@@ -106,7 +106,7 @@ features:
 - id: FEAT-008
   name: Platform self metering
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5'
   doc: docs/features/FEAT-008-platform-self-metering.md
 - id: FEAT-009
@@ -787,6 +787,13 @@ changes:
   type: Feature
   what: TASK-P0-022, the organization tree and account health collectors, plus the cadence
     rows that make the hourly refresh data rather than a claim
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0051
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-023, the platform self cost collector. One grouped request a day, untagged
+    cost named rather than dropped, and the metering charge owned. Wave F complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:

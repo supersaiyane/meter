@@ -84,6 +84,7 @@ class ScheduleEntry:
 
 
 HOURLY = 3600
+DAILY = 86400
 
 #: What a new tenant starts with. Installed at onboarding rather than in a
 #: migration, because the table is keyed by tenant and a migration knows none.
@@ -107,6 +108,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "are free, and the alternative is finding out from a missing number."
         ),
         est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="platform_cost",
+        cadence_seconds=DAILY,
+        reason=(
+            "Cost Explorer charges per request, so the cadence is itself a cost "
+            "decision. Daily is the granularity the data has, and running hourly "
+            "would pay twenty four times over for a figure that changes once."
+        ),
+        # The published per request price at the time of writing. Modelled, not
+        # measured: the real figure arrives in the next day's own report, which
+        # is the point of metering ourselves.
+        est_cost_per_run="0.01",
     ),
 )
 

@@ -233,17 +233,23 @@ def test_one_tenant_rebuild_does_not_touch_another(engine: Engine, tenant_id: UU
 @pytest.mark.integration
 def test_the_default_schedule_makes_the_hourly_claim_real(engine: Engine, tenant_id: UUID) -> None:
     """ADR-0012. The interval is data, and it arrives with the tenant."""
-    from finops_ingest.registry import HOURLY, install_default_schedule
+    from finops_ingest.registry import DEFAULT_SCHEDULE, HOURLY, install_default_schedule
 
     with engine.begin() as connection:
-        assert install_default_schedule(connection, tenant_id, updated_by="onboarding") == 2
+        installed = install_default_schedule(connection, tenant_id, updated_by="onboarding")
+    assert installed == len(DEFAULT_SCHEDULE)
 
     schedule = {row["collector"]: row for row in rows(engine, "collector_schedule", tenant_id)}
-    assert set(schedule) == {"org_tree", "account_health"}
+    assert set(schedule) == {entry.collector for entry in DEFAULT_SCHEDULE}
     for entry in schedule.values():
-        assert entry["cadence_seconds"] == HOURLY
         assert entry["reason"], "a cadence without a reason cannot be safely changed"
         assert entry["is_enabled"] is True
+
+    # The two that answer "has a new account appeared" run hourly, which is the
+    # P0 definition of done for onboarding. platform_cost is daily because each
+    # of its runs is a paid request.
+    assert schedule["org_tree"]["cadence_seconds"] == HOURLY
+    assert schedule["account_health"]["cadence_seconds"] == HOURLY
 
 
 @pytest.mark.integration

@@ -8,10 +8,13 @@ package rather than a rewrite of everything above it.
 from finops_providers.aws.accounts import AwsAccountDiscovery
 from finops_providers.aws.credentials import AwsCredentialBroker, AwsSession
 from finops_providers.aws.health import AccountHealthCheck
+from finops_providers.aws.platform_cost import AwsPlatformCostSource, ModuleCharge
 
 __all__ = [
     "AccountHealthCheck",
     "AwsAccountDiscovery",
     "AwsCredentialBroker",
+    "AwsPlatformCostSource",
     "AwsSession",
+    "ModuleCharge",
 ]

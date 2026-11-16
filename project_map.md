@@ -156,7 +156,8 @@ meter/
 │   │   ├── client.py          bounded config, and provider code to typed cause
 │   │   ├── credentials.py     assume role, cached until before expiry
 │   │   ├── accounts.py        the exact org tree. Every call paginated
-│   │   └── health.py          is the role usable, and if not, whose fix is it
+│   │   ├── health.py          is the role usable, and if not, whose fix is it
+│   │   └── platform_cost.py   the one Cost Explorer request, grouped
 │   └── fake/                  in memory, all eight ports, no network and no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
@@ -167,7 +168,8 @@ meter/
 │   ├── worker.py              one transaction per unit. Only the six are caught
 │   └── collectors/
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
-│       └── account_health.py  role_health written every run, including failed ones
+│       ├── account_health.py  role_health written every run, including failed ones
+│       └── platform_cost.py   one grouped request a day. Untagged cost is named
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── guards.py              the scope guard. No default, empty means nothing

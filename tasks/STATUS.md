@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 12 specified, 7 in build, 1 delivered |
+| Features | 50 total, 11 specified, 8 in build, 1 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 50 recorded |
+| Changes | 51 recorded |
 | Issues | 74 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 17 | 0 | 18 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 18 | 0 | 17 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -74,6 +74,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-020` | Done, 2026-08-24 | implement the run ledger and watermarks |
 | `TASK-P0-021` | Done, 2026-08-24 | implement the dispatcher and worker |
 | `TASK-P0-022` | Done, 2026-08-24 | implement the organization tree and account health collectors |
+| `TASK-P0-023` | Done, 2026-08-27 | implement the platform self cost collector |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -139,6 +140,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-020, the run ledger and watermarks | Idempotent claims, forward only watermarks, uniqueness scoped per tenant |
 | `[x]` | TASK-P0-021, the dispatcher and worker | One transaction per unit. Only the six caught. Both section 11 tests pass |
 | `[x]` | TASK-P0-022, the tree and account health collectors | Tree replaced in one transaction, departed accounts marked, cadence seeded |
+| `[x]` | TASK-P0-023, the platform self cost collector | One grouped request a day, untagged cost named, metering charge owned. Wave F complete |
 
 ## Remaining sub projects
 

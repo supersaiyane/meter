@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-162 public symbols across 4 packages.
+169 public symbols across 4 packages.
 
 ## finops_core
 
@@ -53,6 +53,7 @@ a duplicate.
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/fake/fixtures.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
+| `PlatformCost` | class | `finops_core/domain/platform.py:26` | One day of one module's spend on one service. | nothing in this tree |
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
@@ -93,20 +94,23 @@ a duplicate.
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
 | `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | nothing in this tree |
-| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py`, `finops_providers/aws/health.py` |
+| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/credentials.py`, `finops_providers/aws/health.py`, `finops_providers/aws/platform_cost.py` |
 | `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | `finops_ingest/collectors/org_tree.py` |
 | `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | `finops_ingest/collectors/org_tree.py` |
-| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
+| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py` |
 | `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
 | `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
 | `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
-| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py` |
+| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py` |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
 | `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_ingest/collectors/account_health.py` |
+| `ModuleCharge` | class | `finops_providers/aws/platform_cost.py:38` | One day, one module tag value, one service, as the provider reported it. | nothing in this tree |
+| `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | nothing in this tree |
+| `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight ports, with a configurable failure plan. | nothing in this tree |
 | `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
@@ -128,6 +132,9 @@ a duplicate.
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
 | `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
+| `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
+| `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
+| `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
 | `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
 | `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
 | `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
@@ -151,15 +158,15 @@ a duplicate.
 | `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
 | `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:22` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py` |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/platform_cost.py` |
 | `CollectorContext` | class | `finops_ingest/registry.py:40` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
 | `Collector` | class | `finops_ingest/registry.py:64` |  | nothing in this tree |
 | `ScheduleEntry` | class | `finops_ingest/registry.py:71` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `install_default_schedule` | function | `finops_ingest/registry.py:114` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:144` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:150` |  | nothing in this tree |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:158` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 7 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:167` |  | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:128` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:158` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:164` |  | nothing in this tree |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:172` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 9 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:181` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
 | `BatchResult.count` | method | `finops_ingest/worker.py:62` |  | nothing in this tree |
@@ -224,6 +231,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `IngestRun` in `finops_core/domain/ingest.py:34`
 - `CollectionFailure` in `finops_core/domain/ingest.py:53`
 - `Watermark` in `finops_core/domain/ingest.py:64`
+- `PlatformCost` in `finops_core/domain/platform.py:26`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `Scope.permits` in `finops_core/domain/tenant.py:45`
 - `CollectionError` in `finops_core/errors.py:27`
@@ -252,6 +260,8 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AwsCredentialBroker` in `finops_providers/aws/credentials.py:53`
 - `AwsCredentialBroker.external_id` in `finops_providers/aws/credentials.py:72`
 - `AccountHealthCheck` in `finops_providers/aws/health.py:54`
+- `ModuleCharge` in `finops_providers/aws/platform_cost.py:38`
+- `AwsPlatformCostSource` in `finops_providers/aws/platform_cost.py:48`
 - `FakeSession` in `finops_providers/fake/provider.py:33`
 - `FakeProvider` in `finops_providers/fake/provider.py:41`
 - `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:112`
@@ -264,11 +274,8 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountHealthCollector` in `finops_ingest/collectors/account_health.py:34`
 - `compute_paths` in `finops_ingest/collectors/org_tree.py:45`
 - `OrgTreeCollector` in `finops_ingest/collectors/org_tree.py:79`
+- `attribute` in `finops_ingest/collectors/platform_cost.py:51`
+- `PlatformCostCollector` in `finops_ingest/collectors/platform_cost.py:58`
+- `total` in `finops_ingest/collectors/platform_cost.py:106`
 - `WorkUnit` in `finops_ingest/dispatcher.py:29`
 - `WorkUnit.scope_key` in `finops_ingest/dispatcher.py:40`
-- `WorkUnit.dedup_key` in `finops_ingest/dispatcher.py:52`
-- `Publisher` in `finops_ingest/dispatcher.py:57`
-- `Publisher.publish` in `finops_ingest/dispatcher.py:63`
-- `InMemoryPublisher` in `finops_ingest/dispatcher.py:66`
-- `InMemoryPublisher.publish` in `finops_ingest/dispatcher.py:79`
-- `DispatchResult` in `finops_ingest/dispatcher.py:88`

@@ -19,9 +19,11 @@ from finops_core.domain.fact import Fact
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.ingest import CollectionFailure, IngestRun, RunStatus, Watermark
 from finops_core.domain.org import OrgNode, OrgNodeType
+from finops_core.domain.platform import UNALLOCATED, PlatformCost
 from finops_core.domain.tenant import Scope, Tenant
 
 __all__ = [
+    "UNALLOCATED",
     "AccountHealth",
     "AccountKey",
     "AccountStatus",
@@ -33,6 +35,7 @@ __all__ = [
     "IngestRun",
     "OrgNode",
     "OrgNodeType",
+    "PlatformCost",
     "Principal",
     "Provider",
     "RoleHealth",
