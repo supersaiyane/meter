@@ -19,6 +19,7 @@ fixture library becomes a file every test depends on and nobody understands.
 from __future__ import annotations
 
 import os
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -27,6 +28,8 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import Engine, create_engine, text
+
+from finops_core.config import Settings, load_settings
 
 
 @pytest.fixture(scope="session")
@@ -105,3 +108,21 @@ def tenant_id(engine: Engine) -> UUID:
             {"id": new_id, "name": f"tenant-{new_id}"},
         )
     return new_id
+
+
+# --- settings, built from the documented environment -------------------------
+#
+# Promoted here once a third layer needed it. Every test that constructs
+# anything real needs a Settings, and .env.example is the one description of
+# what a complete environment looks like, so building from it means a test can
+# never drift from the documented set.
+
+ENV_EXAMPLE = ROOT / ".env.example"
+_VARIABLE = re.compile(r"^(METER_[A-Z0-9_]+)=(.*)$", re.MULTILINE)
+
+
+@pytest.fixture
+def settings(monkeypatch: pytest.MonkeyPatch) -> Settings:
+    for key, value in _VARIABLE.findall(ENV_EXAMPLE.read_text(encoding="utf-8")):
+        monkeypatch.setenv(key, value)
+    return load_settings()

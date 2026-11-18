@@ -52,3 +52,9 @@ THROTTLE_BACKOFF_BASE_SECONDS = 1.0
 # worker knows it so that the fourth delivery records an outcome rather than
 # silently disappearing into the queue's own accounting.
 MAX_DELIVERY_ATTEMPTS = 3
+
+# How many cadences a collector may miss before its data is called stale. Two,
+# because one missed run is a retry and three is an outage nobody noticed. It is
+# a multiple of the collector's own cadence rather than a fixed age, so a daily
+# collector and an hourly one are judged by their own standard.
+STALE_AFTER_CADENCE_MULTIPLE = 2

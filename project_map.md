@@ -172,6 +172,10 @@ meter/
 │       └── platform_cost.py   one grouped request a day. Untagged cost is named
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
+│   ├── main.py                app factory. Refuses to start on a bare route
+│   ├── deps.py                the first scope point. Scope comes from the resolver
+│   ├── middleware.py          request id on every line and back on the response
+│   ├── schemas.py             the meta envelope. degraded is computed, never set
 │   ├── guards.py              the scope guard. No default, empty means nothing
 │   ├── identity/              behind the two ports ADR-0008 parked
 │   │   ├── local_config.py    users from a file. Refused in prod by config.py

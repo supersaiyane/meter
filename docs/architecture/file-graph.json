@@ -22,12 +22,16 @@
     "finops_api/db/repositories/base.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
+    "finops_api/deps.py",
     "finops_api/flags.py",
     "finops_api/guards.py",
     "finops_api/identity/__init__.py",
     "finops_api/identity/coverage.py",
     "finops_api/identity/local_config.py",
     "finops_api/identity/session.py",
+    "finops_api/main.py",
+    "finops_api/middleware.py",
+    "finops_api/schemas.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
     "finops_core/constants.py",
@@ -90,6 +94,7 @@
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_identity_local.py",
+    "tests/api/test_scope_enforcement.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
@@ -106,7 +111,6 @@
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
-    "tests/ingest/collectors/conftest.py",
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -115,7 +119,6 @@
     "tests/ingest/test_worker.py",
     "tests/providers/__init__.py",
     "tests/providers/aws/__init__.py",
-    "tests/providers/aws/conftest.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
@@ -294,6 +297,31 @@
       "k": "python"
     },
     {
+      "s": "finops_api/deps.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/flags.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -356,6 +384,41 @@
     {
       "s": "finops_api/identity/session.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_api/middleware.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/middleware.py",
+      "t": "finops_api/deps.py",
       "k": "python"
     },
     {
@@ -899,6 +962,61 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_scope_enforcement.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/conftest.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/conftest.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -1069,11 +1187,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/conftest.py",
-      "t": "finops_core/config.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -1221,11 +1334,6 @@
     {
       "s": "tests/ingest/test_worker.py",
       "t": "finops_ingest/worker.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/aws/conftest.py",
-      "t": "finops_core/config.py",
       "k": "python"
     },
     {

@@ -1519,7 +1519,7 @@ pytest tests/ingest/collectors/test_platform_cost.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 8 |
 | Delivers | FEAT-007 |
 | Depends on | TASK-P0-012 |
@@ -1540,11 +1540,11 @@ adversarial test that proves enforcement is not bypassable.
 
 **Acceptance criteria.**
 
-- [ ] Every response carries `meta` with `as_of`, `scope_coverage` and
+- [x] Every response carries `meta` with `as_of`, `scope_coverage` and
       `degraded`
-- [ ] `/healthz` reports database reachability and ingestion freshness, not
+- [x] `/healthz` reports database reachability and ingestion freshness, not
       just process liveness
-- [ ] A route registered without the scope dependency still cannot return out
+- [x] A route registered without the scope dependency still cannot return out
       of scope rows, because the repository guard catches it
 
 **Tests.**
@@ -1557,6 +1557,31 @@ adversarial test that proves enforcement is not bypassable.
 **Also.** `finops_api.guards` now exists, so the last inert target in the
 `finops_mcp` contract becomes live. Confirm it fires by probe, as in
 TASK-P0-011. ISS-109 closes here.
+
+**The envelope contract nearly shipped as a check that checked nothing.** The
+first version walked `app.routes`, and FastAPI wraps an included router instead
+of flattening it, so the walk found zero routes and passed. That is the worst
+failure a check of this kind can have: it reports success over an application it
+never examined. It now inspects the routers being registered, which is public
+API rather than a private attribute that moves between versions, and it refuses
+to start if it finds no routes at all.
+
+`Envelope[list[str]]` is a pydantic generic, which builds a concrete model class
+rather than a typing alias, so `get_origin` reports nothing for it. The check
+reads pydantic's own generic metadata, which is what makes a parameterised
+envelope recognisable as one.
+
+**What the repository guard cannot catch, stated plainly.** It refuses a read
+with no scope. It cannot refuse a read with a fabricated scope, because it
+faithfully applies whatever it is handed, so a route that builds a `Scope` out of
+a query parameter defeats both checks at once. That is why the scope comes from
+the entitlement resolver and never from the request, and why every read writes
+the scope it evaluated to `audit_event`: the case that cannot be prevented is at
+least visible afterwards, and a test asserts the audit row carries the request id.
+
+**ISS-109 was already closed in TASK-P0-011**, where both forbidden targets,
+`finops_api.db` and `finops_api.guards`, were confirmed to fire by probe rather
+than assumed.
 
 **Do not.**
 

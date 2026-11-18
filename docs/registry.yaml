@@ -796,6 +796,13 @@ changes:
     cost named rather than dropped, and the metering charge owned. Wave F complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0052
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope,
+    with the adversarial test that proves a forgetful route cannot leak
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

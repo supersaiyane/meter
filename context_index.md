@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-169 public symbols across 4 packages.
+193 public symbols across 4 packages.
 
 ## finops_core
 
@@ -33,7 +33,7 @@ a duplicate.
 | `ConfigurationError` | class | `finops_core/config.py:33` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
 | `Settings.region_list` | method | `finops_core/config.py:147` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -44,7 +44,7 @@ a duplicate.
 | `AccountHealth.is_usable` | method | `finops_core/domain/account.py:105` |  | nothing in this tree |
 | `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
-| `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
+| `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
 | `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | `finops_api/identity/local_config.py`, `finops_providers/fake/provider.py` |
 | `RunStatus` | class | `finops_core/domain/ingest.py:24` |  | nothing in this tree |
 | `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
@@ -80,7 +80,7 @@ a duplicate.
 | `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
 | `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
 | `EntitlementResolver` | class | `finops_core/ports/identity.py:36` | Turns a principal into the scope it may read. | nothing in this tree |
-| `EntitlementResolver.resolve` | method | `finops_core/ports/identity.py:39` | The entitlement held by the principal, carrying its own `as_of`. | `finops_ingest/collectors/org_tree.py` |
+| `EntitlementResolver.resolve` | method | `finops_core/ports/identity.py:39` | The entitlement held by the principal, carrying its own `as_of`. | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
 | `ResourceInventory` | class | `finops_core/ports/inventory.py:18` | Reads what exists in an account, and what depends on what. | nothing in this tree |
 | `ResourceInventory.list_resources` | method | `finops_core/ports/inventory.py:21` | Every resource in the account and region, optionally of one type. | nothing in this tree |
 | `ResourceInventory.list_dependencies` | method | `finops_core/ports/inventory.py:35` | What the named resource depends on, one level out. | nothing in this tree |
@@ -123,7 +123,7 @@ a duplicate.
 | `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:161` |  | nothing in this tree |
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
-| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_ingest/collectors/org_tree.py` |
+| `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
 
 ## finops_ingest
 
@@ -165,7 +165,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:128` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:158` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:164` |  | nothing in this tree |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:172` |  | `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 9 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:172` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 12 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:181` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -183,7 +183,7 @@ a duplicate.
 | `AccountRepository` | class | `finops_api/db/repositories/accounts.py:15` |  | nothing in this tree |
 | `AccountRepository.list_in_scope` | method | `finops_api/db/repositories/accounts.py:19` | Every account the scope permits, and nothing else. | nothing in this tree |
 | `AccountRepository.list_unhealthy` | method | `finops_api/db/repositories/accounts.py:23` | Accounts whose collector role is not healthy. | nothing in this tree |
-| `AccessContext` | class | `finops_api/db/repositories/base.py:31` | Who is reading, and under which request. Both land in the audit row. | nothing in this tree |
+| `AccessContext` | class | `finops_api/db/repositories/base.py:31` | Who is reading, and under which request. Both land in the audit row. | `finops_api/deps.py` |
 | `ScopedRepository` | class | `finops_api/db/repositories/base.py:38` | Base for every repository that touches tenant data. | nothing in this tree |
 | `ScopedRepository.scoped_select` | method | `finops_api/db/repositories/base.py:49` | A select already confined to the scope. There is no unconfined variant. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
 | `ScopedRepository.fetch` | method | `finops_api/db/repositories/base.py:53` | Run a scoped read and record it. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/org.py` |
@@ -194,6 +194,12 @@ a duplicate.
 | `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:35` |  | nothing in this tree |
 | `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | nothing in this tree |
 | `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | nothing in this tree |
+| `get_settings` | function | `finops_api/deps.py:37` |  | `finops_api/main.py` |
+| `get_request_id` | function | `finops_api/deps.py:41` | The id every log line and every audit row for this request carries. | nothing in this tree |
+| `get_connection` | function | `finops_api/deps.py:47` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |
+| `get_principal` | function | `finops_api/deps.py:53` | Who is asking. Absent, malformed and forged all get one answer. | nothing in this tree |
+| `get_scope` | function | `finops_api/deps.py:77` | The scope this request may read. Resolved, never supplied by the caller. | nothing in this tree |
+| `get_access_context` | function | `finops_api/deps.py:83` | What every audit row this request writes is stamped with. | nothing in this tree |
 | `FlagResolver` | class | `finops_api/flags.py:39` | Reads a flag for a tenant, caching the per tenant override briefly. | nothing in this tree |
 | `FlagResolver.is_enabled` | method | `finops_api/flags.py:55` |  | nothing in this tree |
 | `ScopeViolationError` | class | `finops_api/guards.py:26` | A query was about to run against a scoped table without a scope. | nothing in this tree |
@@ -209,11 +215,29 @@ a duplicate.
 | `load_users` | function | `finops_api/identity/local_config.py:51` | Read the file, refusing anything malformed rather than skipping it. | nothing in this tree |
 | `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | nothing in this tree |
 | `LocalConfigIdentityProvider.authenticate` | method | `finops_api/identity/local_config.py:110` | In local development the token is the subject. Unknown is refused. | nothing in this tree |
-| `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | `finops_ingest/collectors/org_tree.py` |
+| `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
 | `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | `finops_providers/aws/credentials.py` |
 | `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | nothing in this tree |
 | `SessionSigner.issue` | method | `finops_api/identity/session.py:77` |  | nothing in this tree |
-| `SessionSigner.verify` | method | `finops_api/identity/session.py:91` |  | nothing in this tree |
+| `SessionSigner.verify` | method | `finops_api/identity/session.py:91` |  | `finops_api/deps.py` |
+| `EnvelopeContractError` | class | `finops_api/main.py:50` | A data route was registered without the response envelope. | nothing in this tree |
+| `returns_envelope` | function | `finops_api/main.py:54` | True when the declared model is the envelope, parameterised or not. | nothing in this tree |
+| `iter_api_routes` | function | `finops_api/main.py:70` | Every API route in the routers this application registers. | nothing in this tree |
+| `assert_envelope_contract` | function | `finops_api/main.py:86` | Refuse to start if a data route returns something bare. | nothing in this tree |
+| `collector_health` | function | `finops_api/main.py:110` | How long since each enabled collector last succeeded, against its cadence. | nothing in this tree |
+| `build_router` | function | `finops_api/main.py:149` |  | nothing in this tree |
+| `create_app` | function | `finops_api/main.py:172` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
+| `RequestIdMiddleware` | class | `finops_api/middleware.py:27` | Give every request an id, log it, and hand it back on the response. | nothing in this tree |
+| `RequestIdMiddleware.dispatch` | method | `finops_api/middleware.py:30` |  | nothing in this tree |
+| `CoverageOut` | class | `finops_api/schemas.py:24` | Visible accounts against every account the organization holds. ISS-016. | nothing in this tree |
+| `CoverageOut.is_partial` | method | `finops_api/schemas.py:34` |  | nothing in this tree |
+| `FailureOut` | class | `finops_api/schemas.py:38` | One thing that is broken, and what the reader should do about it. | nothing in this tree |
+| `Meta` | class | `finops_api/schemas.py:52` | What the numbers beside this are worth. | nothing in this tree |
+| `Meta.degraded` | method | `finops_api/schemas.py:66` | True when the reader must not take these figures at face value. | nothing in this tree |
+| `Meta.build` | method | `finops_api/schemas.py:76` |  | nothing in this tree |
+| `Envelope` | class | `finops_api/schemas.py:92` | Every route returns this. There is no bare data variant. | nothing in this tree |
+| `CollectorHealth` | class | `finops_api/schemas.py:101` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
+| `HealthOut` | class | `finops_api/schemas.py:113` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
 
 ## Called by nothing in this tree
 
@@ -222,7 +246,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `ConfigurationError` in `finops_core/config.py:33`
 - `Settings` in `finops_core/config.py:37`
 - `Settings.region_list` in `finops_core/config.py:147`
-- `load_settings` in `finops_core/config.py:167`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
@@ -279,3 +302,4 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `total` in `finops_ingest/collectors/platform_cost.py:106`
 - `WorkUnit` in `finops_ingest/dispatcher.py:29`
 - `WorkUnit.scope_key` in `finops_ingest/dispatcher.py:40`
+- `WorkUnit.dedup_key` in `finops_ingest/dispatcher.py:52`

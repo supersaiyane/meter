@@ -264,6 +264,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0049 | 2026-08-24 | Feature | TASK-P0-021, the dispatcher and worker. One transaction per unit, only the six caught, and the two spec section 11 tests passing | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0050 | 2026-08-24 | Feature | TASK-P0-022, the organization tree and account health collectors, plus the cadence rows that make the hourly refresh data rather than a claim | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0051 | 2026-08-27 | Feature | TASK-P0-023, the platform self cost collector. One grouped request a day, untagged cost named rather than dropped, and the metering charge owned. Wave F complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0052 | 2026-08-27 | Feature | TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope, with the adversarial test that proves a forgetful route cannot leak | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
