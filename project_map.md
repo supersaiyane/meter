@@ -176,6 +176,12 @@ meter/
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
+│   ├── routes/                the seven P0 routes, all returning the envelope
+│   │   ├── me.py              principal, tier, scope summary
+│   │   ├── accounts.py        accounts in scope, plus the role health recheck
+│   │   ├── org.py             the tree. Out of scope branches marked, not hidden
+│   │   ├── ingest.py          runs with typed errors, and freshness per cadence
+│   │   └── platform.py        Meter's own cost, unallocated included
 │   ├── guards.py              the scope guard. No default, empty means nothing
 │   ├── identity/              behind the two ports ADR-0008 parked
 │   │   ├── local_config.py    users from a file. Refused in prod by config.py

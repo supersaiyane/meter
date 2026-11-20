@@ -1602,7 +1602,7 @@ pytest tests/api -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 8 |
 | Delivers | FEAT-001, FEAT-006, FEAT-008 |
 | Depends on | TASK-P0-024, TASK-P0-022, TASK-P0-023 |
@@ -1623,11 +1623,36 @@ pytest tests/api -v
 
 **Acceptance criteria.**
 
-- [ ] All seven routes from spec section 8 exist and match the documented shape
-- [ ] `/org/tree` marks branches outside scope as unreachable rather than
+- [x] All seven routes from spec section 8 exist and match the documented shape
+- [x] `/org/tree` marks branches outside scope as unreachable rather than
       hiding them, so the tree shape stays honest
-- [ ] `/ingest/runs` returns typed errors with their remediation text
-- [ ] `/health/freshness` reports staleness per collector and scope
+- [x] `/ingest/runs` returns typed errors with their remediation text
+- [x] `/health/freshness` reports staleness per collector and scope
+
+**The tree keeps its shape.** A narrow scope and a global one return the same
+node count; only `reachable` differs. A test asserts that, because the pruning
+version is the one somebody writes when the tree looks untidy in review.
+
+**Two lookups give one answer.** A recheck on an account outside the scope and a
+recheck on an account that does not exist both return the same 404 with the same
+body. Telling them apart would let a caller enumerate the accounts they cannot
+see, one request at a time.
+
+**A global viewer is not reported as seeing nothing.** A global scope enumerates
+no accounts, so the naive count is zero, and zero renders as a user with no
+access. The coverage figure uses the organization total instead.
+
+**Deviations.** Three repositories beyond the file list, in
+`finops_api/db/repositories/freshness.py`, plus `count_in_organization` on the
+account repository. Routes must not query directly, and the coverage denominator
+has to come from the organization rather than from the visible set, which is
+ISS-016. That method returns a count and never rows, so it cannot become a way
+to read out of scope data.
+
+`finops_api/routes/__init__.py` holds the shared envelope assembly.
+`freshness_of` takes the oldest timestamp in a set rather than the newest,
+because a page is only as fresh as its stalest figure, and it skips rows that
+are not facts rather than guessing which field stands in for `collected_at`.
 
 **Do not.**
 

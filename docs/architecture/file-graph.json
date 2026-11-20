@@ -20,6 +20,7 @@
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
     "finops_api/deps.py",
@@ -31,6 +32,12 @@
     "finops_api/identity/session.py",
     "finops_api/main.py",
     "finops_api/middleware.py",
+    "finops_api/routes/__init__.py",
+    "finops_api/routes/accounts.py",
+    "finops_api/routes/ingest.py",
+    "finops_api/routes/me.py",
+    "finops_api/routes/org.py",
+    "finops_api/routes/platform.py",
     "finops_api/schemas.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
@@ -94,6 +101,7 @@
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_identity_local.py",
+    "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
@@ -223,6 +231,11 @@
     },
     {
       "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/freshness.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/__init__.py",
       "t": "finops_api/db/repositories/ingest.py",
       "k": "python"
     },
@@ -239,6 +252,11 @@
     {
       "s": "finops_api/db/repositories/accounts.py",
       "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/accounts.py",
+      "t": "finops_api/guards.py",
       "k": "python"
     },
     {
@@ -263,6 +281,21 @@
     },
     {
       "s": "finops_api/db/repositories/base.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/freshness.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/freshness.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/freshness.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -403,6 +436,11 @@
     },
     {
       "s": "finops_api/main.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
       "t": "finops_api/schemas.py",
       "k": "python"
     },
@@ -419,6 +457,171 @@
     {
       "s": "finops_api/middleware.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/__init__.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/__init__.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/__init__.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/me.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -959,6 +1162,41 @@
     {
       "s": "tests/api/test_identity_local.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_routes.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

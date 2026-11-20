@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 11 specified, 30 planned, 8 in build, 1 delivered.
+50 features across 8 sub projects. 11 specified, 30 planned, 6 in build, 3 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -88,9 +88,9 @@ block is caught by `make check-docs`. See
 | [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
-| [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
+| [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
 | [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
-| [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
+| [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | In build | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
@@ -265,6 +265,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0050 | 2026-08-24 | Feature | TASK-P0-022, the organization tree and account health collectors, plus the cadence rows that make the hourly refresh data rather than a claim | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0051 | 2026-08-27 | Feature | TASK-P0-023, the platform self cost collector. One grouped request a day, untagged cost named rather than dropped, and the metering charge owned. Wave F complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0052 | 2026-08-27 | Feature | TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope, with the adversarial test that proves a forgetful route cannot leak | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0053 | 2026-08-27 | Feature | TASK-P0-025, the seven P0 routes. Out of scope branches marked rather than pruned, typed errors with remediation, freshness per collector cadence. Wave G complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

@@ -169,12 +169,21 @@ def build_router() -> APIRouter:
     return router
 
 
+def p0_routers() -> tuple[APIRouter, ...]:
+    """The seven P0 routes, from the spec's section 8 table."""
+    from finops_api.routes import accounts, ingest, me, org, platform
+
+    return (me.router, accounts.router, org.router, ingest.router, platform.router)
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
     signer: Any,
     settings: Settings | None = None,
+    health_check: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
+    include_p0_routes: bool = True,
 ) -> FastAPI:
     """Build the application, refusing to start on a broken envelope contract."""
     resolved = settings or get_settings()
@@ -183,8 +192,9 @@ def create_app(
     app.state.entitlements = entitlements
     app.state.signer = signer
     app.state.settings = resolved
+    app.state.health_check = health_check
     app.add_middleware(RequestIdMiddleware)
-    routers = (build_router(), *extra_routers)
+    routers = (build_router(), *(p0_routers() if include_p0_routes else ()), *extra_routers)
     # Checked before anything is registered, so a broken contract fails at
     # construction rather than at the first request.
     assert_envelope_contract(routers)

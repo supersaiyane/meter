@@ -1,0 +1,64 @@
+"""Meter's own cost, by module and day.
+
+Constraint 7 in CLAUDE.md. A tool that reports other people's spending without
+reporting its own is asking for a trust it has not earned, so this is a first
+class route rather than something behind a flag.
+
+`unallocated` appears here as a module like any other. Hiding it would make the
+self metering report look tidier and under count, and a self metering report
+that under counts is worse than none because it is believed.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime
+from decimal import Decimal
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy.engine import Connection
+
+from finops_api.db.repositories import AccessContext, PlatformCostRepository
+from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.routes import API_PREFIX, build_meta
+from finops_api.schemas import Envelope
+from finops_core.domain.tenant import Scope
+
+router = APIRouter(prefix=API_PREFIX, tags=["platform"])
+
+
+class PlatformCostOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    module: str
+    service: str
+    #: Decimal, never float. A float total over a month of line items is wrong
+    #: in the last places, and a figure that will not reconcile is not used twice.
+    amortized_cost: Decimal
+    as_of: datetime
+    collected_at: datetime
+
+
+@router.get("/platform/cost", response_model=Envelope[list[PlatformCostOut]])
+def platform_cost(
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[PlatformCostOut]]:
+    rows = PlatformCostRepository(connection, context).by_day_and_module(scope)
+    costs = [
+        PlatformCostOut(
+            day=row.day,
+            module=str(row.module),
+            service=str(row.service),
+            amortized_cost=row.amortized_cost,
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in rows
+    ]
+    return Envelope(
+        data=costs,
+        meta=build_meta(connection, scope, context, visible=len(costs), rows=rows),
+    )

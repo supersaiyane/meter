@@ -94,7 +94,7 @@ features:
 - id: FEAT-006
   name: Typed error taxonomy and data freshness contract
   subproject: P0
-  status: In build
+  status: Delivered
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6'
   doc: docs/features/FEAT-006-typed-errors-and-freshness.md
 - id: FEAT-007
@@ -106,7 +106,7 @@ features:
 - id: FEAT-008
   name: Platform self metering
   subproject: P0
-  status: In build
+  status: Delivered
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5'
   doc: docs/features/FEAT-008-platform-self-metering.md
 - id: FEAT-009
@@ -801,6 +801,13 @@ changes:
   type: Feature
   what: TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope,
     with the adversarial test that proves a forgetful route cannot leak
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0053
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-025, the seven P0 routes. Out of scope branches marked rather than pruned,
+    typed errors with remediation, freshness per collector cadence. Wave G complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
