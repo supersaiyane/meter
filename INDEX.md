@@ -266,6 +266,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0051 | 2026-08-27 | Feature | TASK-P0-023, the platform self cost collector. One grouped request a day, untagged cost named rather than dropped, and the metering charge owned. Wave F complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0052 | 2026-08-27 | Feature | TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope, with the adversarial test that proves a forgetful route cannot leak | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0053 | 2026-08-27 | Feature | TASK-P0-025, the seven P0 routes. Out of scope branches marked rather than pruned, typed errors with remediation, freshness per collector cadence. Wave G complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0054 | 2026-08-27 | Chore | TASK-P0-002, the frontend workspace. Vite, React and TypeScript that builds, lints and tests, with no component library and no state library yet | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
@@ -276,7 +277,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**74 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**75 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -390,6 +391,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-081 | LOW | The pxpipe proxy currently compresses nothing, every request skipped as unsupported_model, so it provides accounting rather than savings. Its log is also machine global rather than scoped to this project | OPEN | Documented in [README.md](README.md). Re check with make stats after a session on the current model |
 | ISS-096 | LOW | Unknown whether any dashboards are managed as code today, which determines the value of the CI policy gate | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Affects FEAT-014 scope |
 | ISS-101 | LOW | The doc and policy scripts claimed to run before make setup, but pyyaml is absent from a system interpreter and PEP 668 blocks adding it | FIXED | They now run from the project venv, and `scripts/README.md` states this rather than the previous claim |
+| ISS-110 | LOW | make lint failed on a terraform directory that Wave D has not created yet, leaving verify red for a reason unrelated to the change under review | FIXED | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-002 |
 
 <!-- generated:issues end -->
 

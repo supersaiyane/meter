@@ -161,6 +161,11 @@ meter/
 │   └── fake/                  in memory, all eight ports, no network and no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
+├── finops-web/                IN BUILD  Vite, React and TypeScript
+│   ├── README.md              why the versions are pinned where they are
+│   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
+│   └── src/                   the application. Components arrive in TASK-P0-035
+│
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance
 │   ├── registry.py            what a collector is. Cadence lives in the database

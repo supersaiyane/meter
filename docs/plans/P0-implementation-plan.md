@@ -99,7 +99,7 @@ make setup && make lint && make test && make check-writing
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 9 |
 | Depends on | none |
 | Estimate | S |
@@ -120,10 +120,31 @@ make setup && make lint && make test && make check-writing
 
 **Acceptance criteria.**
 
-- [ ] `npm ci && npm run build` produces `finops-web/dist`
-- [ ] `npm run lint` and `npm run test -- --run` pass
-- [ ] `package.json` defines `format`, `lint`, `test` and `build`, because the
+- [x] `npm ci && npm run build` produces `finops-web/dist`
+- [x] `npm run lint` and `npm run test -- --run` pass
+- [x] `package.json` defines `format`, `lint`, `test` and `build`, because the
       Makefile calls all four
+
+**Two deviations from the file list, both because following it would have
+produced something that silently does nothing.**
+
+`eslint.config.js` rather than `.eslintrc.cjs`. ESLint 9 and later do not read
+`.eslintrc` by default, so that file would have given a lint step that checked
+nothing while reporting success, which is worse than having no lint step.
+
+`tsconfig.app.json` and `tsconfig.node.json` alongside `tsconfig.json`, because
+the application and the build config need different `lib` and `types` sets and
+one file cannot express both without weakening the strict settings for both.
+
+**TypeScript is pinned below 6.** The current major is 7, and `typescript-eslint`
+declares a peer range of `>=4.8.4 <6.1.0`. Installing 7 gives a lint step that
+cannot parse the code it is meant to check. Recorded in `finops-web/README.md`
+so the pin lifts deliberately rather than by accident.
+
+**Node engine warning.** Some packages ask for Node 22, 24 or 26 and up. This
+machine runs 25, which is an odd numbered line and not long term support. It
+installs and builds, and the pipeline image should be on an even numbered
+release.
 
 **Do not.**
 

@@ -810,6 +810,13 @@ changes:
     typed errors with remediation, freshness per collector cadence. Wave G complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0054
+  date: '2026-08-27'
+  type: Chore
+  what: TASK-P0-002, the frontend workspace. Vite, React and TypeScript that builds, lints
+    and tests, with no component library and no state library yet
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1443,6 +1450,12 @@ issues:
     criteria
   detail: 'Run 2026-10-07 against the full resolved tree: grype 0 findings across 97 packages, pip-audit
     0 advisories across 113. Recorded in the task evidence'
+- id: ISS-110
+  severity: LOW
+  status: FIXED
+  summary: make lint failed on a terraform directory that Wave D has not created yet, leaving
+    verify red for a reason unrelated to the change under review
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-002'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

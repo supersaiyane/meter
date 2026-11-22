@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 11 specified, 6 in build, 3 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 53 recorded |
-| Issues | 74 fixed, 34 open, 0 parked |
+| Changes | 54 recorded |
+| Issues | 75 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 20 | 0 | 15 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 21 | 0 | 14 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -59,6 +59,7 @@ pytest harness and `conftest.py` do not.
 | Task | Status | Title |
 | --- | --- | --- |
 | `TASK-P0-001` | **Done 2026-10-07** | create the Python workspace and quality gates |
+| `TASK-P0-002` | Done, 2026-08-27 | add the frontend workspace |
 | `TASK-P0-034` | Done, 2026-08-24 | settings object, feature flags and the no hardcoding gate |
 | `TASK-P0-005` | Done, 2026-08-24 | define the typed error taxonomy |
 | `TASK-P0-006` | Done, 2026-08-24 | define the domain entities |
@@ -145,6 +146,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-023, the platform self cost collector | One grouped request a day, untagged cost named, metering charge owned. Wave F complete |
 | `[x]` | TASK-P0-024, the application and scope dependency | Meta envelope enforced at startup. The adversarial leak test passes |
 | `[x]` | TASK-P0-025, the seven P0 routes | Unreachable branches marked, typed errors with remediation. Wave G complete |
+| `[x]` | TASK-P0-002, the frontend workspace | Builds, lints and tests. Flat eslint config, TypeScript pinned below 6 |
 
 ## Remaining sub projects
 
