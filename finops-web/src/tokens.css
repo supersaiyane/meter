@@ -1,0 +1,122 @@
+/*
+ * Design tokens. Light and dark are both first class, which means neither is
+ * derived from the other by inverting lightness. A palette produced that way
+ * puts its worst contrast exactly where this product needs its best, on
+ * numerals.
+ *
+ * Each token names both values in one declaration through light-dark(), rather
+ * than repeating the whole palette in a second block. Two blocks drift, and the
+ * half that drifts is always the one nobody is looking at.
+ *
+ * Provenance is never carried by colour alone. The fill, the tilde prefix and
+ * the text label each carry it independently, because colour fails for roughly
+ * eight percent of men, fails in print, fails in a screenshot pasted into a
+ * ticket, and fails in a board pack photocopied twice.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --surface: light-dark(#ffffff, #14181d);
+  --surface-sunken: light-dark(#f6f7f9, #0e1116);
+  --surface-raised: light-dark(#ffffff, #1b2027);
+  --border: light-dark(#d8dce2, #2c333c);
+  --border-strong: light-dark(#aeb5be, #47505c);
+
+  --text: light-dark(#14181d, #e6eaef);
+  --text-muted: light-dark(#5a636e, #9aa4b1);
+  /* Numerals get the highest contrast available. Misreading a digit is the
+     failure mode that matters here, so this is AAA rather than AA. */
+  --text-numeral: light-dark(#0a0d10, #f4f7fa);
+
+  --accent: light-dark(#1f4f8f, #7fa9e8);
+  --accent-quiet: light-dark(#e7eefa, #17253a);
+
+  /* Failure is the only thing that is ever red, so that when red appears it
+     means exactly one thing. A large cost is not a failure. */
+  --failure: light-dark(#a01b1b, #f08a8a);
+  --failure-quiet: light-dark(#fbeaea, #2a1416);
+  --stale: light-dark(#8a5a00, #e0b25c);
+  --stale-quiet: light-dark(#fdf3e0, #2a2113);
+
+  /* Sequential, not a traffic light. Severity is a ramp of one hue so that
+     rank is readable without relying on hue discrimination. */
+  --severity-1: light-dark(#e7eefa, #17253a);
+  --severity-2: light-dark(#c3d6f2, #1f3550);
+  --severity-3: light-dark(#8fb2e4, #2c4d75);
+  --severity-4: light-dark(#4f83c8, #4472a8);
+  --severity-5: light-dark(#1f4f8f, #7fa9e8);
+
+  --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --radius: 3px;
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-numeral: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+}
+
+/* An explicit choice wins over the operating system in both directions. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* Numerals are tabular everywhere, so a column of figures aligns by digit and a
+   changing value does not shift the ones beside it. */
+.meter-numeral {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  text-align: right;
+  color: var(--text-numeral);
+  white-space: nowrap;
+}
+
+/* Provenance fills. Solid, hatched, hatched. The interval on a forecast is
+   carried by the value itself, which is a range and never a point. */
+.meter-fill-measured {
+  background: transparent;
+}
+
+.meter-fill-modelled,
+.meter-fill-forecast {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    var(--hatch-line) 3px,
+    var(--hatch-line) 4px
+  );
+}
+
+.meter-failure {
+  color: var(--failure);
+  font-family: var(--font-ui);
+  letter-spacing: 0.02em;
+}
+
+.meter-stale {
+  border-top: 2px solid var(--stale);
+  color: var(--stale);
+}
+
+/* A number counting up from zero is lying for four hundred milliseconds, and
+   this product's whole claim is that its numbers are trustworthy. Nothing here
+   animates a value. What little motion exists is switched off on request. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

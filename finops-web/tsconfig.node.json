@@ -9,7 +9,9 @@
     "skipLibCheck": true,
     "noEmit": false,
     "outDir": "./dist-types-node",
-    "composite": true
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
   "include": ["vite.config.ts"]
 }

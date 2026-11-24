@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 11 specified, 30 planned, 6 in build, 3 delivered.
+50 features across 8 sub projects. 10 specified, 30 planned, 7 in build, 3 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -94,7 +94,7 @@ block is caught by `make check-docs`. See
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | In build | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
-| [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | Specified | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
+| [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | In build | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 
 ### P2 Query Cost Governance
 
@@ -267,6 +267,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0052 | 2026-08-27 | Feature | TASK-P0-024, the FastAPI application, the scope dependency and the meta envelope, with the adversarial test that proves a forgetful route cannot leak | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0053 | 2026-08-27 | Feature | TASK-P0-025, the seven P0 routes. Out of scope branches marked rather than pruned, typed errors with remediation, freshness per collector cadence. Wave G complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0054 | 2026-08-27 | Chore | TASK-P0-002, the frontend workspace. Vite, React and TypeScript that builds, lints and tests, with no component library and no state library yet | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0055 | 2026-08-27 | Feature | TASK-P0-035, the component layer. A number reaches a user only through Figure, which requires its provenance and its freshness, and no formatter is exported at all | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

@@ -18,7 +18,9 @@
     "skipLibCheck": true,
     "noEmit": false,
     "outDir": "./dist-types",
-    "composite": true
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
   "include": ["src"]
 }

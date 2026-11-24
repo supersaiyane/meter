@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 11 specified, 6 in build, 3 delivered |
+| Features | 50 total, 10 specified, 7 in build, 3 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 54 recorded |
+| Changes | 55 recorded |
 | Issues | 75 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 21 | 0 | 14 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 22 | 0 | 13 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -78,6 +78,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-023` | Done, 2026-08-27 | implement the platform self cost collector |
 | `TASK-P0-024` | Done, 2026-08-27 | implement the FastAPI application and scope dependency |
 | `TASK-P0-025` | Done, 2026-08-27 | implement the P0 routes |
+| `TASK-P0-035` | Done, 2026-08-27 | the component layer and the visual honesty system |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -147,6 +148,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-024, the application and scope dependency | Meta envelope enforced at startup. The adversarial leak test passes |
 | `[x]` | TASK-P0-025, the seven P0 routes | Unreachable branches marked, typed errors with remediation. Wave G complete |
 | `[x]` | TASK-P0-002, the frontend workspace | Builds, lints and tests. Flat eslint config, TypeScript pinned below 6 |
+| `[x]` | TASK-P0-035, the component layer and visual honesty system | A number reaches a user only through Figure. No formatter is exported |
 
 ## Remaining sub projects
 

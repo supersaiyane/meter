@@ -17,12 +17,63 @@
     "finops-web/dist-types-node/vite.config.d.ts",
     "finops-web/dist-types/src/App.d.ts",
     "finops-web/dist-types/src/App.test.d.ts",
+    "finops-web/dist-types/src/components/CoverageBanner",
+    "finops-web/dist-types/src/components/CoverageBanner.d.ts",
+    "finops-web/dist-types/src/components/DataTable",
+    "finops-web/dist-types/src/components/DataTable.d.ts",
+    "finops-web/dist-types/src/components/Figure",
+    "finops-web/dist-types/src/components/Figure.d.ts",
+    "finops-web/dist-types/src/components/FreshnessIndicator",
+    "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
+    "finops-web/dist-types/src/components/SeverityBadge",
+    "finops-web/dist-types/src/components/SeverityBadge.d.ts",
+    "finops-web/dist-types/src/components/Sparkline",
+    "finops-web/dist-types/src/components/Sparkline.d.ts",
+    "finops-web/dist-types/src/components/StateBoundary",
+    "finops-web/dist-types/src/components/StateBoundary.d.ts",
+    "finops-web/dist-types/src/components/TypedError",
+    "finops-web/dist-types/src/components/TypedError.d.ts",
+    "finops-web/dist-types/src/components/__tests__/DataTable.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/Figure.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/StateBoundary.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/axe.d.ts",
+    "finops-web/dist-types/src/components/__tests__/shell.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/surface.test.d.ts",
+    "finops-web/dist-types/src/components/index.d.ts",
+    "finops-web/dist-types/src/components/provenance",
+    "finops-web/dist-types/src/components/provenance.d.ts",
+    "finops-web/dist-types/src/components/surfaceState",
+    "finops-web/dist-types/src/components/surfaceState.d.ts",
+    "finops-web/dist-types/src/components/tableConfig",
+    "finops-web/dist-types/src/components/tableConfig.d.ts",
     "finops-web/dist-types/src/main.d.ts",
     "finops-web/dist-types/src/test-setup.d.ts",
+    "finops-web/dist-types/src/tokens.css",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
+    "finops-web/src/components/CoverageBanner.tsx",
+    "finops-web/src/components/DataTable.tsx",
+    "finops-web/src/components/Figure.tsx",
+    "finops-web/src/components/FreshnessIndicator.tsx",
+    "finops-web/src/components/SeverityBadge.tsx",
+    "finops-web/src/components/Sparkline.tsx",
+    "finops-web/src/components/StateBoundary.tsx",
+    "finops-web/src/components/TypedError.tsx",
+    "finops-web/src/components/__tests__/DataTable.test.tsx",
+    "finops-web/src/components/__tests__/Figure.test.tsx",
+    "finops-web/src/components/__tests__/StateBoundary.test.tsx",
+    "finops-web/src/components/__tests__/axe.ts",
+    "finops-web/src/components/__tests__/shell.test.tsx",
+    "finops-web/src/components/__tests__/surface.test.ts",
+    "finops-web/src/components/index.ts",
+    "finops-web/src/components/provenance.ts",
+    "finops-web/src/components/surfaceState.ts",
+    "finops-web/src/components/tableConfig.ts",
     "finops-web/src/main.tsx",
     "finops-web/src/test-setup.ts",
+    "finops-web/src/tokens.css",
+    "finops-web/src/tokens.css?raw",
+    "finops-web/src/vite-env.d.ts",
     "finops-web/vite.config.ts",
     "finops_api/__init__.py",
     "finops_api/db/__init__.py",
@@ -230,13 +281,303 @@
       "k": "docker"
     },
     {
+      "s": "finops-web/dist-types/src/components/DataTable.d.ts",
+      "t": "finops-web/dist-types/src/components/tableConfig",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/Figure.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/Sparkline.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/StateBoundary.d.ts",
+      "t": "finops-web/dist-types/src/components/surfaceState",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/TypedError.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/CoverageBanner",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/DataTable",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/Figure",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/FreshnessIndicator",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/SeverityBadge",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/Sparkline",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/StateBoundary",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/TypedError",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/surfaceState",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/tableConfig",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/surfaceState.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/main.d.ts",
+      "t": "finops-web/dist-types/src/tokens.css",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/App.test.tsx",
       "t": "finops-web/src/App.tsx",
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/FreshnessIndicator.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Sparkline.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/StateBoundary.tsx",
+      "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/StateBoundary.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TypedError.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/DataTable.test.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/DataTable.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/DataTable.test.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/Figure.test.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/Figure.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/Figure.test.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/StateBoundary.test.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/StateBoundary.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/StateBoundary.test.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/CoverageBanner.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/surface.test.ts",
+      "t": "finops-web/src/components/index.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/surface.test.ts",
+      "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/CoverageBanner.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/surfaceState.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/App.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/main.tsx",
+      "t": "finops-web/src/tokens.css",
       "k": "typescript"
     },
     {

@@ -1,0 +1,100 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { StateBoundary } from '../StateBoundary';
+import { SURFACE_STATES, type SurfaceState } from '../surfaceState';
+import { violationsIn } from './axe';
+
+/** One example of every state, so the list and the boundary cannot drift apart. */
+const EXAMPLES: Record<(typeof SURFACE_STATES)[number], SurfaceState> = {
+  loading: { kind: 'loading', rows: 3 },
+  empty: { kind: 'empty', filter: 'role health is healthy' },
+  'never-collected': { kind: 'never-collected', collector: 'org_tree', nextRun: 'in 40 min' },
+  partial: { kind: 'partial', missing: 3, reason: 'three accounts could not be read' },
+  stale: { kind: 'stale', age: '9 h' },
+  degraded: { kind: 'degraded', failing: ['account_health'] },
+  failed: { kind: 'failed', cause: 'AccessDenied', remediation: 'Check the StackSet.' },
+};
+
+describe('StateBoundary', () => {
+  it('implements_seven_states', () => {
+    // Not three. A surface that implements five is not finished, so the count is
+    // asserted rather than trusted to review.
+    expect(SURFACE_STATES).toHaveLength(7);
+    for (const kind of SURFACE_STATES) {
+      const { unmount } = render(
+        <StateBoundary state={EXAMPLES[kind]}>
+          <p>rows</p>
+        </StateBoundary>,
+      );
+      expect(screen.getByTestId('state').dataset['state']).toBe(kind);
+      unmount();
+    }
+  });
+
+  it('keeps showing the rows for the three states that still have data', () => {
+    // Partial, stale and degraded add something beside the data. Hiding the rows
+    // would be a different lie from the one being prevented.
+    for (const kind of ['partial', 'stale', 'degraded'] as const) {
+      const { unmount } = render(
+        <StateBoundary state={EXAMPLES[kind]}>
+          <p>rows</p>
+        </StateBoundary>,
+      );
+      expect(screen.getByText('rows')).toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('renders a skeleton at the final dimensions rather than a spinner', () => {
+    render(
+      <StateBoundary state={{ kind: 'loading', rows: 4 }}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    // A spinner hides how much is coming. Four rows are coming, so four appear.
+    expect(screen.getAllByTestId('skeleton-row')).toHaveLength(4);
+  });
+
+  it('does not let a genuine empty look like a failure', () => {
+    render(
+      <StateBoundary state={{ kind: 'empty', filter: 'suspended only' }}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    expect(screen.getByText(/Nothing matches this filter/)).toBeInTheDocument();
+    expect(screen.getByText(/suspended only/)).toBeInTheDocument();
+  });
+
+  it('does not let never collected render as an empty success', () => {
+    render(
+      <StateBoundary state={EXAMPLES['never-collected']}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    expect(screen.getByText(/Not yet collected by org_tree/)).toBeInTheDocument();
+    expect(screen.getByText(/Next run in 40 min/)).toBeInTheDocument();
+  });
+
+  it('renders no numeral in the failed state', () => {
+    const { container } = render(
+      <StateBoundary state={EXAMPLES.failed}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    expect(container.querySelector('.meter-numeral')).toBeNull();
+    expect(screen.getByText('ACCESS DENIED')).toBeInTheDocument();
+  });
+
+  it('reports no accessibility violations in any state', async () => {
+    for (const kind of SURFACE_STATES) {
+      const { container, unmount } = render(
+        <StateBoundary state={EXAMPLES[kind]}>
+          <p>rows</p>
+        </StateBoundary>,
+      );
+      expect(await violationsIn(container)).toEqual([]);
+      unmount();
+    }
+  });
+});

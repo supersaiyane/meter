@@ -164,7 +164,14 @@ meter/
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
-│   └── src/                   the application. Components arrive in TASK-P0-035
+│   └── src/
+│       ├── tokens.css         light and dark in one declaration, via light-dark()
+│       └── components/        built once, used by every sub project
+│           ├── Figure.tsx     the load bearing one. Nothing else renders a number
+│           ├── provenance.ts  the union that makes a point forecast unsayable
+│           ├── StateBoundary.tsx  all seven states from design section 8
+│           ├── DataTable.tsx  virtualised past 200 rows, headless
+│           └── index.ts       exports no formatter, deliberately
 │
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance

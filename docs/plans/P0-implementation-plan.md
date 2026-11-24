@@ -1696,7 +1696,7 @@ pytest tests/api/test_routes.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | `docs/12-UI-DESIGN.md`, ADR-0019 |
 | Delivers | FEAT-050 |
 | Depends on | TASK-P0-002 |
@@ -1722,22 +1722,22 @@ one that makes a dishonest number impossible to render.
 
 **Acceptance criteria.**
 
-- [ ] **`Figure` cannot render without provenance and freshness.** They are
+- [x] **`Figure` cannot render without provenance and freshness.** They are
       required props, and the type system rejects a call without them
-- [ ] Provenance is encoded three times: fill, `~` prefix, and text label.
+- [x] Provenance is encoded three times: fill, `~` prefix, and text label.
       A test asserts the label is present with colour disabled
-- [ ] `measured` renders solid, `modelled` renders hatched, `forecast` renders
+- [x] `measured` renders solid, `modelled` renders hatched, `forecast` renders
       hatched with an interval and **never as a single number**
-- [ ] `Figure` given a typed error renders the cause and its remediation, and
+- [x] `Figure` given a typed error renders the cause and its remediation, and
       **renders no numeral at all**
-- [ ] `NoData` is the only cause that renders as `0`
-- [ ] `StateBoundary` implements all seven states from design system section 8
-- [ ] All numerals tabular, right aligned, fixed decimal places including
+- [x] `NoData` is the only cause that renders as `0`
+- [x] `StateBoundary` implements all seven states from design system section 8
+- [x] All numerals tabular, right aligned, fixed decimal places including
       trailing zeros
-- [ ] `DataTable` virtualises past 200 rows
-- [ ] Tokens defined for light and dark, both first class
-- [ ] Axe reports zero violations on every component
-- [ ] Reduced motion respected
+- [x] `DataTable` virtualises past 200 rows
+- [x] Tokens defined for light and dark, both first class
+- [x] Axe reports zero violations on every component
+- [x] Reduced motion respected
 
 **Tests.**
 
@@ -1748,6 +1748,31 @@ one that makes a dishonest number impossible to render.
 | `Figure.test.tsx::provenance_survives_without_colour` | Fill and label carry it independently |
 | `Figure.test.tsx::forecast_renders_an_interval` | ADR-0015 condition 2 as a rendering rule |
 | `StateBoundary.test.tsx::implements_seven_states` | Not three |
+
+**How the guarantee is actually made.** `FigureValue` is a discriminated union,
+so a forecast carries `low` and `high` and has no single amount to give. A point
+forecast is not something a caller can express and then be reviewed for. A
+failure carries a cause and a remediation and no amount at all, and there is no
+shape in the type that pairs a failure with a number. ADR-0015 condition 2 is a
+rendering rule, and this is it in the type system.
+
+`components/index.ts` exports no formatter, and a test asserts that. If a screen
+could import a function that turns a number into a string, then under time
+pressure a screen will, and every figure on that page loses its provenance
+without anything failing.
+
+**Deviations, all small.** `provenance.ts`, `surfaceState.ts` and
+`tableConfig.ts` hold values that would otherwise be exported from component
+files, which the React Refresh rule rejects for good reason. `vite-env.d.ts` is
+the standard Vite ambient declaration.
+
+**Two defects found while building it, both of the same family.** `tsc --build`
+was emitting JavaScript into `dist-types`, and vitest was collecting and running
+those compiled copies as well, so every test ran twice against a build that
+could be stale. Emit is now declaration only and the test glob is restricted to
+`src`. Separately, `css: false` in the vitest config made a raw stylesheet
+import return an empty string, so the token assertions passed over nothing while
+appearing to check the palette.
 
 **Do not.**
 

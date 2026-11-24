@@ -62,7 +62,7 @@ setup: security-tools ## Create the virtualenv and install everything, including
 clean: ## Remove build artefacts and caches. Does not touch the database volume
 	find . -type d -name __pycache__ -prune -exec $(RM) -r {} +
 	find . -type d -name '*.egg-info' -prune -exec $(RM) -r {} +
-	$(RM) -r .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage finops-web/dist
+	$(RM) -r .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage finops-web/dist finops-web/dist-types finops-web/dist-types-node
 
 # ---------------------------------------------------------------- quality
 
