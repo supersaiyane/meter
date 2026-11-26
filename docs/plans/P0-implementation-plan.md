@@ -1800,7 +1800,7 @@ cd finops-web && npm run test -- --run && npx axe-core-cli
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 9, screen 1 |
 | Delivers | FEAT-006, FEAT-009, FEAT-050 |
 | Depends on | TASK-P0-025, TASK-P0-035 |
@@ -1811,10 +1811,35 @@ cd finops-web && npm run test -- --run && npx axe-core-cli
 
 **Acceptance criteria.**
 
-- [ ] A persistent banner reads "showing N of M accounts" whenever coverage is
+- [x] A persistent banner reads "showing N of M accounts" whenever coverage is
       partial, per ISS-016
-- [ ] A global freshness indicator shows the oldest `as_of` in view
-- [ ] A degraded response is visually distinct from a healthy one
+- [x] A global freshness indicator shows the oldest `as_of` in view
+- [x] A degraded response is visually distinct from a healthy one
+
+**Coverage and freshness are properties of the page, not of a panel.** Each
+surface reports its own meta and the shell shows the worst of them: the oldest
+`as_of` in view, the most conservative coverage, and degraded if any panel is. A
+per panel treatment lets a reader carry an impression from one panel to the next
+without noticing it stopped applying, and a page whose oldest panel is nine
+hours old is a nine hour old page.
+
+**The API client refuses a response with no envelope**, and throws rather than
+returning an empty result when a request fails. An empty list rendered where a
+request failed is indistinguishable from an organization with nothing in it,
+which is the defect the backend spends its whole error taxonomy preventing,
+arriving through the front door instead.
+
+**Retries are off in the query client.** A retry hides a failure for as long as
+it takes to give up, and the backend already retries what is worth retrying and
+reports in its envelope what it could not do.
+
+**A cause the frontend does not recognise is still shown.** Hiding it because
+the vocabulary drifted would hide the drift.
+
+**Evidence deferred.** The screenshot of the partial coverage state is not
+produced here, because Playwright arrives with TASK-P0-028. The state itself is
+asserted: `AppShell.test.tsx` renders it and checks the banner reads "Showing 42
+of 310 accounts".
 
 **Do not.**
 

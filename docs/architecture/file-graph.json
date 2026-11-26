@@ -17,6 +17,10 @@
     "finops-web/dist-types-node/vite.config.d.ts",
     "finops-web/dist-types/src/App.d.ts",
     "finops-web/dist-types/src/App.test.d.ts",
+    "finops-web/dist-types/src/api/__tests__/client.test.d.ts",
+    "finops-web/dist-types/src/api/client.d.ts",
+    "finops-web/dist-types/src/api/types",
+    "finops-web/dist-types/src/api/types.d.ts",
     "finops-web/dist-types/src/components/CoverageBanner",
     "finops-web/dist-types/src/components/CoverageBanner.d.ts",
     "finops-web/dist-types/src/components/DataTable",
@@ -47,10 +51,24 @@
     "finops-web/dist-types/src/components/tableConfig",
     "finops-web/dist-types/src/components/tableConfig.d.ts",
     "finops-web/dist-types/src/main.d.ts",
+    "finops-web/dist-types/src/queryClient.d.ts",
+    "finops-web/dist-types/src/shell/AppShell.d.ts",
+    "finops-web/dist-types/src/shell/MetaContext.d.ts",
+    "finops-web/dist-types/src/shell/MetaProvider.d.ts",
+    "finops-web/dist-types/src/shell/__tests__/AppShell.test.d.ts",
+    "finops-web/dist-types/src/shell/__tests__/metaStore.test.d.ts",
+    "finops-web/dist-types/src/shell/metaRegistry.d.ts",
+    "finops-web/dist-types/src/shell/metaStore",
+    "finops-web/dist-types/src/shell/metaStore.d.ts",
+    "finops-web/dist-types/src/shell/sections",
+    "finops-web/dist-types/src/shell/sections.d.ts",
     "finops-web/dist-types/src/test-setup.d.ts",
     "finops-web/dist-types/src/tokens.css",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
+    "finops-web/src/api/__tests__/client.test.ts",
+    "finops-web/src/api/client.ts",
+    "finops-web/src/api/types.ts",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
     "finops-web/src/components/Figure.tsx",
@@ -70,6 +88,14 @@
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
     "finops-web/src/main.tsx",
+    "finops-web/src/queryClient.ts",
+    "finops-web/src/shell/AppShell.tsx",
+    "finops-web/src/shell/MetaProvider.tsx",
+    "finops-web/src/shell/__tests__/AppShell.test.tsx",
+    "finops-web/src/shell/__tests__/metaStore.test.ts",
+    "finops-web/src/shell/metaRegistry.ts",
+    "finops-web/src/shell/metaStore.ts",
+    "finops-web/src/shell/sections.ts",
     "finops-web/src/test-setup.ts",
     "finops-web/src/tokens.css",
     "finops-web/src/tokens.css?raw",
@@ -281,6 +307,11 @@
       "k": "docker"
     },
     {
+      "s": "finops-web/dist-types/src/api/client.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/components/DataTable.d.ts",
       "t": "finops-web/dist-types/src/components/tableConfig",
       "k": "typescript"
@@ -376,8 +407,68 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/shell/AppShell.d.ts",
+      "t": "finops-web/dist-types/src/shell/sections",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/shell/MetaContext.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/shell/MetaContext.d.ts",
+      "t": "finops-web/dist-types/src/shell/metaStore",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/shell/metaRegistry.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/shell/metaRegistry.d.ts",
+      "t": "finops-web/dist-types/src/shell/metaStore",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/shell/metaStore.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/App.test.tsx",
       "t": "finops-web/src/App.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/queryClient.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/shell/AppShell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/shell/MetaProvider.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/client.test.ts",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/client.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -578,6 +669,101 @@
     {
       "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/tokens.css",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/components/CoverageBanner.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/components/FreshnessIndicator.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/MetaProvider.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/MetaProvider.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/MetaProvider.tsx",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/shell/AppShell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/shell/MetaProvider.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/metaRegistry.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/metaRegistry.ts",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/metaStore.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {

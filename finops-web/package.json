@@ -12,6 +12,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.102.6",
     "@tanstack/react-virtual": "^3.14.10",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

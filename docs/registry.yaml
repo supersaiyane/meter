@@ -112,7 +112,7 @@ features:
 - id: FEAT-009
   name: Organization map, tree and graph views
   subproject: P0
-  status: Specified
+  status: In build
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9'
   doc: docs/features/FEAT-009-organization-map.md
 - id: FEAT-010
@@ -822,6 +822,13 @@ changes:
   type: Feature
   what: TASK-P0-035, the component layer. A number reaches a user only through Figure, which
     requires its provenance and its freshness, and no formatter is exported at all
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0056
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-026, the application shell. Coverage and freshness are page level and show
+    the worst panel, and the API client refuses a response with no envelope
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
