@@ -2,15 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import { ApiError, createApiClient, EnvelopeError } from '../client';
 
+/** Just enough of a Response for the client to work with. */
+function fakeResponse(body: unknown, status: number): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: 'x',
+    json: () => Promise.resolve(body),
+    text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+  } as unknown as Response;
+}
+
 function respondWith(body: unknown, status = 200): typeof fetch {
-  return (() =>
-    Promise.resolve({
-      ok: status >= 200 && status < 300,
-      status,
-      statusText: 'x',
-      json: () => Promise.resolve(body),
-      text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
-    } as Response)) as unknown as typeof fetch;
+  return () => Promise.resolve(fakeResponse(body, status));
 }
 
 const ENVELOPE = {
@@ -48,13 +52,7 @@ describe('the api client', () => {
     let seen: RequestInit | undefined;
     const spy = ((_url: string, init?: RequestInit) => {
       seen = init;
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        statusText: 'ok',
-        json: () => Promise.resolve(ENVELOPE),
-        text: () => Promise.resolve(''),
-      } as Response);
+      return Promise.resolve(fakeResponse(ENVELOPE, 200));
     }) as unknown as typeof fetch;
     const client = createApiClient({ token: 'abc', fetchImpl: spy });
     await client.get('/api/v1/me');

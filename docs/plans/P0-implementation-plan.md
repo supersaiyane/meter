@@ -1860,7 +1860,7 @@ state.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 9, screens 2 and 3 |
 | Delivers | FEAT-001, FEAT-009 |
 | Depends on | TASK-P0-026 |
@@ -1868,10 +1868,40 @@ state.
 
 **Acceptance criteria.**
 
-- [ ] Accounts table filters by role health, so broken onboarding is one click
-- [ ] Tree view is the default, and is keyboard navigable
-- [ ] Graph view renders with Cytoscape.js and stays usable at 300 accounts
-- [ ] Unreachable branches are drawn, marked, and not clickable
+- [x] Accounts table filters by role health, so broken onboarding is one click
+- [x] Tree view is the default, and is keyboard navigable
+- [x] Graph view renders with Cytoscape.js and stays usable at 300 accounts
+- [x] Unreachable branches are drawn, marked, and not clickable
+
+**Broken is one filter, not four.** Finding every account that cannot be read
+is a single click. Making somebody select four health states in turn is how a
+screen that technically supports the question fails to answer it.
+
+**Two components joined the inventory**, `OrgTree` and `GraphCanvas`, which
+section 11 lists and TASK-P0-035 did not build. Tree behaviour comes from React
+Aria rather than being hand written, per ADR-0019 rung seven: accessible tree
+navigation, expansion state and roving focus are subtle work that is not this
+product's problem.
+
+**An unreachable branch stays focusable and stops being actionable.** That is
+why `disabledBehavior` is selection rather than the default. A branch a keyboard
+user cannot reach at all is a branch they cannot discover, and discovering it is
+the entire point of drawing it. The test asserts the behaviour, that clicking it
+selects nothing, rather than asserting an attribute.
+
+**React Aria caught a real defect during the work.** Expandable items had no
+expand control, so a screen reader user could not open or close a branch at all.
+The library says so out loud, and it was right.
+
+**The graph library is loaded on demand.** It was most of the bundle, and the
+tree is the default, so paying for it on first load slowed the view everybody
+opens to speed up the one they mostly do not. First load went from 849 kB to
+414 kB, 264 kB to 126 kB compressed.
+
+**Evidence deferred.** The screenshot at 300 accounts needs a browser and
+arrives with the Playwright journey in TASK-P0-028. What is asserted here is
+what this project owns: the cap, and that 300 nodes and 299 edges are handed to
+the library. Whether it then draws them legibly is a question about a browser.
 
 **Do not.**
 

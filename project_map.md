@@ -173,7 +173,8 @@ meter/
 │           ├── DataTable.tsx  virtualised past 200 rows, headless
 │           └── index.ts       exports no formatter, deliberately
 │       ├── api/               typed client. Refuses a response with no envelope
-│       └── shell/             coverage and freshness, page level and worst case
+│       ├── shell/             coverage and freshness, page level and worst case
+│       └── screens/           accounts and the organization map
 │
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance

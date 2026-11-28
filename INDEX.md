@@ -269,6 +269,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0054 | 2026-08-27 | Chore | TASK-P0-002, the frontend workspace. Vite, React and TypeScript that builds, lints and tests, with no component library and no state library yet | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0055 | 2026-08-27 | Feature | TASK-P0-035, the component layer. A number reaches a user only through Figure, which requires its provenance and its freshness, and no formatter is exported at all | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0056 | 2026-08-27 | Feature | TASK-P0-026, the application shell. Coverage and freshness are page level and show the worst panel, and the API client refuses a response with no envelope | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0057 | 2026-08-27 | Feature | TASK-P0-027, the accounts screen and organization map. Broken onboarding is one click, the tree is the default, and unreachable branches are drawn and marked | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

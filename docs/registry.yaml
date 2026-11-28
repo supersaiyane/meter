@@ -831,6 +831,13 @@ changes:
     the worst panel, and the API client refuses a response with no envelope
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0057
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-027, the accounts screen and organization map. Broken onboarding is one
+    click, the tree is the default, and unreachable branches are drawn and marked
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
