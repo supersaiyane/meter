@@ -31,12 +31,14 @@ LOCK = ROOT / "docker" / "base-images.lock"
 
 REGISTRY = "reg.mini.dev"
 AUTH = "https://auth.mini.dev/api/v1/registry/token"
-ACCEPT = ", ".join([
-    "application/vnd.oci.image.index.v1+json",
-    "application/vnd.docker.distribution.manifest.list.v2+json",
-    "application/vnd.oci.image.manifest.v1+json",
-    "application/vnd.docker.distribution.manifest.v2+json",
-])
+ACCEPT = ", ".join(
+    [
+        "application/vnd.oci.image.index.v1+json",
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+        "application/vnd.oci.image.manifest.v1+json",
+        "application/vnd.docker.distribution.manifest.v2+json",
+    ]
+)
 
 # Versions chosen by measurement at TASK-P0-029, not by habit. See ADR-0018.
 #   python 3.12  13 findings, 3 High     python 3.13  3 findings, 0 High
@@ -64,10 +66,13 @@ def resolve(repo: str, tag: str) -> tuple[str, list[str]]:
     with urllib.request.urlopen(request, timeout=25) as response:
         digest = response.headers.get("docker-content-digest", "")
         body = json.loads(response.read())
-    platforms = sorted({
-        f"{m['platform']['os']}/{m['platform']['architecture']}"
-        for m in body.get("manifests", []) if "platform" in m
-    })
+    platforms = sorted(
+        {
+            f"{m['platform']['os']}/{m['platform']['architecture']}"
+            for m in body.get("manifests", [])
+            if "platform" in m
+        }
+    )
     return digest, platforms
 
 
@@ -138,8 +143,9 @@ def main() -> int:
         was = existing.get(ref)
         if was and was != digest:
             drift.append(f"{ref}\n    was {was}\n    now {digest}")
-        entries.append({"repo": repo, "tag": tag, "digest": digest,
-                        "platforms": platforms, "note": note})
+        entries.append(
+            {"repo": repo, "tag": tag, "digest": digest, "platforms": platforms, "note": note}
+        )
 
     if args.check:
         if drift:

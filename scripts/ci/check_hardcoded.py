@@ -41,32 +41,46 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api", "finops_mcp")
 
 EXEMPT_FILES = {
-    "finops_core/config.py",       # the one place values are declared
-    "finops_core/constants.py",    # genuine domain constants, closed sets
+    "finops_core/config.py",  # the one place values are declared
+    "finops_core/constants.py",  # genuine domain constants, closed sets
 }
 EXEMPT_DIRS = ("tests", "migrations", "__pycache__")
 
 CHECKS = [
-    ("region",
-     re.compile(r'["\'](?:us|eu|ap|sa|ca|me|af|il)-(?:north|south|east|west|central|northeast|southeast)-[1-9]["\']'),
-     "AWS region literal. Use settings.regions, from METER_REGIONS."),
-    ("account id",
-     re.compile(r'["\'](?!0{12})\d{12}["\']'),
-     "12 digit account identifier. Accounts come from the organization tree."),
-    ("arn",
-     re.compile(r'["\']arn:aws[a-z-]*:'),
-     "ARN literal. Build it from settings, or read it from the provider."),
-    ("endpoint url",
-     re.compile(r'["\']https?://(?!127\.0\.0\.1|localhost)[^"\']+["\']'),
-     "URL literal. Put it in settings, so an outbound call is reviewable."),
-    ("role name",
-     re.compile(r'["\'](?:FinOps[A-Za-z]*Role)["\']'),
-     "Role name literal. Use settings.collector_role_name, so it cannot drift "
-     "from the StackSet."),
-    ("bare threshold",
-     re.compile(r'(?<![\w.])(?:>=|<=|>|<)\s*(?!0\b|1\b|2\b|100\b)\d{2,}(?![\w.])'),
-     "Numeric threshold in a comparison. A magic number in an expression is a "
-     "policy decision in hiding. Move it to settings."),
+    (
+        "region",
+        re.compile(
+            r'["\'](?:us|eu|ap|sa|ca|me|af|il)-(?:north|south|east|west|central|northeast|southeast)-[1-9]["\']'
+        ),
+        "AWS region literal. Use settings.regions, from METER_REGIONS.",
+    ),
+    (
+        "account id",
+        re.compile(r'["\'](?!0{12})\d{12}["\']'),
+        "12 digit account identifier. Accounts come from the organization tree.",
+    ),
+    (
+        "arn",
+        re.compile(r'["\']arn:aws[a-z-]*:'),
+        "ARN literal. Build it from settings, or read it from the provider.",
+    ),
+    (
+        "endpoint url",
+        re.compile(r'["\']https?://(?!127\.0\.0\.1|localhost)[^"\']+["\']'),
+        "URL literal. Put it in settings, so an outbound call is reviewable.",
+    ),
+    (
+        "role name",
+        re.compile(r'["\'](?:FinOps[A-Za-z]*Role)["\']'),
+        "Role name literal. Use settings.collector_role_name, so it cannot drift "
+        "from the StackSet.",
+    ),
+    (
+        "bare threshold",
+        re.compile(r"(?<![\w.])(?:>=|<=|>|<)\s*(?!0\b|1\b|2\b|100\b)\d{2,}(?![\w.])"),
+        "Numeric threshold in a comparison. A magic number in an expression is a "
+        "policy decision in hiding. Move it to settings.",
+    ),
 ]
 
 # A line carrying this marker is accepted, with its reason recorded inline.
@@ -93,10 +107,7 @@ def main() -> int:
                 for name, pattern, advice in CHECKS:
                     match = pattern.search(line)
                     if match:
-                        findings.append(
-                            f"{rel}:{number}  {name}: {match.group(0)}\n"
-                            f"    {advice}"
-                        )
+                        findings.append(f"{rel}:{number}  {name}: {match.group(0)}\n    {advice}")
                         break
 
     if findings:

@@ -49,6 +49,7 @@ SEVERITY_RANK = {name: index for index, name in enumerate(SEVERITY_ORDER)}
 
 # ------------------------------------------------------------------ parsing
 
+
 def _norm_sev(value: str | None) -> str:
     if not value:
         return "Unknown"
@@ -201,6 +202,7 @@ def collect(directory: Path) -> list[dict[str, Any]]:
 
 # ------------------------------------------------------------------ merging
 
+
 def dedupe(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Merge the same finding seen by more than one scanner, keeping both names."""
     merged: dict[tuple[str, str, str], dict[str, Any]] = {}
@@ -266,9 +268,9 @@ def suggest_fix(finding: dict[str, Any]) -> str:
             "security/policy/allowlist.yaml."
         )
     if finding["ecosystem"] in ("python", "python-pkg"):
-        return f'Pin `{package}>={fixed}` in pyproject.toml, then `make setup`.'
+        return f"Pin `{package}>={fixed}` in pyproject.toml, then `make setup`."
     if finding["ecosystem"] in ("npm", "node-pkg"):
-        return f'`cd finops-web && npm install {package}@{fixed}`'
+        return f"`cd finops-web && npm install {package}@{fixed}`"
     return (
         f"Upgrade `{package}` to {fixed}. If it comes from the base image, "
         f"rebuild against the current Minimus tag, which is rebuilt daily."
@@ -368,8 +370,14 @@ def render_html(
     else:
         out.append('<div class="scroll"><table><thead><tr>')
         for header in (
-            "Severity", "Advisory", "Package", "Installed", "Fixed in",
-            "Target", "Seen by", "Suggested fix",
+            "Severity",
+            "Advisory",
+            "Package",
+            "Installed",
+            "Fixed in",
+            "Target",
+            "Seen by",
+            "Suggested fix",
         ):
             out.append(f"<th>{header}</th>")
         out.append("</tr></thead><tbody>")
@@ -381,11 +389,11 @@ def render_html(
                 "<tr>"
                 f'<td class="sev {f["severity"]}">{f["severity"]}</td>'
                 f"<td>{link}</td>"
-                f'<td><code>{html.escape(f["package"])}</code></td>'
-                f'<td>{html.escape(f["installed"])}</td>'
-                f'<td>{html.escape(f["fixed_in"]) or "<em>none</em>"}</td>'
-                f'<td>{html.escape(f["target"])}</td>'
-                f'<td>{html.escape(", ".join(sorted(set(f["scanners"]))))}</td>'
+                f"<td><code>{html.escape(f['package'])}</code></td>"
+                f"<td>{html.escape(f['installed'])}</td>"
+                f"<td>{html.escape(f['fixed_in']) or '<em>none</em>'}</td>"
+                f"<td>{html.escape(f['target'])}</td>"
+                f"<td>{html.escape(', '.join(sorted(set(f['scanners']))))}</td>"
                 f'<td class="fix">{f["fix_html"]}</td>'
                 "</tr>"
             )
@@ -403,11 +411,11 @@ def render_html(
             entry = f["allowlist"]
             out.append(
                 "<tr>"
-                f'<td>{html.escape(f["id"])}</td>'
-                f'<td><code>{html.escape(f["package"])}</code></td>'
-                f'<td>{html.escape(str(entry.get("owner", "")))}</td>'
-                f'<td>{html.escape(str(entry.get("expires", "")))}</td>'
-                f'<td>{html.escape(str(entry.get("reason", "")))}</td>'
+                f"<td>{html.escape(f['id'])}</td>"
+                f"<td><code>{html.escape(f['package'])}</code></td>"
+                f"<td>{html.escape(str(entry.get('owner', '')))}</td>"
+                f"<td>{html.escape(str(entry.get('expires', '')))}</td>"
+                f"<td>{html.escape(str(entry.get('reason', '')))}</td>"
                 "</tr>"
             )
         out.append("</tbody></table></div>")
@@ -417,19 +425,18 @@ def render_html(
         out.append('<p class="empty">None.</p>')
     else:
         out.append('<div class="scroll"><table><thead><tr>')
-        for header in ("Advisory", "Package", "Owner", "Review",
-                       "Why it is not reachable"):
+        for header in ("Advisory", "Package", "Owner", "Review", "Why it is not reachable"):
             out.append(f"<th>{header}</th>")
         out.append("</tr></thead><tbody>")
         for f in unfixable:
             e = f["accepted"]
             out.append(
                 "<tr>"
-                f'<td>{html.escape(f["id"])}</td>'
-                f'<td><code>{html.escape(f["package"])}</code></td>'
-                f'<td>{html.escape(str(e.get("owner", "")))}</td>'
-                f'<td>{html.escape(str(e.get("review", "")))}</td>'
-                f'<td>{html.escape(str(e.get("reachability", "")))}</td>'
+                f"<td>{html.escape(f['id'])}</td>"
+                f"<td><code>{html.escape(f['package'])}</code></td>"
+                f"<td>{html.escape(str(e.get('owner', '')))}</td>"
+                f"<td>{html.escape(str(e.get('review', '')))}</td>"
+                f"<td>{html.escape(str(e.get('reachability', '')))}</td>"
                 "</tr>"
             )
         out.append("</tbody></table></div>")
@@ -447,13 +454,15 @@ def render_html(
 
 
 def render_posture(
-    findings: list[dict[str, Any]], allowed: list[dict[str, Any]], generated: str,
-    label: str, unfixable: list[dict[str, Any]] | None = None
+    findings: list[dict[str, Any]],
+    allowed: list[dict[str, Any]],
+    generated: str,
+    label: str,
+    unfixable: list[dict[str, Any]] | None = None,
 ) -> str:
     unfixable = unfixable or []
     counts = Counter(f["severity"] for f in findings)
-    status = ("**ZERO FIXABLE FINDINGS**" if not findings
-              else f"**{len(findings)} UNRESOLVED**")
+    status = "**ZERO FIXABLE FINDINGS**" if not findings else f"**{len(findings)} UNRESOLVED**"
     lines = [
         "# Security posture",
         "",
@@ -489,8 +498,8 @@ def render_posture(
     else:
         lines += ["| Advisory | Package | Owner | Expires |", "| --- | --- | --- | --- |"]
         lines += [
-            f'| {f["id"]} | {f["package"]} | {f["allowlist"].get("owner", "")} '
-            f'| {f["allowlist"].get("expires", "")} |'
+            f"| {f['id']} | {f['package']} | {f['allowlist'].get('owner', '')} "
+            f"| {f['allowlist'].get('expires', '')} |"
             for f in allowed
         ]
     lines += ["", "Full report: `security/reports/latest/index.html`", ""]
@@ -499,14 +508,19 @@ def render_posture(
 
 # ------------------------------------------------------------------ main
 
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--allowlist", type=Path, required=True)
     parser.add_argument(
-        "--accepted", type=Path,
+        "--accepted",
+        type=Path,
         default=Path(__file__).resolve().parent.parent.parent
-        / "security" / "policy" / "accepted.yaml")
+        / "security"
+        / "policy"
+        / "accepted.yaml",
+    )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--summary", type=Path)
     parser.add_argument("--posture", type=Path)
@@ -517,9 +531,7 @@ def main() -> int:
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
     raw = collect(args.input)
     for finding in raw:
-        finding["scanner_family"] = (
-            "secrets" if finding["scanner"] == "gitleaks" else "vuln"
-        )
+        finding["scanner_family"] = "secrets" if finding["scanner"] == "gitleaks" else "vuln"
     findings = dedupe(raw)
 
     allowlist = load_allowlist(args.allowlist, date.today())
@@ -557,27 +569,29 @@ def main() -> int:
             print(f"FAIL: {len(unresolved)} finding(s) in {args.label}\n")
             for f in unresolved[:25]:
                 fixed = f["fixed_in"] or "no fix published"
-                print(f'  [{f["severity"]:<10}] {f["id"]:<20} {f["package"]} '
-                      f'{f["installed"]} -> {fixed}')
+                print(
+                    f"  [{f['severity']:<10}] {f['id']:<20} {f['package']} "
+                    f"{f['installed']} -> {fixed}"
+                )
             print("\nPolicy is zero findings that have a published fix, ADR-0018.")
             print("  With a fix:    take the fix, or add a time boxed allowlist")
             print("                 entry with an owner in policy/allowlist.yaml.")
             print("  Without a fix: change the version, or add an acceptance record")
             print("                 with a reachability argument in policy/accepted.yaml.")
             return 1
-        print(f"PASS: {args.label} has zero fixable findings"
-              + (f", {len(unfixable)} accepted as unfixable." if unfixable else "."))
+        print(
+            f"PASS: {args.label} has zero fixable findings"
+            + (f", {len(unfixable)} accepted as unfixable." if unfixable else ".")
+        )
         return 0
 
     if args.output:
         args.output.write_text(
-            render_html(unresolved, allowed, generated, args.label, unfixable),
-            encoding="utf-8"
+            render_html(unresolved, allowed, generated, args.label, unfixable), encoding="utf-8"
         )
     if args.posture:
         args.posture.write_text(
-            render_posture(unresolved, allowed, generated, args.label, unfixable),
-            encoding="utf-8"
+            render_posture(unresolved, allowed, generated, args.label, unfixable), encoding="utf-8"
         )
     if args.summary:
         args.summary.write_text(
@@ -595,8 +609,10 @@ def main() -> int:
                 default=str,
             )
         )
-    print(f"{len(unresolved)} unresolved, {len(allowed)} allowlisted, "
-          f"{len(unfixable)} accepted as unfixable")
+    print(
+        f"{len(unresolved)} unresolved, {len(allowed)} allowlisted, "
+        f"{len(unfixable)} accepted as unfixable"
+    )
     return 0
 
 

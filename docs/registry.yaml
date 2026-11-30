@@ -838,6 +838,13 @@ changes:
     click, the tree is the default, and unreachable branches are drawn and marked
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0058
+  date: '2026-08-27'
+  type: Chore
+  what: TASK-P0-003 and TASK-P0-004, the index checker's own tests and a demonstrated
+    rejection of the banned dash by the local hook. Wave A complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

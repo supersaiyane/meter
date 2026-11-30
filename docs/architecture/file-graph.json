@@ -252,6 +252,8 @@
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/test_fake.py",
+    "tests/scripts/__init__.py",
+    "tests/scripts/test_check_index.py",
     "tests/test_checkpoint_rotation.py"
   ],
   "edges": [

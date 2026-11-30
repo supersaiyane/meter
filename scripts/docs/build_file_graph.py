@@ -52,9 +52,21 @@ LAYERS = ["finops_api", "finops_mcp", "finops_ingest", "finops_providers", "fino
 LAYER_RANK = {name: index for index, name in enumerate(LAYERS)}
 
 SKIP_DIRS = {
-    ".git", ".venv", "venv", "node_modules", "dist", "build", "__pycache__",
-    ".pytest_cache", ".mypy_cache", ".ruff_cache", "htmlcov", ".terraform",
-    "security", "scratch", "tmp",
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "dist",
+    "build",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "htmlcov",
+    ".terraform",
+    "security",
+    "scratch",
+    "tmp",
 }
 
 TS_IMPORT = re.compile(
@@ -231,13 +243,11 @@ def render_mermaid(edges, nodes) -> str:
         lines.append(f"| `{node}` | {count} |")
     lines.append("")
 
-    orphans = sorted(
-        n for n in nodes
-        if n not in incoming and not any(s == n for s, _, _ in edges)
-    )
+    orphans = sorted(n for n in nodes if n not in incoming and not any(s == n for s, _, _ in edges))
     lines += ["## Files with no edges", ""]
     lines += (
-        ["None."] if not orphans
+        ["None."]
+        if not orphans
         else ["A file with no edges is either an entry point or dead. Check each one.", ""]
         + [f"- `{n}`" for n in orphans[:40]]
     )

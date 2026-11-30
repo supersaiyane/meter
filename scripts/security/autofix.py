@@ -84,9 +84,7 @@ def apply_python(finding: dict[str, Any], pyproject: Path) -> bool:
     """Raise the lower bound of a direct pin. Returns True when a change was made."""
     package, fixed = finding["package"], finding["fixed_in"]
     text = pyproject.read_text()
-    pattern = re.compile(
-        rf'(["\']){re.escape(package)}(\[[^\]]*\])?\s*>=\s*[^"\',]+(["\'])'
-    )
+    pattern = re.compile(rf'(["\']){re.escape(package)}(\[[^\]]*\])?\s*>=\s*[^"\',]+(["\'])')
     match = pattern.search(text)
     if not match:
         finding["blocked_because"] = (
@@ -95,7 +93,7 @@ def apply_python(finding: dict[str, Any], pyproject: Path) -> bool:
         )
         return False
     extras = match.group(2) or ""
-    replacement = f'{match.group(1)}{package}{extras}>={fixed}{match.group(3)}'
+    replacement = f"{match.group(1)}{package}{extras}>={fixed}{match.group(3)}"
     pyproject.write_text(text[: match.start()] + replacement + text[match.end() :])
     return True
 
@@ -124,8 +122,9 @@ def main() -> int:
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--branch", default=None)
-    parser.add_argument("--skip-tests", action="store_true",
-                        help="Only for a dry run. Never use when applying.")
+    parser.add_argument(
+        "--skip-tests", action="store_true", help="Only for a dry run. Never use when applying."
+    )
     args = parser.parse_args()
 
     if not args.summary.exists():
@@ -144,15 +143,19 @@ def main() -> int:
     print(f"  {len(manual)} need a human decision\n")
 
     for finding in manual:
-        print(f'  MANUAL  {finding["id"]:<20} {finding["package"]:<24} '
-              f'{finding.get("blocked_because", "")}')
+        print(
+            f"  MANUAL  {finding['id']:<20} {finding['package']:<24} "
+            f"{finding.get('blocked_because', '')}"
+        )
     if manual:
         print()
 
     if not args.apply:
         for finding in auto:
-            print(f'  WOULD APPLY  {finding["package"]} '
-                  f'{finding.get("installed")} -> {finding["fixed_in"]}')
+            print(
+                f"  WOULD APPLY  {finding['package']} "
+                f"{finding.get('installed')} -> {finding['fixed_in']}"
+            )
         print("\nDry run. Pass --apply to make the changes on a branch.")
         return 0
 
@@ -173,8 +176,10 @@ def main() -> int:
         )
         (applied if ok else failed).append(finding)
         verb = "APPLIED" if ok else "SKIPPED"
-        print(f'  {verb}  {finding["package"]} -> {finding["fixed_in"]}'
-              + ("" if ok else f'  ({finding.get("blocked_because", "")})'))
+        print(
+            f"  {verb}  {finding['package']} -> {finding['fixed_in']}"
+            + ("" if ok else f"  ({finding.get('blocked_because', '')})")
+        )
 
     if not applied:
         print("\nNo change made.")

@@ -59,9 +59,7 @@ def main() -> int:
                     f"new entry. Do not edit the date."
                 )
             if expires - added > MAX_WINDOW:
-                problems.append(
-                    f"{label}: expiry {expires} is more than 90 days after {added}"
-                )
+                problems.append(f"{label}: expiry {expires} is more than 90 days after {added}")
 
     if problems:
         print(f"FAIL: {len(problems)} problem(s) in {args.allowlist}\n")
@@ -70,10 +68,7 @@ def main() -> int:
         return 1
 
     if args.emit_grype_ignore:
-        rules = [
-            {"vulnerability": e["id"], "package": {"name": e["package"]}}
-            for e in entries
-        ]
+        rules = [{"vulnerability": e["id"], "package": {"name": e["package"]}} for e in entries]
         args.emit_grype_ignore.write_text(yaml.safe_dump({"ignore": rules}))
 
     plural = "y" if len(entries) == 1 else "ies"

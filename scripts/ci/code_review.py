@@ -34,8 +34,18 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 # Deterministic checks. Each is (name, command, blocking).
 CHECKS = [
     ("ruff", ["ruff", "check", "--output-format", "json", "."], True),
-    ("mypy", ["mypy", "--no-error-summary", "finops_core", "finops_providers",
-              "finops_ingest", "finops_api"], True),
+    (
+        "mypy",
+        [
+            "mypy",
+            "--no-error-summary",
+            "finops_core",
+            "finops_providers",
+            "finops_ingest",
+            "finops_api",
+        ],
+        True,
+    ),
     ("import-linter", ["lint-imports"], True),
     ("layering", ["python3", "scripts/docs/build_file_graph.py", "--check"], True),
     ("dead-code", ["ruff", "check", "--select", "F401,F841,ARG", "."], False),

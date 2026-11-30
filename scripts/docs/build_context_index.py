@@ -102,24 +102,41 @@ def collect() -> tuple[list[dict], dict[str, set[str]]]:
             for node in tree.body:
                 if isinstance(node, ast.ClassDef) and not node.name.startswith("_"):
                     symbols.append(
-                        {"kind": "class", "name": node.name, "file": rel,
-                         "line": node.lineno, "doc": first_line(node),
-                         "package": package}
+                        {
+                            "kind": "class",
+                            "name": node.name,
+                            "file": rel,
+                            "line": node.lineno,
+                            "doc": first_line(node),
+                            "package": package,
+                        }
                     )
                     for sub in node.body:
-                        if isinstance(sub, (ast.FunctionDef, ast.AsyncFunctionDef)) \
-                                and not sub.name.startswith("_"):
+                        if isinstance(
+                            sub, (ast.FunctionDef, ast.AsyncFunctionDef)
+                        ) and not sub.name.startswith("_"):
                             symbols.append(
-                                {"kind": "method", "name": f"{node.name}.{sub.name}",
-                                 "file": rel, "line": sub.lineno,
-                                 "doc": first_line(sub), "package": package}
+                                {
+                                    "kind": "method",
+                                    "name": f"{node.name}.{sub.name}",
+                                    "file": rel,
+                                    "line": sub.lineno,
+                                    "doc": first_line(sub),
+                                    "package": package,
+                                }
                             )
-                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) \
-                        and not node.name.startswith("_"):
+                elif isinstance(
+                    node, (ast.FunctionDef, ast.AsyncFunctionDef)
+                ) and not node.name.startswith("_"):
                     symbols.append(
-                        {"kind": "function", "name": node.name, "file": rel,
-                         "line": node.lineno, "doc": first_line(node),
-                         "package": package}
+                        {
+                            "kind": "function",
+                            "name": node.name,
+                            "file": rel,
+                            "line": node.lineno,
+                            "doc": first_line(node),
+                            "package": package,
+                        }
                     )
 
             for node in ast.walk(tree):
@@ -127,8 +144,10 @@ def collect() -> tuple[list[dict], dict[str, set[str]]]:
                     continue
                 func = node.func
                 name = (
-                    func.id if isinstance(func, ast.Name)
-                    else func.attr if isinstance(func, ast.Attribute)
+                    func.id
+                    if isinstance(func, ast.Name)
+                    else func.attr
+                    if isinstance(func, ast.Attribute)
                     else None
                 )
                 if name:
@@ -162,8 +181,7 @@ def render(symbols: list[dict], calls: dict[str, set[str]]) -> str:
     for sym in symbols:
         by_package[sym["package"]].append(sym)
 
-    out.append(f"{len(symbols)} public symbols across "
-               f"{len(by_package)} packages.\n\n")
+    out.append(f"{len(symbols)} public symbols across {len(by_package)} packages.\n\n")
 
     for package in PACKAGES:
         rows = by_package.get(package)
@@ -185,10 +203,7 @@ def render(symbols: list[dict], calls: dict[str, set[str]]) -> str:
             )
         out.append("\n")
 
-    orphans = [
-        s for s in symbols
-        if not (calls.get(s["name"].split(".")[-1], set()) - {s["file"]})
-    ]
+    orphans = [s for s in symbols if not (calls.get(s["name"].split(".")[-1], set()) - {s["file"]})]
     out.append("## Called by nothing in this tree\n\n")
     if not orphans:
         out.append("None.\n")

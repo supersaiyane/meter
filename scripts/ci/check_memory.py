@@ -166,9 +166,7 @@ def check_lessons() -> tuple[list[str], int, str]:
         if match:
             dates.append(match.group(1))
         else:
-            problems.append(
-                f"lesson '{title}': the heading must open with an absolute date"
-            )
+            problems.append(f"lesson '{title}': the heading must open with an absolute date")
 
     return problems, len(blocks), max(dates) if dates else "never"
 

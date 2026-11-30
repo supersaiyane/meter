@@ -53,9 +53,7 @@ def load() -> dict:
 
 def replace_block(text: str, name: str, body: str) -> str:
     start, end = f"<!-- generated:{name} start -->", f"<!-- generated:{name} end -->"
-    pattern = re.compile(
-        re.escape(start) + r".*?" + re.escape(end), re.DOTALL
-    )
+    pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
     warning = WARNING_TEMPLATE.format(source=SOURCES.get(name, DEFAULT_SOURCE))
     block = f"{start}\n{warning}\n\n{body.rstrip()}\n\n{end}"
     if not pattern.search(text):
@@ -67,6 +65,7 @@ def replace_block(text: str, name: str, body: str) -> str:
 
 
 # ---------------------------------------------------------------- renderers
+
 
 def render_features(reg: dict) -> str:
     subs = {s["id"]: s["name"] for s in reg["subprojects"]}
@@ -212,6 +211,7 @@ def render_subprojects(reg: dict) -> str:
     ]
     for sp in sorted(reg["subprojects"], key=lambda x: x["id"]):
         c = counts[sp["id"]]
+
         # This table lives in docs/01-ROADMAP.md, so a path recorded from the
         # repository root needs its leading "docs/" removed to resolve.
         def rel(path: str) -> str:
@@ -237,8 +237,10 @@ def render_task_status(reg: dict) -> str:
     """
     import re
 
-    lines = ["| Sub project | Done | Partly | Not started | Total | Plan |",
-             "| --- | --- | --- | --- | --- | --- |"]
+    lines = [
+        "| Sub project | Done | Partly | Not started | Total | Plan |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
     detail: list[str] = []
 
     for sub in ("P0", "P2"):
@@ -283,20 +285,21 @@ def render_status_summary(reg: dict) -> str:
     fc = Counter(f["status"] for f in reg["features"])
     ic = Counter(i["status"] for i in reg["issues"])
     oc = Counter(o["status"].split()[0] for o in reg["open_questions"])
-    return "\n".join([
-        "| Register | Counts |",
-        "| --- | --- |",
-        f"| Features | {sum(fc.values())} total, {fc.get('Specified', 0)} specified, "
-        f"{fc.get('In build', 0)} in build, {fc.get('Delivered', 0)} delivered |",
-        f"| Decisions | {len(reg['adrs'])} architecture decision records |",
-        f"| Changes | {len(reg['changes'])} recorded |",
-        f"| Issues | {ic.get('FIXED', 0)} fixed, {ic.get('OPEN', 0)} open, "
-        f"{ic.get('PARKED', 0)} parked |",
-        f"| Open questions | {sum(oc.values())} awaiting a decision |",
-        "",
-        "Generated from `docs/registry.yaml`. Change a status there, then run "
-        "`make doc-sync`.",
-    ])
+    return "\n".join(
+        [
+            "| Register | Counts |",
+            "| --- | --- |",
+            f"| Features | {sum(fc.values())} total, {fc.get('Specified', 0)} specified, "
+            f"{fc.get('In build', 0)} in build, {fc.get('Delivered', 0)} delivered |",
+            f"| Decisions | {len(reg['adrs'])} architecture decision records |",
+            f"| Changes | {len(reg['changes'])} recorded |",
+            f"| Issues | {ic.get('FIXED', 0)} fixed, {ic.get('OPEN', 0)} open, "
+            f"{ic.get('PARKED', 0)} parked |",
+            f"| Open questions | {sum(oc.values())} awaiting a decision |",
+            "",
+            "Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.",
+        ]
+    )
 
 
 def sync_feature_headers(reg: dict, check: bool) -> list[str]:
@@ -377,8 +380,14 @@ def main() -> int:
         f"{len(reg['changes'])} changes, {len(reg['issues'])} issues, "
         f"{len(reg['open_questions'])} open questions"
     )
-    print(("OK: generated documents match the registry, " if args.check
-           else "Regenerated from the registry: ") + counts)
+    print(
+        (
+            "OK: generated documents match the registry, "
+            if args.check
+            else "Regenerated from the registry: "
+        )
+        + counts
+    )
     return 0
 
 

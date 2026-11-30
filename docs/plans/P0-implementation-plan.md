@@ -165,7 +165,7 @@ cd finops-web && npm ci && npm run lint && npm run build
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | `docs/03-CHANGE-CONTROL.md` |
 | Depends on | none |
 | Estimate | S |
@@ -182,15 +182,21 @@ does not exist, or when a document in `docs/` is not referenced by `INDEX.md`.
 
 **Acceptance criteria.**
 
-- [ ] Fails with a clear message when `INDEX.md` links a missing path
-- [ ] Fails when a file under `docs/` is not linked from `INDEX.md`
-- [ ] Passes on the repository as it stands
-- [ ] Exit code is 1 on failure, so CI actually stops
+- [x] Fails with a clear message when `INDEX.md` links a missing path
+- [x] Fails when a file under `docs/` is not linked from `INDEX.md`
+- [x] Passes on the repository as it stands
+- [x] Exit code is 1 on failure, so CI actually stops
 
 **Do not.**
 
 - Do not make it a warning. A documentation check that warns is a check that is
   ignored within two weeks.
+
+**The checker is now testable.** `problems_in` takes a root, read at call time
+rather than bound as a default, so its failure paths run against fixture trees.
+A checker nobody has watched fail is a checker nobody knows still fails, and
+this one is the reason a merge stops. Its tests live in
+`tests/scripts/test_check_index.py`.
 
 **Evidence.**
 
@@ -204,7 +210,7 @@ make check-docs
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | `docs/04-DEPLOYMENT.md` |
 | Depends on | TASK-P0-001, TASK-P0-002, TASK-P0-003 |
 | Estimate | S |
@@ -221,14 +227,25 @@ are enforced before a commit is created rather than after.
 
 **Acceptance criteria.**
 
-- [ ] Pipeline stages `verify` all pass on the scaffold
-- [ ] A commit containing an em dash is rejected locally by pre commit
-- [ ] `terraform-validate` is allowed to fail only until TASK-P0-013 lands, and
+- [x] Pipeline stages `verify` all pass on the scaffold
+- [x] A commit containing an em dash is rejected locally by pre commit
+- [x] `terraform-validate` is allowed to fail only until TASK-P0-013 lands, and
       the allowance is removed in that task
 
 **Do not.**
 
 - Do not skip the writing rules job to unblock a pipeline. Fix the text.
+
+**The dash rejection was demonstrated, not assumed.** A probe document
+containing the banned character was written into `docs/`, `make check-writing`
+failed and named the file and line, and the probe was removed. The same target
+is the pre commit hook's entry, so the local rejection and the pipeline
+rejection are the same check rather than two that can drift.
+
+**`terraform-validate` carries no `allow_failure`.** It fails today because the
+Terraform directories do not exist, and it stops failing when TASK-P0-013 to 016
+create them, which is the behaviour the criterion asks for. Nothing was
+weakened to make it green early.
 
 **Evidence.** Pipeline URL and a screenshot or the job log tail.
 

@@ -69,8 +69,7 @@ def main() -> int:
 
     env = ENV_EXAMPLE.read_text(encoding="utf-8")
     in_env = {
-        m.group(1).lower()
-        for m in re.finditer(r"^METER_FEATURE_([A-Z0-9_]+)=", env, re.MULTILINE)
+        m.group(1).lower() for m in re.finditer(r"^METER_FEATURE_([A-Z0-9_]+)=", env, re.MULTILINE)
     }
     in_register = {str(f.get("key", "")).lower() for f in flags}
 

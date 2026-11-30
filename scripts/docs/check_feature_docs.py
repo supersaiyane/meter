@@ -45,10 +45,7 @@ PLANNED_SECTIONS = ("## What it does", "## Why it exists")
 def main() -> int:
     problems: list[str] = []
 
-    index_ids = {
-        f"FEAT-{n}"
-        for n in FEAT_ID.findall(INDEX.read_text(encoding="utf-8"))
-    }
+    index_ids = {f"FEAT-{n}" for n in FEAT_ID.findall(INDEX.read_text(encoding="utf-8"))}
     doc_by_id: dict[str, Path] = {}
     for path in sorted(FEATURES.glob("FEAT-*.md")):
         match = FEAT_ID.match(path.name)
@@ -58,13 +55,10 @@ def main() -> int:
         doc_by_id[f"FEAT-{match.group(1)}"] = path
 
     for feature_id in sorted(index_ids - doc_by_id.keys()):
-        problems.append(
-            f"{feature_id} is in INDEX.md but has no document under docs/features/"
-        )
+        problems.append(f"{feature_id} is in INDEX.md but has no document under docs/features/")
     for feature_id in sorted(doc_by_id.keys() - index_ids):
         problems.append(
-            f"{feature_id} has a document but is not listed in INDEX.md, so nobody "
-            f"will find it"
+            f"{feature_id} has a document but is not listed in INDEX.md, so nobody will find it"
         )
 
     for feature_id, path in sorted(doc_by_id.items()):
@@ -77,9 +71,7 @@ def main() -> int:
         required = PLANNED_SECTIONS if status == "Planned" else SPECIFIED_SECTIONS
         for section in required:
             if section not in text:
-                problems.append(
-                    f"{feature_id} is {status} but is missing the '{section}' section"
-                )
+                problems.append(f"{feature_id} is {status} but is missing the '{section}' section")
 
     if problems:
         print(f"FAIL: {len(problems)} problem(s) with feature documentation\n")

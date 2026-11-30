@@ -29,8 +29,14 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent.parent
 ACCEPTED = ROOT / "security" / "policy" / "accepted.yaml"
 
-PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api",
-            "finops_mcp", "finops_query")
+PACKAGES = (
+    "finops_core",
+    "finops_providers",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+    "finops_query",
+)
 
 # module -> the advisory whose acceptance depends on not importing it
 FORBIDDEN = {

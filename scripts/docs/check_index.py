@@ -50,12 +50,21 @@ LINK = re.compile(r"\[[^\]]*\]\(([^)#]+)(?:#[^)]*)?\)")
 BACKTICK_PATH = re.compile(r"`([A-Za-z0-9_./-]+\.md)`")
 
 
-def main() -> int:
-    if not INDEX.exists():
-        print("FAIL: INDEX.md is missing. It is the entry point for the project.")
-        return 1
+def problems_in(root: Path | None = None) -> list[str] | None:
+    """Everything wrong with the index under `root`, or None when it is absent.
 
-    text = INDEX.read_text(encoding="utf-8")
+    The root is a parameter so this can be pointed at a fixture tree. A checker
+    with no test of its own failure paths is a checker nobody knows still fails,
+    and this one is the reason a merge stops.
+    """
+    # Read at call time rather than bound as a default, so a test can point the
+    # checker at a fixture tree.
+    root = ROOT if root is None else root
+    index = root / "INDEX.md"
+    if not index.exists():
+        return None
+
+    text = index.read_text(encoding="utf-8")
     referenced: set[str] = set()
     problems: list[str] = []
 
@@ -67,19 +76,27 @@ def main() -> int:
 
     # Check 1: every referenced path exists.
     for target in sorted(referenced):
-        candidate = ROOT / target
+        candidate = root / target
         if not candidate.exists() and not target.endswith("/"):
             problems.append(f"INDEX.md references a missing path: {target}")
 
     # Check 2: every indexed document is referenced.
     for directory in INDEXED_DIRS:
-        for path in sorted((ROOT / directory).rglob("*.md")):
-            rel = path.relative_to(ROOT).as_posix()
+        for path in sorted((root / directory).rglob("*.md")):
+            rel = path.relative_to(root).as_posix()
             if rel in EXEMPT:
                 continue
             if rel not in referenced:
                 problems.append(f"Not referenced from INDEX.md: {rel}")
 
+    return problems
+
+
+def main() -> int:
+    problems = problems_in()
+    if problems is None:
+        print("FAIL: INDEX.md is missing. It is the entry point for the project.")
+        return 1
     if problems:
         print("FAIL: INDEX.md is out of step with the documents it indexes.\n")
         for problem in problems:
@@ -87,7 +104,7 @@ def main() -> int:
         print("\nSee docs/03-CHANGE-CONTROL.md for the routing rule.")
         return 1
 
-    print(f"OK: INDEX.md is consistent, {len(referenced)} references checked")
+    print("OK: INDEX.md is consistent")
     return 0
 
 
