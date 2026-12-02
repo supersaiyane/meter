@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-109 issues. 75 fixed, 34 open, 0 parked.
+110 issues. 75 fixed, 35 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -88,6 +88,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-098 | HIGH | The chosen base image versions were picked by habit, not measurement. python 3.12 carried 3 High findings and nginx 1.27 carried 93 including 6 Critical | FIXED | Moved to python 3.13 and nginx 1.30, both measured at TASK-P0-029. node:22-dev was already clean |
 | ISS-102 | HIGH | Every honesty guarantee in the product is enforced by a database constraint and then delivered by an undesigned pixel, so the constraint work could be thrown away in the last six inches | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md). The Figure component makes a number unrenderable without its provenance |
 | ISS-110 | HIGH | The import linter contracts forbidding external modules never worked: include_external_packages was not set, so boto3, fastapi and sqlalchemy were never checked and the contract looked like protection it was not providing | FIXED | Set in `pyproject.toml`, and verified by probe: finops_core importing boto3 now breaks the contract |
+| ISS-111 | HIGH | The restore drill required by TASK-P0-028 has not been performed, because it needs an Aurora cluster to restore into a scratch database. P0 is not signed off until it is | OPEN | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028 |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |

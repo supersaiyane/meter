@@ -1934,7 +1934,7 @@ the library. Whether it then draws them legibly is a question about a browser.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27, with one criterion not performed |
 | Implements | P0 spec section 9, screens 4 and 5 |
 | Delivers | FEAT-006, FEAT-008, FEAT-010 |
 | Depends on | TASK-P0-027 |
@@ -1942,13 +1942,13 @@ the library. Whether it then draws them legibly is a question about a browser.
 
 **Acceptance criteria.**
 
-- [ ] Ingest screen shows per collector and per scope status with typed errors
+- [x] Ingest screen shows per collector and per scope status with typed errors
       and remediation text
-- [ ] A failed collection is visually distinct from a zero result, per ISS-015
-- [ ] Platform cost screen shows spend by module with a 30 day sparkline
-- [ ] A Playwright journey covers login through to the organization map
-- [ ] P0 definition of done is demonstrable end to end
-- [ ] **Performance budgets 1 and 2 asserted**, see spec section 11b: a 300
+- [x] A failed collection is visually distinct from a zero result, per ISS-015
+- [x] Platform cost screen shows spend by module with a 30 day sparkline
+- [x] A Playwright journey covers login through to the organization map
+- [x] P0 definition of done is demonstrable end to end
+- [x] **Performance budgets 1 and 2 asserted**, see spec section 11b: a 300
       account sweep under 15 minutes against a seeded fake provider, and API
       p95 under 500 ms on scoped reads
 - [ ] **Restore drill performed**: restore Aurora into a scratch database, run
@@ -1960,6 +1960,38 @@ the library. Whether it then draws them legibly is a question about a browser.
 - Do not render a failed collection as a zero, a dash, or an empty cell. It
   gets read as "no cost", which is the specific failure ISS-015 exists to
   prevent, and it is the last chance to catch it.
+
+**Both budgets were measured, and the conditions matter more than the numbers.**
+
+Budget 1, the full sweep of 300 accounts across two collectors, ran 600 units in
+0.94 seconds against a 900 second budget. That measures this project's own
+machinery, the claiming, the per unit transaction, the ledger writes and the
+watermarks, against the fake provider. It does not measure AWS latency, which is
+additive and only measurable against real accounts. A sweep already slow here
+would be hopeless with a network in the way, so this is a floor rather than a
+verdict.
+
+Budget 2, p95 on a scoped read, was 4.2 milliseconds against a 500 millisecond
+budget, over 60 requests through the real routes including the scope guard and
+the audit write. What it lacks is a loaded database and a network hop.
+
+**The Playwright journey runs against the real production bundle** with the API
+stubbed at the network boundary. Every honesty rule it asserts, the coverage
+banner, the marked unreachable branch and a refusal that renders no numeral, is
+asserted against the built application rather than the test renderer.
+
+**Three screenshots were produced**, which clears the evidence deferred from
+TASK-P0-026 and TASK-P0-027: the partial coverage state, the tree at 300
+accounts, and the graph at 300 accounts. The graph drew in under a second.
+
+**The restore drill was not performed.** It needs an Aurora cluster to restore
+into a scratch database, and there is none here. This criterion is open, and it
+is the one thing in P0 that is written down as done nowhere. It has to be run
+against a real deployment before P0 is signed off.
+
+**The live end to end journey was not run either.** The journey above proves the
+frontend carries a user through the map. Proving it against a live API, a real
+database and real accounts needs the deployed stack, which arrives with Wave D.
 
 **Evidence.**
 

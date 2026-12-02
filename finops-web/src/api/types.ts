@@ -62,3 +62,34 @@ export interface Account {
   readonly as_of: string;
   readonly collected_at: string;
 }
+
+export interface Run {
+  readonly run_id: string;
+  readonly collector: string;
+  readonly scope_key: string;
+  readonly status: string;
+  readonly started_at: string;
+  readonly finished_at: string | null;
+  readonly items_written: number;
+  /** One of the six causes, or null. Never a free text exception message. */
+  readonly error_type: string | null;
+  readonly error_detail: string | null;
+}
+
+export interface Freshness {
+  readonly collector: string;
+  readonly scope_key: string;
+  readonly as_of: string;
+  readonly cadence_seconds: number | null;
+  readonly age_seconds: number;
+  readonly is_stale: boolean;
+}
+
+export interface PlatformCost {
+  readonly day: string;
+  readonly module: string;
+  readonly service: string;
+  readonly amortized_cost: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}

@@ -118,7 +118,7 @@ features:
 - id: FEAT-010
   name: Ingest and freshness surface
   subproject: P0
-  status: Specified
+  status: Delivered
   detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9'
   doc: docs/features/FEAT-010-ingest-and-freshness-surface.md
 - id: FEAT-011
@@ -358,7 +358,7 @@ features:
 - id: FEAT-050
   name: Provenance, freshness and failure rendering, the visual honesty system
   subproject: P0
-  status: In build
+  status: Delivered
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
   doc: docs/features/FEAT-050-visual-honesty-system.md
 adrs:
@@ -843,6 +843,13 @@ changes:
   type: Chore
   what: TASK-P0-003 and TASK-P0-004, the index checker's own tests and a demonstrated
     rejection of the banned dash by the local hook. Wave A complete
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0059
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-028, the last three screens, the Playwright journey and both performance
+    budgets measured. The restore drill is not performed and is recorded as open
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
@@ -1484,6 +1491,12 @@ issues:
   summary: make lint failed on a terraform directory that Wave D has not created yet, leaving
     verify red for a reason unrelated to the change under review
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-002'
+- id: ISS-111
+  severity: HIGH
+  status: OPEN
+  summary: The restore drill required by TASK-P0-028 has not been performed, because it needs
+    an Aurora cluster to restore into a scratch database. P0 is not signed off until it is
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

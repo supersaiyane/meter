@@ -5,3 +5,7 @@ dist-types-node
 coverage
 playwright-report
 test-results
+
+# Playwright artefacts. The screenshots are evidence for a task, kept out of
+# the repository because a binary that changes on every run is not a diff.
+e2e/*.png

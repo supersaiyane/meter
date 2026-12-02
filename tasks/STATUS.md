@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 9 specified, 8 in build, 3 delivered |
+| Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 58 recorded |
-| Issues | 75 fixed, 34 open, 0 parked |
+| Changes | 59 recorded |
+| Issues | 75 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 26 | 0 | 9 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 27 | 0 | 8 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -83,6 +83,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-035` | Done, 2026-08-27 | the component layer and the visual honesty system |
 | `TASK-P0-026` | Done, 2026-08-27 | application shell, coverage banner and freshness indicator |
 | `TASK-P0-027` | Done, 2026-08-27 | accounts screen and organization map |
+| `TASK-P0-028` | Done, 2026-08-27, with one criterion not performed | ingest, freshness and platform cost screens, plus the end to end journey |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->
@@ -156,6 +157,7 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-026, the application shell | Coverage and freshness page level and worst case. Client refuses a bare response |
 | `[x]` | TASK-P0-027, accounts screen and organization map | Broken onboarding one click. Tree default. Unreachable branches drawn |
 | `[x]` | TASK-P0-003 and 004, index checker tests and the pipeline gate | Failure paths tested. Dash rejection demonstrated. Wave A complete |
+| `[~]` | TASK-P0-028, the last screens, journey and budgets | Screens and budgets done. Restore drill not performed, ISS-111 |
 
 ## Remaining sub projects
 

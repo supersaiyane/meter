@@ -8,7 +8,10 @@ import { AppShell } from './shell/AppShell';
 import { MetaProvider } from './shell/MetaProvider';
 import type { Section } from './shell/sections';
 import { AccountsScreen } from './screens/AccountsScreen';
+import { FreshnessScreen } from './screens/FreshnessScreen';
+import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
+import { PlatformScreen } from './screens/PlatformScreen';
 
 /**
  * The application root.
@@ -33,9 +36,9 @@ export function App({
           <AppShell section={section} onSelect={setSection}>
             {section === 'Accounts' ? <AccountsScreen /> : null}
             {section === 'Organization' ? <OrganizationScreen /> : null}
-            {section !== 'Accounts' && section !== 'Organization' ? (
-              <p>This screen arrives in TASK-P0-028.</p>
-            ) : null}
+            {section === 'Ingest' ? <IngestScreen /> : null}
+            {section === 'Freshness' ? <FreshnessScreen /> : null}
+            {section === 'Platform' ? <PlatformScreen /> : null}
           </AppShell>
         </MetaProvider>
       </ApiProvider>

@@ -75,7 +75,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 9 specified, 30 planned, 8 in build, 3 delivered.
+50 features across 8 sub projects. 8 specified, 30 planned, 7 in build, 5 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -92,9 +92,9 @@ block is caught by `make check-docs`. See
 | [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
-| [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
+| [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | In build | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
-| [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | In build | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
+| [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | Delivered | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 
 ### P2 Query Cost Governance
 
@@ -271,6 +271,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0056 | 2026-08-27 | Feature | TASK-P0-026, the application shell. Coverage and freshness are page level and show the worst panel, and the API client refuses a response with no envelope | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0057 | 2026-08-27 | Feature | TASK-P0-027, the accounts screen and organization map. Broken onboarding is one click, the tree is the default, and unreachable branches are drawn and marked | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0058 | 2026-08-27 | Chore | TASK-P0-003 and TASK-P0-004, the index checker's own tests and a demonstrated rejection of the banned dash by the local hook. Wave A complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0059 | 2026-08-27 | Feature | TASK-P0-028, the last three screens, the Playwright journey and both performance budgets measured. The restore drill is not performed and is recorded as open | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
@@ -281,7 +282,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**75 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**75 FIXED, 35 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -325,6 +326,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-098 | HIGH | The chosen base image versions were picked by habit, not measurement. python 3.12 carried 3 High findings and nginx 1.27 carried 93 including 6 Critical | FIXED | Moved to python 3.13 and nginx 1.30, both measured at TASK-P0-029. node:22-dev was already clean |
 | ISS-102 | HIGH | Every honesty guarantee in the product is enforced by a database constraint and then delivered by an undesigned pixel, so the constraint work could be thrown away in the last six inches | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md). The Figure component makes a number unrenderable without its provenance |
 | ISS-110 | HIGH | The import linter contracts forbidding external modules never worked: include_external_packages was not set, so boto3, fastapi and sqlalchemy were never checked and the contract looked like protection it was not providing | FIXED | Set in `pyproject.toml`, and verified by probe: finops_core importing boto3 now breaks the contract |
+| ISS-111 | HIGH | The restore drill required by TASK-P0-028 has not been performed, because it needs an Aurora cluster to restore into a scratch database. P0 is not signed off until it is | OPEN | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028 |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |

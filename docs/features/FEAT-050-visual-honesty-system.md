@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P0 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [docs/12-UI-DESIGN.md](../12-UI-DESIGN.md) |
 | Tasks | TASK-P0-026, TASK-P0-035 |
 | Decisions | ADR-0019 |

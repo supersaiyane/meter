@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
-import type { Account, ApiEnvelope } from './types';
+import type { Account, ApiEnvelope, Freshness, PlatformCost, Run } from './types';
 import type { FlatNode } from '../components/orgNodes';
 
 /**
@@ -26,5 +26,29 @@ export function useOrgTree() {
   return useQuery<ApiEnvelope<FlatNode[]>>({
     queryKey: ['org-tree'],
     queryFn: () => client.get<FlatNode[]>('/api/v1/org/tree'),
+  });
+}
+
+export function useRuns() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<Run[]>>({
+    queryKey: ['runs'],
+    queryFn: () => client.get<Run[]>('/api/v1/ingest/runs'),
+  });
+}
+
+export function useFreshness() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<Freshness[]>>({
+    queryKey: ['freshness'],
+    queryFn: () => client.get<Freshness[]>('/api/v1/health/freshness'),
+  });
+}
+
+export function usePlatformCost() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<PlatformCost[]>>({
+    queryKey: ['platform-cost'],
+    queryFn: () => client.get<PlatformCost[]>('/api/v1/platform/cost'),
   });
 }
